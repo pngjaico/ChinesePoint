@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "chinesepoint/cjk/CjkReviewScheduler.h"
+#include "chinesepoint/cjk/CjkLearnerModel.h"
 
 namespace {
 constexpr int64_t kMinute = 60LL * 1000;
@@ -45,4 +46,18 @@ TEST(CjkReviewScheduler, AnkiAuthorityIsNeverLocallyDue) {
   state.authority = ChinesePoint::Cjk::ScheduleAuthority::Anki;
 
   EXPECT_FALSE(scheduler.isDue(state, kNow));
+}
+
+TEST(CjkLearnerModel, StableIdsAndBoundsProtectJournalInputs) {
+  using namespace ChinesePoint::Cjk;
+  EXPECT_NE(stableWordId("金箍棒"), 0u);
+  EXPECT_EQ(stableWordId("金箍棒"), stableWordId("金箍棒"));
+  EXPECT_NE(stableWordId("金箍棒"), stableWordId("金箍"));
+  EXPECT_TRUE(validHeadword("量子纠缠"));
+  EXPECT_FALSE(validHeadword(""));
+  EXPECT_FALSE(validHeadword(std::string(kMaxHeadwordBytes + 1, 'a')));
+  EXPECT_TRUE(validSentence(std::string(kMaxSentenceBytes, 'a')));
+  EXPECT_FALSE(validSentence(std::string(kMaxSentenceBytes + 1, 'a')));
+  EXPECT_TRUE(validBookPath(std::string(kMaxBookPathBytes, 'a')));
+  EXPECT_FALSE(validBookPath(std::string(kMaxBookPathBytes + 1, 'a')));
 }
