@@ -4,6 +4,8 @@
 
 ChinesePoint is a learning-first fork of CrossPoint Reader for the Xteink X4 Pro only. The firmware is ChinesePoint; CJK Learner is its integrated Chinese, Japanese, and Korean learning workspace.
 
+ChinesePoint retains the current X4 Pro CrossPoint reader and platform as-is: library, EPUB/TXT/XTC reader, touch, Wi-Fi, frontlight, KOReader Sync, settings, updates, panel detection, and recovery remain CrossPoint responsibilities. ChinesePoint work is additive and limited to the planned CJK learner, learning data, statistics/export, and optional Anki Desktop bridge; it does not replace the reader, boot, display, update, or flasher implementations.
+
 ChinesePoint v1 does not claim support for X3, original X4, X4 Classic, Sticky, PaperMono, or any other board. Their upstream source may remain for rebaseability, but ChinesePoint CI, releases, site, installer, documentation, and support build and publish only the X4 Pro.
 
 ## Verified base
