@@ -26,6 +26,9 @@
 
 #include "CrossPointSettings.h"
 #include "CrossPointState.h"
+#if defined(CHINESEPOINT)
+#include "chinesepoint/CjkSafetyGuard.h"
+#endif
 #include "KOReaderCredentialStore.h"
 #include "MappedInputManager.h"
 #include "OpdsServerStore.h"
@@ -383,6 +386,19 @@ void setup() {
                                                                                      : MappedInputManager::Button::Up;
   const bool recoveryFirmwareMode = wakeupReason == HalGPIO::WakeupReason::PowerButton && !BoardConfig::isPaperMono() &&
                                     mappedInputManager.isPressed(recoveryButton);
+
+#if defined(CHINESEPOINT)
+  // Deliberately after recovery-button detection: optional learner state must
+  // never precede, replace, or block the proven DOWN + POWER escape route.
+  if (!recoveryFirmwareMode) {
+    const auto cjkSafety = ChinesePoint::CjkSafetyGuard::reconcileBoot(rebootedFromPanic);
+    if (cjkSafety.safeMode) {
+      LOG_INF("CJK", "Learner safe mode active after %u consecutive learner crashes", cjkSafety.crashStreak);
+    } else if (!cjkSafety.storageAvailable) {
+      LOG_INF("CJK", "Learner crash marker unavailable; continuing fail-open");
+    }
+  }
+#endif
 
   halTiltSensor.begin();
   halClock.begin();

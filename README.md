@@ -39,9 +39,13 @@ The initial source base is CrossPoint develop commit e7a3bb48817f1cb951b521ca958
 
 The unmodified X4 Pro baseline compiled on 2026-08-30 and produced a valid ESP32-S3 application image. It is not yet a ChinesePoint CJK release.
 
+The first ChinesePoint foundation build passed on 2026-08-31. Its X4 Pro artifact has an ESP32-S3 image header, the current `CROSSPOINT-BOARD-V1:x4pro;` tag, a valid Espressif checksum and validation hash, and SHA-256 `04f5c7ec012910559886eafc86b92753f047792a4d9ef109eef9a05b8a003950`. It also passed 174 native tests and four artifact-gate tests. It is explicitly **not installable yet**: no physical panel or recovery drill has been performed, and the simulator/site release bundle is still pending.
+
 ~~~powershell
 $env:PYTHONUTF8 = '1'
-pio run -e x4pro
+$env:PLATFORMIO_CORE_DIR = 'D:\ChinesePoint\platformio-core' # keep toolchains on D:
+$env:PLATFORMIO_HOME_DIR = $env:PLATFORMIO_CORE_DIR
+pio run -e chinesepoint_x4pro
 ~~~
 
 ## Simulator

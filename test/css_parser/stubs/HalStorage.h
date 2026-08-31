@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <filesystem>
 #include <string>
 #include <utility>
 
@@ -68,7 +69,7 @@ class HalStorage {
 
   bool remove(const char* path) { return std::remove(path) == 0; }
   bool rename(const char* from, const char* to) {
-    if (from == failedRenameFrom_ && to == failedRenameTo_) {
+    if (normalizePath(from) == failedRenameFrom_ && normalizePath(to) == failedRenameTo_) {
       clearFailures();
       return false;
     }
@@ -76,8 +77,8 @@ class HalStorage {
   }
 
   void failNextRename(std::string from, std::string to) {
-    failedRenameFrom_ = std::move(from);
-    failedRenameTo_ = std::move(to);
+    failedRenameFrom_ = normalizePath(from.c_str());
+    failedRenameTo_ = normalizePath(to.c_str());
   }
 
   void clearFailures() {
@@ -91,6 +92,10 @@ class HalStorage {
   bool openFileForWrite(const char*, const std::string& path, HalFile& file) { return file.open(path.c_str(), "wb"); }
 
  private:
+  static std::string normalizePath(const char* path) {
+    return std::filesystem::path(path).lexically_normal().generic_string();
+  }
+
   std::string failedRenameFrom_;
   std::string failedRenameTo_;
 };
