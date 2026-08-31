@@ -43,7 +43,7 @@ On the very first lookup with a dictionary (and again whenever the `.idx` or `.s
 1. **Direct match** — the word is found as-is (case-insensitive) in the dictionary index. Surrounding punctuation is ignored.
 2. **Synonyms** — on a miss, if the dictionary ships a `.syn` file, alternate spellings and irregular forms recorded there are resolved to their headword (e.g. `oxen` → `ox`, `colour` → `color`). This step is skipped if the `.sidx` sidecar could not be built (e.g. transient low memory during indexing); the dictionary otherwise stays usable, and the build is retried the next time it is opened.
 3. **Stemming** — still no match: common English word forms are retried automatically: possessives and plurals (`dogs` → `dog`, `stories` → `story`) and verb endings (`walked` → `walk`, `running` → `run`, `making` → `make`).
-4. **Not found** — a short popup appears and you return to word selection.
+4. **Not found** — for the standard CrossPoint lookup, a short popup appears and you return to word selection.
 
 ## The Definition Screen
 
@@ -53,6 +53,10 @@ HTML dictionaries that declare `sametypesequence=h` use the EPUB text-layout eng
 
 - **Left/Right** or side **Up/Down** — previous / next page
 - **Back** — return to word selection
+
+### ChinesePoint learner selections
+
+When the reader can construct a complete CJK sentence context, a local StarDict miss opens a read-only `Not found` detail instead of discarding that context. **Save** stores the selected word and sentence in the bounded local learner journal; it never invokes an online dictionary or translator. The same saved entries are available from Reader menu → Learning stats → Vocabulary.
 
 
 

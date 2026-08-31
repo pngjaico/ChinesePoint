@@ -2,12 +2,12 @@
   "schema": 1,
   "project": "ChinesePoint",
   "target": "xteink-x4-pro",
-  "source_commit": "c3d36692d4459ae4d17bef9eb3a504d76e7cf0af",
+  "source_commit": "df21b37b65e2be10eec78926c238b562ecc18e40",
   "version": "ChinesePoint-v0.6-x4pro",
   "artifact": {
     "filename": "firmware.bin",
-    "bytes": 5336976,
-    "sha256": "1be3542d6dc7af44b498397af8159cf45efb116ef5f91c0ce1e9c427ab521c84",
+    "bytes": 5346768,
+    "sha256": "7c95d83a1bf057427c49a9e44cd2312c789d0f51d108b42c637003ebcce3e0de",
     "environment": "chinesepoint_x4pro",
     "board_tag": "CROSSPOINT-BOARD-V1:x4pro;",
     "installable": false,
@@ -16,7 +16,7 @@
   "evidence": {
     "native_tests": 194,
     "artifact_tests": 4,
-    "simulator_run": "https://github.com/pngjaico/ChinesePoint/actions/runs/33414889143",
+    "simulator_run": "https://github.com/pngjaico/ChinesePoint/actions/runs/33446276933",
     "simulator_panels": ["SSD1677", "UC8179", "UC8279"],
     "physical_matrix": "pending",
     "recovery_drill": "pending"

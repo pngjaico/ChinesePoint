@@ -39,7 +39,7 @@ The initial source base is CrossPoint develop commit e7a3bb48817f1cb951b521ca958
 
 The unmodified X4 Pro baseline compiled on 2026-08-30 and produced a valid ESP32-S3 application image. It is not yet a ChinesePoint CJK release.
 
-The latest ChinesePoint foundation build passed on 2026-08-31. Its X4 Pro artifact has an ESP32-S3 image header, the current `CROSSPOINT-BOARD-V1:x4pro;` tag, a valid Espressif checksum and validation hash, and SHA-256 `1be3542d6dc7af44b498397af8159cf45efb116ef5f91c0ce1e9c427ab521c84`. It passed 194 native tests, artifact validation, and the [three-panel simulator CI run](https://github.com/pngjaico/ChinesePoint/actions/runs/33414889143). It includes word selection, sentence-context saving, optional local StarDict lookup, and the first auditable learner-statistics core. It is explicitly **not installable yet**: no physical panel or recovery drill has been performed, and the safe site release bundle is still pending.
+The latest ChinesePoint foundation build passed on 2026-08-31 at source commit `df21b37`. Its X4 Pro artifact has an ESP32-S3 image header, the current `CROSSPOINT-BOARD-V1:x4pro;` tag, a valid Espressif checksum and validation hash, and SHA-256 `7c95d83a1bf057427c49a9e44cd2312c789d0f51d108b42c637003ebcce3e0de`. It passed 194 native tests, artifact validation, and the [current-source three-panel simulator CI run](https://github.com/pngjaico/ChinesePoint/actions/runs/33446276933). It includes word selection, sentence-context saving even for a local dictionary miss, optional local StarDict lookup, learner statistics, and a read-only vocabulary/context browser. It is explicitly **not installable yet**: no physical panel or recovery drill has been performed.
 
 ~~~powershell
 $env:PYTHONUTF8 = '1'
