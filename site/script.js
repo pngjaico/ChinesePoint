@@ -65,6 +65,7 @@
       setText('[data-release-environment]', artifact.environment);
       setText('[data-release-bytes]', formatBytes(artifact.bytes));
       setText('[data-release-sha]', artifact.sha256);
+      setText('[data-release-tests]', `${manifest.evidence.native_tests} / ${manifest.evidence.native_tests}`);
       setText('[data-release-commit]', manifest.source_commit.slice(0, 7));
       setText('[data-release-notes]', artifact.installable
         ? 'Release marcado como instalável no manifesto assinado.'
