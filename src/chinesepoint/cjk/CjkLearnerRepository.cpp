@@ -52,9 +52,9 @@ bool LearnerRepository::replay(const uint8_t* journalBytes, const size_t journal
   return true;
 }
 
-bool LearnerRepository::recordEncountered(const std::string_view headword, const std::string_view sentence,
-                                          const std::string_view bookPath, const TextAnchor& anchor,
-                                          const int64_t nowMs) {
+bool LearnerRepository::record(const std::string_view headword, const std::string_view sentence,
+                               const std::string_view bookPath, const TextAnchor& anchor, const int64_t nowMs,
+                               const WordStatus requestedStatus) {
   if (!validHeadword(headword) || !validSentence(sentence) || !validBookPath(bookPath)) return false;
   const uint64_t wordId = stableWordId(headword);
   const size_t index = findIndex(wordId, headword);
@@ -66,11 +66,24 @@ bool LearnerRepository::recordEncountered(const std::string_view headword, const
     next.firstSeenStudyMs = nowMs;
   }
   if (next.encounterCount < std::numeric_limits<uint32_t>::max()) ++next.encounterCount;
+  if (static_cast<uint8_t>(requestedStatus) > static_cast<uint8_t>(next.status)) next.status = requestedStatus;
   next.lastSeenStudyMs = std::max(next.lastSeenStudyMs, nowMs);
   next.bookPath.assign(bookPath);
   next.sourceAnchor = anchor;
   next.sourceSentence.assign(sentence);
   return applySnapshot(next);
+}
+
+bool LearnerRepository::recordEncountered(const std::string_view headword, const std::string_view sentence,
+                                          const std::string_view bookPath, const TextAnchor& anchor,
+                                          const int64_t nowMs) {
+  return record(headword, sentence, bookPath, anchor, nowMs, WordStatus::Encountered);
+}
+
+bool LearnerRepository::recordSaved(const std::string_view headword, const std::string_view sentence,
+                                    const std::string_view bookPath, const TextAnchor& anchor,
+                                    const int64_t nowMs) {
+  return record(headword, sentence, bookPath, anchor, nowMs, WordStatus::Saved);
 }
 
 bool LearnerRepository::prepareSnapshot(const LearnerEntry& entry, Journal::EncodedRecord& output) const {

@@ -74,10 +74,24 @@ bool LearnerStore::append(const Journal::EncodedRecord& record) {
 
 bool LearnerStore::recordEncountered(const std::string_view headword, const std::string_view sentence,
                                      const std::string_view bookPath, const TextAnchor& anchor, const int64_t nowMs) {
+  return record(headword, sentence, bookPath, anchor, nowMs, WordStatus::Encountered);
+}
+
+bool LearnerStore::recordSaved(const std::string_view headword, const std::string_view sentence,
+                                const std::string_view bookPath, const TextAnchor& anchor, const int64_t nowMs) {
+  return record(headword, sentence, bookPath, anchor, nowMs, WordStatus::Saved);
+}
+
+bool LearnerStore::record(const std::string_view headword, const std::string_view sentence,
+                          const std::string_view bookPath, const TextAnchor& anchor, const int64_t nowMs,
+                          const WordStatus requestedStatus) {
   if ((!loaded_ && !load()) || (repository_.needsRepair() && !compact())) return false;
 
   LearnerRepository candidate = repository_;
-  if (!candidate.recordEncountered(headword, sentence, bookPath, anchor, nowMs)) return false;
+  const bool recorded = requestedStatus == WordStatus::Saved
+                            ? candidate.recordSaved(headword, sentence, bookPath, anchor, nowMs)
+                            : candidate.recordEncountered(headword, sentence, bookPath, anchor, nowMs);
+  if (!recorded) return false;
   const LearnerEntry* entry = candidate.find(stableWordId(headword), headword);
   Journal::EncodedRecord record;
   if (entry == nullptr || !candidate.prepareSnapshot(*entry, record) || !append(record)) return false;

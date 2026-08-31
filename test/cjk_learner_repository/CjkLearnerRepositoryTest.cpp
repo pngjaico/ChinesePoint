@@ -29,6 +29,19 @@ TEST(CjkLearnerRepository, EncounterRetainsLearnerStatusAndProducesSnapshot) {
   EXPECT_EQ(repository.lastSequence(), 1u);
 }
 
+TEST(CjkLearnerRepository, DeliberateSavePromotesEncounterWithoutDowngradingProgress) {
+  LearnerRepository repository;
+  ASSERT_TRUE(repository.recordEncountered("学习", "我每天学习中文。", "/books/a.epub", {1, 5, 2, 7}, 100));
+  ASSERT_TRUE(repository.recordSaved("学习", "我每天学习中文。", "/books/a.epub", {1, 5, 2, 7}, 150));
+  ASSERT_EQ(repository.entries().size(), 1u);
+  EXPECT_EQ(repository.entries()[0].status, ChinesePoint::Cjk::WordStatus::Saved);
+  EXPECT_EQ(repository.entries()[0].encounterCount, 2u);
+
+  ASSERT_TRUE(repository.recordEncountered("学习", "我每天学习中文。", "/books/a.epub", {1, 5, 2, 7}, 200));
+  EXPECT_EQ(repository.entries()[0].status, ChinesePoint::Cjk::WordStatus::Saved);
+  EXPECT_EQ(repository.entries()[0].encounterCount, 3u);
+}
+
 TEST(CjkLearnerRepository, ReplayStopsAtTornTailButKeepsLastDurableEntry) {
   LearnerRepository writer;
   ASSERT_TRUE(writer.recordEncountered("书", "这是一本书。", "/books/a.epub", {0, 1, 1, 2}, 20));

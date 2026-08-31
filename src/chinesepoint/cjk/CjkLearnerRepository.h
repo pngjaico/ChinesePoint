@@ -17,6 +17,10 @@ class LearnerRepository final {
   bool replay(const uint8_t* journalBytes, size_t journalSize);
   bool recordEncountered(std::string_view headword, std::string_view sentence, std::string_view bookPath,
                          const TextAnchor& anchor, int64_t nowMs);
+  // A deliberate save is stronger than a passive encounter. It may promote an
+  // encountered card to Saved, but never downgrades a Learning or Known card.
+  bool recordSaved(std::string_view headword, std::string_view sentence, std::string_view bookPath,
+                   const TextAnchor& anchor, int64_t nowMs);
 
   bool prepareSnapshot(const LearnerEntry& entry, Journal::EncodedRecord& output) const;
   void markSnapshotCommitted();
@@ -28,6 +32,8 @@ class LearnerRepository final {
 
  private:
   bool applySnapshot(const LearnerEntry& entry);
+  bool record(std::string_view headword, std::string_view sentence, std::string_view bookPath,
+              const TextAnchor& anchor, int64_t nowMs, WordStatus requestedStatus);
   size_t findIndex(uint64_t wordId, std::string_view headword) const;
 
   std::vector<LearnerEntry> entries_;

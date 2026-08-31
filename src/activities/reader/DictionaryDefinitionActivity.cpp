@@ -240,7 +240,7 @@ void DictionaryDefinitionActivity::loop() {
 void DictionaryDefinitionActivity::saveLearnerEntry() {
   learnerSaveAttempted = true;
   if (!learnerContext.has_value() || !ChinesePoint::CjkSafetyGuard::startLearnerSession()) return;
-  learnerSaved = ChinesePoint::Cjk::learnerStore().recordEncountered(
+  learnerSaved = ChinesePoint::Cjk::learnerStore().recordSaved(
       headword, learnerContext->sentence, learnerContext->bookPath, learnerContext->anchor,
       static_cast<int64_t>(millis()));
   ChinesePoint::CjkSafetyGuard::finishLearnerSession();

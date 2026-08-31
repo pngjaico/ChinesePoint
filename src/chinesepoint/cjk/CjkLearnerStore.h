@@ -17,6 +17,8 @@ class LearnerStore final {
   bool load();
   bool recordEncountered(std::string_view headword, std::string_view sentence, std::string_view bookPath,
                          const TextAnchor& anchor, int64_t nowMs);
+  bool recordSaved(std::string_view headword, std::string_view sentence, std::string_view bookPath,
+                   const TextAnchor& anchor, int64_t nowMs);
   bool compact();
 
   const LearnerRepository& repository() const { return repository_; }
@@ -25,6 +27,8 @@ class LearnerStore final {
  private:
   bool restoreBackupIfNeeded();
   bool append(const Journal::EncodedRecord& record);
+  bool record(std::string_view headword, std::string_view sentence, std::string_view bookPath,
+              const TextAnchor& anchor, int64_t nowMs, WordStatus requestedStatus);
 
   std::string rootPath_;
   std::string journalPath_;
