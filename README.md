@@ -1,287 +1,270 @@
-# CrossPoint Reader
+<p align="center">
+  <img src="assets/chinesepoint-hero.png" alt="ChinesePoint running on an XTEINK X4 Pro" width="100%" />
+</p>
 
-[![Fund contributors](https://img.shields.io/badge/%F0%9F%91%91_Fund_contributors-royalty.dev-BB953A?style=for-the-badge&labelColor=1a1a1a)](https://app.royalty.dev/crosspoint-reader/crosspoint-reader)
+<h1 align="center">ChinesePoint</h1>
+<p align="center"><strong>Read Chinese. Learn naturally.</strong></p>
+<p align="center">A Chinese-learning firmware project for the XTEINK X4 Pro, built on CrossPoint.</p>
 
-CrossPoint is open-source e-reader firmware - community-built, fully hackable, free forever. It's maintained by a growing community of developers and readers who believe your device should do what you want - not what a manufacturer decided for you.
+<p align="center">
+  <a href="https://app.royalty.dev/pngjaico/ChinesePoint"><img alt="Fund contributors" src="https://img.shields.io/badge/%F0%9F%91%91_Fund_contributors-royalty.dev-BB953A?style=for-the-badge&labelColor=1a1a1a" /></a>
+</p>
 
-**Now running on:** ESP32C3-based Xteink [X4](https://www.xteink.com/products/xteink-x4) and [X3](https://www.xteink.com/products/xteink-x3).
+<p align="center">
+  <img alt="Target" src="https://img.shields.io/badge/target-XTEINK_X4_Pro-9f2f25" />
+  <img alt="Status" src="https://img.shields.io/badge/status-v0.5_active_development-BB953A" />
+  <img alt="Foundation" src="https://img.shields.io/badge/built_on-CrossPoint-222222" />
+  <img alt="Learning core" src="https://img.shields.io/badge/learning-offline--first-56634f" />
+</p>
 
-![CrossPoint Reader running on Xteink device](./docs/images/cover.jpg)
+Development status
+ChinesePoint v0.5 is under active native development. The source/checkpoint currently covers the native reader bridge, Chinese lookup, crash-safe vocabulary persistence, stable source anchors and local spaced-repetition reviews. Translation, trusted time and Anki sync are roadmap work. A public stable installable firmware release is not being claimed yet.
 
-> If you're planning to buy an Xteink device, consider purchasing an **X3/X4 Developer Edition** through https://crosspointreader.com. CrossPoint receives a small share of each sale, helping fund development costs.
+What is ChinesePoint?
 
-## What can CrossPoint do?
+ChinesePoint is a custom e-reader firmware project built on top of CrossPoint, focused on turning the XTEINK X4 Pro into a dedicated device for learning Chinese through extensive reading.
 
-- **Reader engine**: EPUB 2/3 rendering with embedded-style option, image handling, hyphenation, kerning, chapter navigation, footnotes, bookmarks, dictionary lookups ([StarDict](docs/dictionary.md)), go-to-percent, auto page turn, orientation control, focus reading, KOReader progress sync and more. 
+The idea is simple: keep everything CrossPoint already does well as an e-reader, then add a Chinese-learning layer directly inside the reading experience.
 
-- **Various formats**: native handling for `.epub`, `.xtc/.xtch`, `.txt`, and `.bmp`.
+Read → Understand → Save → Learn → Review → Back to the book
 
-- **Screenshots.**
+Instead of switching between an e-reader, dictionary, phone and flashcard app, ChinesePoint aims to keep that loop on the device.
 
-- **Custom fonts**: install your favorite fonts on the SD card.
+What's different in this fork?
 
-- **Tilt page turn (X3 only)**.
+CrossPoint is the platform. ChinesePoint adds a narrowly scoped learning layer instead of replacing the reader or hardware stack.
 
-- **Library workflow**: folder browser, hidden-file toggle, long-press delete, recent books, SD-cache management.
+Current v0.5 source highlights
 
-- **Wireless workflows**:
-  
-  - File transfer web UI
-  - EPUB Optimizer
-  - Web settings UI/API (edit many device settings from browser)
-  - WebSocket fast uploads
-  - WebDAV handler
-  - AP mode (hotspot) and STA mode (join existing Wi-Fi), both with QR helpers
-  - Calibre wireless connect flow
-  - OPDS browser with saved servers (up to 8), search, pagination, and direct download
-  - OTA update checks and installs from GitHub releases
+Native Chinese lookup inside EPUB reading — touch a rendered word without leaving the reader.
 
-- **Customization**: multiple themes (Classic, Lyra, Lyra Extended, RoundedRaff), sleep screen modes including transparent overlays, front/side button remapping, status bar controls, power-button behavior, refresh cadence, and more.
+Smart multi-character matching — longer useful candidates are preferred before shorter matches.
 
-- **Localization**: 24 UI languages and counting. RTL support.
+CC-CEDICT-aware CJK index — compact lookup index for Chinese candidate detection.
 
-### Coming soon:
+CrossPoint StarDict definitions — dictionary definitions remain owned by CrossPoint's existing dictionary stack.
 
-- More themes.
+Word / sentence / breakdown context — keep the lookup tied to what you were actually reading.
 
-- Much more! stay tuned.
+Vocabulary states — Encountered, Saved, Learning, and Known.
 
----
+Crash-safe learner storage — journaled SD-card persistence designed to recover from interrupted writes.
 
-## USB-locked devices (Xteink Unlocker)
+Stable source anchors — vocabulary can point back to the logical location where it was found.
 
-Some Xteink units purchased from third-party stores (e.g. AliExpress) ship with USB flashing locked from the factory.
-If your device is locked, you will need to use the **Xteink Unlocker** tool available at
-https://crosspointreader.com/#unlock-tool before you can flash CrossPoint.
+View in Book — jump back to the saved source context.
 
-**You do not need this tool if you bought your device directly from xteink.com.** Those units are not locked.
+Offline spaced-repetition reviews — local Again / Hard / Good / Easy review loop and history.
 
-**Not sure if your device is locked?** Power it on, connect the USB-C cable, and try flashing via the web flasher first (see
-[Install firmware](#install-firmware) below). If the browser's serial device picker does not show your device, try a different
-USB port or browser before assuming the device is locked. Only reach for the unlocker if the device still doesn't appear.
+Large-Hanzi e-ink review UI — scalable rendering without bundling multiple giant CJK font copies.
 
-> ### ⚠️ WARNING: READ THIS BEFORE USING THE UNLOCKER ⚠️
-> 
-> **The only officially supported firmwares in the unlock tool are CrossPoint and CrossInk.**
-> 
-> Flashing any other firmware on a USB-locked device may **permanently brick the device** or leave it **permanently
-> stuck on that firmware with no recovery path**. Once USB flashing is re-locked, your only way back is via OTA, and if
-> the firmware you flashed doesn't support OTA, **there is no way out**.
+Offline-first architecture — the learning loop does not require Wi-Fi.
 
-## Install firmware
+Planned
 
-### Web installer (recommended)
+Sentence translation with an on-device cache
 
-1. Connect your device to your computer via USB-C and wake/unlock the device
-2. Go to https://crosspointreader.com/#flash-tools, select device (X3 or X4), and choose an official CrossPoint release.
+Trusted time / NTP-aware scheduling
 
-### Web installer (specific version)
+CJK Relay + Anki / AnkiConnect synchronization over Wi-Fi
 
-1. Connect your device to your computer via USB-C and wake/unlock the device
-2. Download a `firmware.bin` from [Releases](https://github.com/crosspoint-reader/crosspoint-reader/releases), local build, or continuous integration artifact.
-3. Go to https://crosspointreader.com/#flash-tools, select device (X3 or X4), click "Custom .bin" and upload a `firmware.bin`.
+Deeper reading and learning statistics
 
-### Revert to Official Firmware
+Memory / heap profiling and physical-device hardening
 
-To revert to the official firmware, you can also flash the latest official firmware using https://crosspointreader.com/#flash-tools.
+Public release packaging after build and hardware acceptance gates
 
-### Command line
+Supported target
 
-1. Install [`esptool`](https://github.com/espressif/esptool):
+XTEINK X4 Pro
 
-```bash
-pip install esptool
-```
+ChinesePoint is currently being designed and integrated specifically around the XTEINK X4 Pro path in CrossPoint/FreeInk.
 
-2. Download `firmware.bin` from the [releases page](https://github.com/crosspoint-reader/crosspoint-reader/releases).
-3. Connect your device via USB-C.
-4. Find the device port. On Linux, run `dmesg` after connecting. On macOS:
+The project does not assume that hardware-specific changes for unrelated forks are safe on the Pro. Boot, recovery, display, touch, storage, power and update behavior stay as close to CrossPoint upstream as possible.
 
-```bash
-log stream --predicate 'subsystem == "com.apple.iokit"' --info
-```
+ChinesePoint is an independent community project. It is not affiliated with XTEINK and is not an official CrossPoint release.
 
-5. Flash:
+How it works
 
-```bash
-esptool.py --chip esp32c3 --port /dev/ttyACM0 --baud 921600 write_flash 0x10000 /path/to/firmware.bin
-```
+XTEINK X4 Pro
+      │
+      ▼
+FreeInk / HAL
+      │
+      ▼
+CrossPoint
+├── EPUB reader
+├── StarDict
+├── UI / touch
+├── storage
+├── Wi-Fi
+├── sleep / power
+└── recovery / update
+      │
+      ▼
+ChinesePoint learning layer
+├── TextAnchor bridge
+├── CJKLEX2 candidate index
+├── ChineseEngine
+├── LearnerStore
+├── vocabulary states
+├── local flashcards
+└── review history
 
-Adjust `/dev/ttyACM0` to match your system.
+The important design decision is what ChinesePoint doesn't rewrite. CrossPoint and FreeInk continue to own the platform and recovery-critical pieces. ChinesePoint hooks into the reader through small, auditable interfaces.
 
-### Manual
+Learning flow
 
-See [Development quick start](#development-quick-start) below.
+1. Read
 
----
+Open a normal EPUB in CrossPoint.
 
-## Custom SD-card fonts
+2. Understand
 
-Convert your own TTF/OTF files into `.cpfont` files that load from the SD card. No firmware reflash is needed.
+Tap Chinese text. ChinesePoint uses the reader's logical text offsets to find the tapped context and resolve useful word candidates.
 
-1. Go to https://crosspointreader.com/fonts and open the "SD-card font builder" form.
-2. Upload up to four styles (regular, bold, italic, bold-italic), set the family name, point sizes, and Unicode range.
-3. Download the generated `.cpfont` files.
-4. Copy them to your SD card under `/fonts/YourFont/` (or `/.fonts/YourFont/` to hide the folder).
-5. Select the font on the device from the font settings.
+3. Save
 
-Conversion runs the firmware repo's `lib/EpdFont/scripts/fontconvert_sdcard.py` script unmodified, so output matches a local host build.
+Save the resolved headword together with its sentence, book and stable anchor.
 
----
+4. Learn
 
-## Documentation
+Move vocabulary through Saved → Learning → Known and review it locally.
 
-- [User Guide](./USER_GUIDE.md)
-- [Web server usage](./docs/webserver.md)
-- [Web server endpoints](./docs/webserver-endpoints.md)
-- [Project scope](./SCOPE.md)
-- [Contributing docs](./docs/contributing/README.md)
-- [Touch and UI development](./docs/contributing/touch-and-ui.md) - how to build new screens on the FreeInkUI activity bases (UiListActivity and friends), plus build envs for the non-Xteink touch devices
+5. Review
 
----
+Use the on-device spaced-repetition queue, then jump back to the original book context when useful.
 
-## Development quick start
+Why not build another reader?
 
-### Prerequisites
+CrossPoint already provides a mature foundation for EPUB rendering, StarDict dictionaries, file management, custom fonts, Wi-Fi workflows, sleep/recovery and the hardware abstraction used by these devices. Its own README intentionally describes community forks as layers that add more specialized behavior while CrossPoint itself moves conservatively for stability.
 
-- [pioarduino](https://github.com/pioarduino/pioarduino) or VS Code + pioarduino plugin
-- Python 3.8+
-- `clang-format` 21
-- USB-C cable supporting data transfer
+ChinesePoint follows that philosophy: specialize the learning experience without duplicating the platform.
 
-### Setup
+Project status
 
-```bash
-git clone --recursive https://github.com/crosspoint-reader/crosspoint-reader
-cd crosspoint-reader
+Area
 
-# if cloned without --recursive:
-git submodule update --init --recursive
-```
+Status
 
-### Nix/NixOS
+Native reader / text-anchor bridge
 
-Nix/NixOS users can enter the development shell with either `nix develop` (flakes) or `nix-shell`:
+✅ v0.5 source
 
-```bash
-nix develop -f nix
-# or
-nix-shell nix
-```
+Chinese candidate matching
 
-To flash a connected ESP32-C3 device, enable PlatformIO's udev rules in your NixOS configuration:
+✅ v0.5 source
 
-```nix
-services.udev.packages = with pkgs; [ platformio-core.udev ];
-```
+CC-CEDICT index + StarDict handoff
 
-After rebuilding the system configuration, reconnect the device or reload udev rules.
+✅ v0.5 source
 
-### Build / flash / monitor
+Saved / Learning / Known
 
-```bash
-pio run --target upload
-```
+✅ v0.5 source
 
-### Contributor pre-PR checks
+Crash-safe LearnerStore
 
-```bash
-./bin/clang-format-fix
-pio check -e default
-pio run -e default
-```
+✅ v0.5 source
 
-### Debugging
+Stable anchors / View in Book
 
-After flashing the new features, it’s recommended to capture detailed logs from the serial port.
+✅ v0.5 source
 
-First, make sure all required Python packages are installed:
+Local SRS reviews + history
 
-```python
-python3 -m pip install pyserial colorama matplotlib
-```
+✅ v0.5 source
 
-After that run the script:
+Sentence translation cache
 
-```sh
-# For Linux
-# This was tested on Debian and should work on most Linux systems.
-python3 scripts/debugging_monitor.py
+🟡 Planned
 
-# For macOS
-python3 scripts/debugging_monitor.py /dev/cu.usbmodem2101
-```
+Trusted time / NTP
 
-Minor adjustments may be required for Windows.
+🟡 Planned
 
----
+Anki sync / CJK Relay
 
-## Internals
+🟡 Planned
 
-CrossPoint Reader is pretty aggressive about caching data down to the SD card to minimise RAM usage. The ESP32-C3 only has ~380KB of usable RAM, so we have to be careful. A lot of the decisions made in the design of the firmware were based on this constraint.
+Public stable firmware .bin
 
-### Data caching
+⏳ Not released yet
 
-The first time chapters of a book are loaded, they are cached to the SD card. Subsequent loads are served from the
-cache. This cache directory exists at `.crosspoint` on the SD card. The structure is as follows:
+Roadmap
 
-```text
-.crosspoint/
-├── epub_<hash>/         # one directory per book, named by content hash
-│   ├── progress.bin     # reading position (chapter, page, etc.)
-│   ├── cover.bmp        # generated cover image
-│   ├── book.bin         # metadata: title, author, spine, TOC
-│   ├── css_rules.cache  # parsed CSS rule cache
-│   ├── img_*            # rendered image cache files
-│   └── sections/        # per-chapter layout cache
-│       ├── 0.bin
-│       ├── 1.bin
-│       └── ...
-├── settings.json        # device settings
-├── state.json           # resume/runtime state
-└── recent.json          # recent books list
-```
+v0.5 — Native foundation
 
-Removing `/.crosspoint` clears all cached metadata and forces a full regeneration on next open. Book deletes, overwrites, and moves done through the firmware or web UI clear or re-key matching caches; manual SD-card edits may leave stale cache directories behind.
+Native Reader & Dictionary — text anchors, CJK matching, CC-CEDICT index, StarDict definitions.
 
-For more details on the internal file structures, see the [file formats document](./docs/file-formats.md).
+Learning & Persistence — vocabulary states, crash-safe SD journal, lookup/source context.
 
----
+Flashcards & Anchors — local review queue, history, large Hanzi UI, View in Book.
 
-## Contributing
+Translation & Trusted Time — cache-first sentence translation, NTP-aware scheduling.
 
-Contributions are welcome. If you're new to the codebase, start with the [contributing docs](./docs/contributing/README.md). For things to work on, check the [ideas discussion board](https://github.com/crosspoint-reader/crosspoint-reader/discussions/categories/ideas) — leave a comment before starting so we don't duplicate effort.
+Anki & Hardening — CJK Relay, Anki sync, diagnostics, heap profiling and physical-device QA.
 
-Everyone here is a volunteer, so please be respectful and patient. For governance and community expectations, see [GOVERNANCE.md](./GOVERNANCE.md).
+The goal is not to add every possible app to the X4 Pro. ChinesePoint stays focused on reading Chinese better.
 
----
+Funding
 
-## Community forks
+If ChinesePoint is useful to you, you can help fund development, hardware testing and future releases:
 
-One of the best things about open source is that anyone can take the code in a different direction. If you need something outside CrossPoint's [scope](./SCOPE.md), check out the community forks:
 
-- [CrossInk](https://github.com/uxjulia/CrossInk) — Typography and reading tracking: Bionic Reading (bolds word stems to create fixation points), guide dots between words, improved paragraph indents, and replaces the default fonts with ChareInk/Lexend/Bitter.
 
-- [papyrix-reader](https://github.com/bigbag/papyrix-reader) — Adds FB2 and MD format support. Actively maintained with Arabic script support. Custom themes via SD card.
+Royalty.dev: https://app.royalty.dev/pngjaico/ChinesePoint
 
-- ~~[crosspet](https://github.com/trilwu/crosspet) — A Vietnamese fork that adds a Tamagotchi-style virtual chicken that grows based on your reading milestones (pages read, streaks, care). Also: Flashcards, Weather, Pomodoro timer, and mini-games.~~ (Unmaintained)
+GitHub funding metadata is also included in .github/FUNDING.yml:
 
-- [crosspoint-reader-cjk](https://github.com/aBER0724/crosspoint-reader-cjk) — Purpose-built for Chinese, Japanese, and Korean reading.
+custom: ["https://app.royalty.dev/pngjaico/ChinesePoint"]
 
-- [inx](https://github.com/obijuankenobiii/inx) — Completely reimagines the user interface with tabbed navigation.
+Website
 
-- ~~[PlusPoint](https://github.com/ngxson/pluspoint-reader) — custom JS apps support.~~ (Unmaintained)
+The repository includes a dependency-free static project site in the repository root:
 
-- [crosspoint-reader-papers3](https://github.com/juicecultus/crosspoint-reader-papers3) — Crosspoint port for M5Stack Paper S3. 
+python -m http.server 8080
 
-- [t5s3-reader](https://github.com/ShallowGreen123/t5s3-reader) — Crosspoint port for LilyGo T5 ePaper S3 / T5S3 4.7-inch e-paper device.
+Then open http://localhost:8080.
 
-**Note:** Many of these features will make their way into CrossPoint over time. We maintain a slower pace to ensure rock-solid stability and squash bugs before they reach your device.
+It can be deployed directly to GitHub Pages, Netlify, Vercel, Cloudflare Pages, or any static host.
 
-Want to build your own device? Be sure to check out the [de-link](https://github.com/iandchasse/de-link) project.
+Development philosophy
 
----
+ChinesePoint borrows two principles from the projects around it:
 
-CrossPoint Reader is **not affiliated with Xteink or any device manufacturer**.
+From CrossPoint: preserve a small, stable e-reader core and keep recovery-critical code conservative.
 
-Huge shoutout to [diy-esp32-epub-reader](https://github.com/atomic14/diy-esp32-epub-reader), which inspired this project.
+From CrossInk: specialize the reader experience through focused additions rather than reinventing the entire platform.
+
+For ChinesePoint that means:
+
+reuse CrossPoint's existing systems whenever possible;
+
+isolate Chinese-specific code;
+
+keep the learning core offline-first;
+
+write data to the SD card defensively;
+
+prefer small native hooks over invasive reader rewrites;
+
+never ship a fake or unverified firmware artifact just to call a milestone “done”.
+
+Credits
+
+ChinesePoint is possible because of the open-source work around the XTEINK ecosystem.
+
+CrossPoint Reader — the e-reader firmware foundation.
+
+FreeInk — hardware / UI / HAL foundation used by CrossPoint.
+
+CC-CEDICT — open Chinese-English dictionary data used by the CJK lookup workflow.
+
+CrossInk — useful reference for focused reader extensions, typography, statistics and e-ink UX patterns.
+
+The wider CrossPoint/XTEINK community for testing, reverse engineering, bug reports and ideas.
+
+ChinesePoint is not affiliated with XTEINK or any device manufacturer.
+
+<p align="center"><strong>ChinesePoint</strong><br />Read Chinese. Learn naturally.</p>
