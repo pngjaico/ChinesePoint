@@ -17,7 +17,9 @@ struct PersistedState {
   bool safeMode = false;
 };
 
+#if !defined(SIMULATOR)
 Status failOpen() { return {.storageAvailable = false, .safeMode = false, .crashStreak = 0}; }
+#endif
 
 Status toStatus(const PersistedState& state, bool storageAvailable) {
   return {.storageAvailable = storageAvailable, .safeMode = state.safeMode, .crashStreak = state.crashStreak};
