@@ -13,9 +13,11 @@
 #include "util/Dictionary.h"
 
 // Word selection over the current reader page: Left/Right step through words
-// in reading order, Up/Down jump rows, Confirm looks the word up and opens
-// DictionaryDefinitionActivity, Back returns to the reader. On touch devices a
-// touch-down moves the highlight and a tap on a word looks it up directly.
+// in reading order, Up/Down jump rows, Confirm opens the configured local
+// dictionary and then the DictionaryDefinitionActivity. Without a dictionary,
+// it still opens that activity so the selected word and sentence can be saved;
+// it never substitutes an online lookup. Back returns to the reader. On touch
+// devices a touch-down moves the highlight and a tap opens the selected word.
 class DictionaryWordSelectActivity final : public Activity {
  public:
   explicit DictionaryWordSelectActivity(GfxRenderer& renderer, MappedInputManager& mappedInput,

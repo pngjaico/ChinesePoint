@@ -159,6 +159,29 @@ void DictionaryWordSelectActivity::moveVertical(const int direction) {
 }
 
 void DictionaryWordSelectActivity::performLookup() {
+  // Build the learner context before touching the dictionary. Selection and
+  // saving are useful on their own, and must not be disabled merely because a
+  // user has not installed a StarDict yet. A configured dictionary still owns
+  // definitions; ChinesePoint does not silently substitute an online service.
+  std::optional<DictionaryDefinitionActivity::LearnerSaveContext> learnerContext;
+  ChinesePoint::Cjk::SentenceSelection sentenceSelection;
+  if (selected >= 0 && selected < static_cast<int>(learnerTokens.size()) &&
+      ChinesePoint::Cjk::buildSentenceSelection(learnerTokens.data(), learnerTokens.size(),
+                                                static_cast<size_t>(selected), spineIndex,
+                                                startsAtSectionBoundary, endsAtSectionBoundary,
+                                                learnerSentence.data(), learnerSentence.size(), sentenceSelection)) {
+    learnerContext = {{learnerSentence.data()}, bookPath, sentenceSelection.anchor};
+  }
+
+  if (SETTINGS.dictionaryName[0] == '\0') {
+    startActivityForResult(
+        std::make_unique<DictionaryDefinitionActivity>(renderer, mappedInput, words[selected].text,
+                                                       tr(STR_DICT_NO_DICT_SET), false,
+                                                       std::move(learnerContext)),
+        [this](const ActivityResult&) { requestUpdate(); });
+    return;
+  }
+
   popup = Popup::Busy;
   if (!dictOpenAttempted) {
     dictOpenAttempted = true;
@@ -185,15 +208,6 @@ void DictionaryWordSelectActivity::performLookup() {
 
   if (found) {
     popup = Popup::None;
-    std::optional<DictionaryDefinitionActivity::LearnerSaveContext> learnerContext;
-    ChinesePoint::Cjk::SentenceSelection sentenceSelection;
-    if (selected >= 0 && selected < static_cast<int>(learnerTokens.size()) &&
-        ChinesePoint::Cjk::buildSentenceSelection(learnerTokens.data(), learnerTokens.size(),
-                                                  static_cast<size_t>(selected), spineIndex,
-                                                  startsAtSectionBoundary, endsAtSectionBoundary,
-                                                  learnerSentence.data(), learnerSentence.size(), sentenceSelection)) {
-      learnerContext = {{learnerSentence.data()}, bookPath, sentenceSelection.anchor};
-    }
     startActivityForResult(
         std::make_unique<DictionaryDefinitionActivity>(renderer, mappedInput, std::move(headword),
                                                        std::move(definition), dict.definitionsAreHtml(),

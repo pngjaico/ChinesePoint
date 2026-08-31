@@ -293,12 +293,6 @@ void EpubReaderActivity::showBuildPopup(GfxRenderer& renderer, int& pagesUntilFu
 }
 
 void EpubReaderActivity::openDictionaryWordSelect() {
-  if (SETTINGS.dictionaryName[0] == '\0') {
-    showDictionaryMessage = true;
-    dictionaryMessageTime = millis();
-    requestUpdate();
-    return;
-  }
   if (!section) return;
   auto page = section->loadPage(section->currentPage);
   if (!page) return;
