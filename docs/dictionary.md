@@ -23,6 +23,12 @@ Not supported: dictionaries with 64-bit index offsets (`idxoffsetbits=64` in the
 
 The Dictionary setting only appears when at least one usable dictionary folder exists. Folders containing more than one dictionary (multiple `.idx` stems) are skipped as ambiguous.
 
+### ChinesePoint: CC-CEDICT installer
+
+For Chinese reading, the reader menu contains **CC-CEDICT dictionary**. It always asks first, then asks for Wi-Fi, downloads one reviewed release and installs it as `/dictionaries/cc-cedict-20260731/`. It selects it only after all checks succeed.
+
+This is deliberately not a generic auto-installer. The firmware pins the HTTPS release URL, ZIP SHA-256, the exact three archive entries, their uncompressed sizes, and their CRCs. It extracts into `/.dictionaries/.cc-cedict-20260731.stage` and promotes that folder only after validation. Cancel, network, checksum, archive, or SD failures leave no selected partial dictionary. Keep roughly 48 MB free on SD for the download and staging data; the storage HAL cannot preflight available capacity.
+
 ## Looking Up a Word
 
 Two ways to start a lookup while reading:

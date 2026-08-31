@@ -18,10 +18,10 @@ ChinesePoint v1 does not claim support for X3, original X4, X4 Classic, Sticky, 
 | Baseline app image | 5,324,464 bytes |
 | Baseline app SHA-256 | 0ae10b6ed58940d64d9c0faf4871f1b60fb2b6de2425537e30a7b18a660c96da |
 | ChinesePoint foundation environment | chinesepoint_x4pro |
-| Foundation source commit | df21b37b65e2be10eec78926c238b562ecc18e40 |
-| Foundation app image | 5,346,768 bytes |
-| Foundation app SHA-256 | 7c95d83a1bf057427c49a9e44cd2312c789d0f51d108b42c637003ebcce3e0de |
-| Foundation build checks | ESP32-S3 header, valid checksum/hash, one X4 Pro tag, 194 host tests, artifact validation, and [successful current-source SSD1677/UC8179/UC8279 simulator CI](https://github.com/pngjaico/ChinesePoint/actions/runs/33446276933) |
+| Foundation source commit | 2fe4c3a9a7d7b31f334a4c90f74a33dcefb9a282 |
+| Foundation app image | 5,357,200 bytes |
+| Foundation app SHA-256 | 27b8175373b0151fcd2dad363b946e8f28083c476dc2c86be81e63ec0ca8b361 |
+| Foundation build checks | ESP32-S3 header, valid checksum/hash, one X4 Pro tag, 196 host tests, artifact validation; exact-source SSD1677/UC8179/UC8279 simulator CI pending |
 
 The baseline and foundation build are valid ESP32-S3 application images. They prove the starting platform and early safety integration compile, not that CJK changes are hardware-safe. The foundation artifact is not published as installable because it lacks physical display/recovery evidence and its required safe site bundle. The source-side verifier record is `artifacts/chinesepoint-x4pro-foundation.json`; it deliberately carries `installable: false`.
 
@@ -35,6 +35,7 @@ The baseline and foundation build are valid ESP32-S3 application images. They pr
 6. Keep learner persistence append-safe, checksummed, bounded, versioned, and recoverable after a torn final record.
 7. Two consecutive crashes during an active CJK session disable CJK until the user explicitly re-enables it. They never disable the reader.
 8. A simulator or a compilation is not physical display proof.
+9. The CC-CEDICT installer accepts one pinned release only: its HTTPS URL, ZIP SHA-256, exact entry names, sizes, and CRCs are verified before an atomic promotion to `/dictionaries/`.
 
 ## Panel policy
 
