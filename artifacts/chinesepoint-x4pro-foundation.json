@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "kind": "application",
+  "environment": "chinesepoint_x4pro",
+  "target": "xteink-x4-pro",
+  "board_tag": "CROSSPOINT-BOARD-V1:x4pro;",
+  "filename": "firmware.bin",
+  "bytes": 5326320,
+  "sha256": "d8b8c96429cdbee77d69f6ed62d68c13b45a2c2d5f5c6578cb941fe885114291",
+  "version": "ChinesePoint-v0.6-x4pro",
+  "installable": false,
+  "installable_reason": "Hardware validation and release sign-off are still required."
+}
