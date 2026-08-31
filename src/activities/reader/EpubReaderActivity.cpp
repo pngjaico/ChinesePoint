@@ -19,6 +19,7 @@
 
 #include "../../util/BookmarkFile.h"
 #include "BookmarkEntry.h"
+#include "CcCedictDownloadActivity.h"
 #include "CjkLearnerStatsActivity.h"
 #include "CrossPointSettings.h"
 #include "CrossPointState.h"
@@ -836,6 +837,11 @@ void EpubReaderActivity::onReaderMenuConfirm(EpubReaderMenuActivity::MenuAction 
     }
     case EpubReaderMenuActivity::MenuAction::CHINESEPOINT_LEARNER: {
       startActivityForResult(std::make_unique<CjkLearnerStatsActivity>(renderer, mappedInput),
+                             [this](const ActivityResult&) { openReaderMenu(); });
+      break;
+    }
+    case EpubReaderMenuActivity::MenuAction::CHINESEPOINT_CEDICT: {
+      startActivityForResult(std::make_unique<CcCedictDownloadActivity>(renderer, mappedInput),
                              [this](const ActivityResult&) { openReaderMenu(); });
       break;
     }
