@@ -5,6 +5,7 @@
 #include <string_view>
 
 #include "chinesepoint/cjk/CjkLearnerRepository.h"
+#include "chinesepoint/cjk/CjkLearnerStats.h"
 
 namespace ChinesePoint::Cjk {
 
@@ -22,6 +23,7 @@ class LearnerStore final {
   bool compact();
 
   const LearnerRepository& repository() const { return repository_; }
+  LearnerStats stats() const;
   bool loaded() const { return loaded_; }
 
  private:

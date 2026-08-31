@@ -146,6 +146,11 @@ bool LearnerStore::compact() {
   return load();
 }
 
+LearnerStats LearnerStore::stats() const {
+  const auto& entries = repository_.entries();
+  return computeLearnerStats(entries.data(), entries.size());
+}
+
 LearnerStore& learnerStore() {
   static LearnerStore store;
   return store;
