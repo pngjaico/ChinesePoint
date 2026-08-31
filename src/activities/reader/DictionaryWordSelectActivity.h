@@ -4,9 +4,12 @@
 #include <I18n.h>
 
 #include <memory>
+#include <array>
+#include <string>
 #include <vector>
 
 #include "activities/Activity.h"
+#include "chinesepoint/cjk/CjkSentenceSelection.h"
 #include "util/Dictionary.h"
 
 // Word selection over the current reader page: Left/Right step through words
@@ -16,11 +19,17 @@
 class DictionaryWordSelectActivity final : public Activity {
  public:
   explicit DictionaryWordSelectActivity(GfxRenderer& renderer, MappedInputManager& mappedInput,
-                                        std::unique_ptr<Page> page, int marginLeft, int marginTop)
+                                        std::unique_ptr<Page> page, int marginLeft, int marginTop,
+                                        uint16_t spineIndex, bool startsAtSectionBoundary,
+                                        bool endsAtSectionBoundary, std::string bookPath)
       : Activity("DictionaryWordSelect", renderer, mappedInput),
         page(std::move(page)),
         marginLeft(marginLeft),
-        marginTop(marginTop) {}
+        marginTop(marginTop),
+        spineIndex(spineIndex),
+        startsAtSectionBoundary(startsAtSectionBoundary),
+        endsAtSectionBoundary(endsAtSectionBoundary),
+        bookPath(std::move(bookPath)) {}
 
   void onEnter() override;
   void loop() override;
@@ -55,6 +64,12 @@ class DictionaryWordSelectActivity final : public Activity {
   int lineHeight = 0;
 
   std::vector<WordBox> words;
+  std::vector<ChinesePoint::Cjk::SelectableToken> learnerTokens;
+  std::array<char, ChinesePoint::Cjk::kMaxSentenceBytes + 1> learnerSentence{};
+  const uint16_t spineIndex;
+  const bool startsAtSectionBoundary;
+  const bool endsAtSectionBoundary;
+  const std::string bookPath;
   int selected = 0;
   uint16_t rowCount = 0;
 

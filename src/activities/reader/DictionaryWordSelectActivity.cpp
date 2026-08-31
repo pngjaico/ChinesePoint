@@ -35,6 +35,10 @@ bool isSelectableToken(const char* text) {
   return false;
 }
 
+bool beginsNonAscii(const char* text) {
+  return text != nullptr && static_cast<uint8_t>(*text) >= 0x80;
+}
+
 void indexBuildYield(void*) { vTaskDelay(1); }
 
 }  // namespace
@@ -59,7 +63,9 @@ void DictionaryWordSelectActivity::onEnter() {
 
 void DictionaryWordSelectActivity::extractWords() {
   words.clear();
+  learnerTokens.clear();
   words.reserve(128);
+  learnerTokens.reserve(128);
   rowCount = 0;
 
   // Single walk: collect the selectable words while accumulating their text
@@ -91,7 +97,9 @@ void DictionaryWordSelectActivity::extractWords() {
       box.width = 0;  // measured below, once the advance table is ready
       box.row = rowCount;
       box.text = text;
+      const bool joinWithoutSpaceBefore = !words.empty() && beginsNonAscii(words.back().text) && beginsNonAscii(text);
       words.push_back(box);
+      learnerTokens.push_back({text, 0, ChinesePoint::Cjk::utf8CodepointCount(text), joinWithoutSpaceBefore});
       rowHasWords = true;
 
       pageText.append(text);
@@ -177,9 +185,19 @@ void DictionaryWordSelectActivity::performLookup() {
 
   if (found) {
     popup = Popup::None;
+    std::optional<DictionaryDefinitionActivity::LearnerSaveContext> learnerContext;
+    ChinesePoint::Cjk::SentenceSelection sentenceSelection;
+    if (selected >= 0 && selected < static_cast<int>(learnerTokens.size()) &&
+        ChinesePoint::Cjk::buildSentenceSelection(learnerTokens.data(), learnerTokens.size(),
+                                                  static_cast<size_t>(selected), spineIndex,
+                                                  startsAtSectionBoundary, endsAtSectionBoundary,
+                                                  learnerSentence.data(), learnerSentence.size(), sentenceSelection)) {
+      learnerContext = {{learnerSentence.data()}, bookPath, sentenceSelection.anchor};
+    }
     startActivityForResult(
         std::make_unique<DictionaryDefinitionActivity>(renderer, mappedInput, std::move(headword),
-                                                       std::move(definition), dict.definitionsAreHtml()),
+                                                       std::move(definition), dict.definitionsAreHtml(),
+                                                       std::move(learnerContext)),
         [this](const ActivityResult&) { requestUpdate(); });
     return;
   }

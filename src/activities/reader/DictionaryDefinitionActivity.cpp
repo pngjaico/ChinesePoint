@@ -9,6 +9,8 @@
 #include <cstdio>
 
 #include "CrossPointSettings.h"
+#include "chinesepoint/CjkSafetyGuard.h"
+#include "chinesepoint/cjk/CjkLearnerStore.h"
 #include "components/UITheme.h"
 #include "fontIds.h"
 #include "util/DictHtmlPages.h"
@@ -196,6 +198,13 @@ void DictionaryDefinitionActivity::loop() {
     return;
   }
 
+  if (learnerContext.has_value() && !learnerSaved &&
+      mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
+    saveLearnerEntry();
+    requestUpdate();
+    return;
+  }
+
   // Same tap zones as the reader page turns: left third = previous page,
   // the rest = next. Back is the usual left-edge swipe.
   int tx = 0;
@@ -226,6 +235,15 @@ void DictionaryDefinitionActivity::loop() {
       requestUpdate();
     }
   });
+}
+
+void DictionaryDefinitionActivity::saveLearnerEntry() {
+  learnerSaveAttempted = true;
+  if (!learnerContext.has_value() || !ChinesePoint::CjkSafetyGuard::startLearnerSession()) return;
+  learnerSaved = ChinesePoint::Cjk::learnerStore().recordEncountered(
+      headword, learnerContext->sentence, learnerContext->bookPath, learnerContext->anchor,
+      static_cast<int64_t>(millis()));
+  ChinesePoint::CjkSafetyGuard::finishLearnerSession();
 }
 
 // Draws the current page: a styled Page when the HTML layout succeeded,
@@ -272,6 +290,12 @@ void DictionaryDefinitionActivity::render(RenderLock&&) {
     const int counterWidth = renderer.getTextWidth(UI_10_FONT_ID, counter);
     renderer.drawText(UI_10_FONT_ID, contentX + contentWidth - SIDE_PADDING - counterWidth, headerY, counter);
   }
+  if (learnerSaveAttempted) {
+    const char* status = learnerSaved ? "Saved" : "Save failed";
+    const int statusWidth = renderer.getTextWidth(UI_10_FONT_ID, status);
+    renderer.drawText(UI_10_FONT_ID, contentX + contentWidth - SIDE_PADDING - statusWidth,
+                      headerY + renderer.getLineHeight(UI_10_FONT_ID), status);
+  }
 
   // Body: two-pass draw inside a prewarm scope (same pattern as the reader's
   // renderContents) so SD-card font glyphs load from SD in one batch instead
@@ -284,8 +308,9 @@ void DictionaryDefinitionActivity::render(RenderLock&&) {
   scope.endScanAndPrewarm();
   drawBody(fontId, contentX + SIDE_PADDING, bodyStartY);
 
-  const auto labels =
-      mappedInput.mapLabels(tr(STR_BACK), "", (currentPage > 0 ? "<" : ""), (currentPage + 1 < totalPages ? ">" : ""));
+  const auto labels = mappedInput.mapLabels(tr(STR_BACK), learnerContext.has_value() && !learnerSaved ? "Save" : "",
+                                            (currentPage > 0 ? "<" : ""),
+                                            (currentPage + 1 < totalPages ? ">" : ""));
   GUI.drawButtonHints(renderer, labels.btn1, labels.btn2, labels.btn3, labels.btn4);
   renderer.displayBuffer();
 }
