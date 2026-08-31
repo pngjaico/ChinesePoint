@@ -39,7 +39,7 @@ The initial source base is CrossPoint develop commit e7a3bb48817f1cb951b521ca958
 
 The unmodified X4 Pro baseline compiled on 2026-08-30 and produced a valid ESP32-S3 application image. It is not yet a ChinesePoint CJK release.
 
-The latest ChinesePoint foundation build passed on 2026-08-31. Its X4 Pro artifact has an ESP32-S3 image header, the current `CROSSPOINT-BOARD-V1:x4pro;` tag, a valid Espressif checksum and validation hash, and SHA-256 `43e98eaaaa8f1bbaec576c61448d7214fd8a09fa00646ce02d29633452046e85`. It passed 179 native tests, four artifact-gate tests, and the [three-panel simulator CI run](https://github.com/pngjaico/ChinesePoint/actions/runs/33389043901). It is explicitly **not installable yet**: no physical panel or recovery drill has been performed, and the safe site release bundle is still pending.
+The latest ChinesePoint foundation build passed on 2026-08-31. Its X4 Pro artifact has an ESP32-S3 image header, the current `CROSSPOINT-BOARD-V1:x4pro;` tag, a valid Espressif checksum and validation hash, and SHA-256 `8cd695e989dd25595cdc9a7e2f8b4d0555ab664b218d47a8944624025322ae50`. It passed 188 native tests, four artifact-gate tests, and the [three-panel simulator CI run](https://github.com/pngjaico/ChinesePoint/actions/runs/33389043901). It is explicitly **not installable yet**: no physical panel or recovery drill has been performed, and the safe site release bundle is still pending.
 
 ~~~powershell
 $env:PYTHONUTF8 = '1'
