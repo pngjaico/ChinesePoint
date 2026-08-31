@@ -1,0 +1,70 @@
+name: ChinesePoint X4 Pro simulator
+
+on:
+  push:
+    branches: [develop, cjk/part2.5-safety]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  simulator:
+    name: ${{ matrix.environment }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment:
+          - chinesepoint_simulator_x4pro_ssd1677
+          - chinesepoint_simulator_x4pro_uc8179
+          - chinesepoint_simulator_x4pro_uc8279
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install native simulator prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsdl2-dev libssl-dev xvfb
+
+      - name: Install PlatformIO Core
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install https://github.com/pioarduino/platformio-core/archive/refs/tags/v6.1.19.zip
+          python -m pip install "littlefs-python>=0.16.0" "fatfs-ng>=0.1.14" "pyyaml>=6.0.2" \
+            "rich-click>=1.8.6" "zopfli>=0.2.2" "intelhex>=2.3.0" "rich>=14.0.0" "urllib3<2" \
+            "cryptography>=45.0.3" "certifi>=2025.8.3" "ecdsa>=0.19.1" "bitstring>=4.3.1" \
+            "reedsolo>=1.5.3,<1.8" "esp-idf-size>=2.0.0" "esp-coredump>=1.14.0"
+
+      - name: Cache PlatformIO packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: simulator-${{ runner.os }}-${{ matrix.environment }}-${{ hashFiles('platformio.ini') }}
+          restore-keys: simulator-${{ runner.os }}-${{ matrix.environment }}-
+
+      - name: Build simulator
+        run: pio run -e ${{ matrix.environment }}
+
+      - name: Capture deterministic boot screen
+        run: |
+          set -euo pipefail
+          mkdir -p qa-artifacts/${{ matrix.environment }}
+          CROSSPOINT_SIM_INPUT_SCRIPT='1800:QUIT' \
+          CROSSPOINT_SIM_SCREENSHOTS='900:qa-artifacts/${{ matrix.environment }}/boot.bmp' \
+          xvfb-run -a .pio/build/${{ matrix.environment }}/program
+          test -s qa-artifacts/${{ matrix.environment }}/boot.bmp
+
+      - name: Upload simulator evidence
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.environment }}-evidence
+          path: qa-artifacts/${{ matrix.environment }}/
+          if-no-files-found: error
