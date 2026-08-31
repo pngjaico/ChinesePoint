@@ -7,13 +7,31 @@
 #include <utility>
 #include <vector>
 
+#include "chinesepoint/cjk/CjkLearnerExport.h"
+
 namespace ChinesePoint::Cjk {
 namespace {
 
 constexpr size_t kMaxJournalBytes = 256 * 1024;
+constexpr size_t kMaxExportBytes = 2 * 1024 * 1024;
 
 bool writeAll(HalFile& file, const uint8_t* bytes, const size_t size) {
   return size == 0 || file.write(bytes, size) == size;
+}
+
+struct FileExportSink {
+  HalFile& file;
+  size_t bytesWritten = 0;
+};
+
+bool writeExportBytes(void* context, const char* bytes, const size_t size) {
+  auto& sink = *static_cast<FileExportSink*>(context);
+  if (size > kMaxExportBytes - sink.bytesWritten ||
+      sink.file.write(reinterpret_cast<const uint8_t*>(bytes), size) != size) {
+    return false;
+  }
+  sink.bytesWritten += size;
+  return true;
 }
 
 }  // namespace
@@ -22,7 +40,11 @@ LearnerStore::LearnerStore(std::string rootPath)
     : rootPath_(std::move(rootPath)),
       journalPath_(rootPath_ + "/learner.journal"),
       tempPath_(rootPath_ + "/learner.journal.tmp"),
-      backupPath_(rootPath_ + "/learner.journal.bak") {}
+      backupPath_(rootPath_ + "/learner.journal.bak"),
+      exportDirectoryPath_(rootPath_ + "/exports"),
+      exportPath_(exportDirectoryPath_ + "/learner-v1.jsonl"),
+      exportTempPath_(exportPath_ + ".tmp"),
+      exportBackupPath_(exportPath_ + ".bak") {}
 
 bool LearnerStore::restoreBackupIfNeeded() {
   if (Storage.exists(journalPath_.c_str())) return true;
@@ -144,6 +166,44 @@ bool LearnerStore::compact() {
   }
   Storage.remove(backupPath_.c_str());
   return load();
+}
+
+bool LearnerStore::exportJsonl() {
+  if ((!loaded_ && !load()) || !Storage.ensureDirectoryExists(exportDirectoryPath_.c_str())) return false;
+  Storage.remove(exportTempPath_.c_str());
+
+  bool writeOk = false;
+  {
+    HalFile temp;
+    if (!Storage.openFileForWrite("CJK", exportTempPath_, temp)) return false;
+    FileExportSink fileSink{temp};
+    const auto& entries = repository_.entries();
+    writeOk = writeLearnerExportJsonl(entries.data(), entries.size(), {&fileSink, writeExportBytes});
+    temp.flush();
+    writeOk = writeOk && temp.close();
+  }
+  if (!writeOk) {
+    Storage.remove(exportTempPath_.c_str());
+    LOG_ERR("CJK", "Could not write learner export");
+    return false;
+  }
+
+  const bool hadExport = Storage.exists(exportPath_.c_str());
+  if (hadExport) {
+    Storage.remove(exportBackupPath_.c_str());
+    if (!Storage.rename(exportPath_.c_str(), exportBackupPath_.c_str())) {
+      Storage.remove(exportTempPath_.c_str());
+      return false;
+    }
+  }
+  if (!Storage.rename(exportTempPath_.c_str(), exportPath_.c_str())) {
+    if (hadExport && !Storage.rename(exportBackupPath_.c_str(), exportPath_.c_str())) {
+      LOG_ERR("CJK", "Could not restore previous learner export");
+    }
+    return false;
+  }
+  Storage.remove(exportBackupPath_.c_str());
+  return true;
 }
 
 LearnerStats LearnerStore::stats() const {

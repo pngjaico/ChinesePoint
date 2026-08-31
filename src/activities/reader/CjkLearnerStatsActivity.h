@@ -22,9 +22,11 @@ class CjkLearnerStatsActivity final : public UiListActivity {
   void drawFooter() override;
 
   void rebuildRows();
+  void exportEntries();
 
   bool dataAvailable = false;
   ChinesePoint::Cjk::LearnerStats stats{};
+  std::string exportStatus;
   std::vector<std::string> labels;
   std::vector<std::string> values;
   std::vector<freeink::ui::ListItem> rowItems;

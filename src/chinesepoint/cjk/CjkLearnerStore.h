@@ -21,6 +21,10 @@ class LearnerStore final {
   bool recordSaved(std::string_view headword, std::string_view sentence, std::string_view bookPath,
                    const TextAnchor& anchor, int64_t nowMs);
   bool compact();
+  // Replaces only a derived NDJSON backup. Learner journal contents remain
+  // authoritative and untouched if this export fails.
+  bool exportJsonl();
+  const std::string& exportPath() const { return exportPath_; }
 
   const LearnerRepository& repository() const { return repository_; }
   LearnerStats stats() const;
@@ -36,6 +40,10 @@ class LearnerStore final {
   std::string journalPath_;
   std::string tempPath_;
   std::string backupPath_;
+  std::string exportDirectoryPath_;
+  std::string exportPath_;
+  std::string exportTempPath_;
+  std::string exportBackupPath_;
   LearnerRepository repository_;
   bool loaded_ = false;
 };
