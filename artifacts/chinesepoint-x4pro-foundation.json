@@ -6,7 +6,7 @@
   "board_tag": "CROSSPOINT-BOARD-V1:x4pro;",
   "filename": "firmware.bin",
   "bytes": 5326320,
-  "sha256": "8cd695e989dd25595cdc9a7e2f8b4d0555ab664b218d47a8944624025322ae50",
+  "sha256": "a9fcde0f15acffe8c43d80f4192c4742f1f7f1f01f59142a971c4dc8026ab48f",
   "version": "ChinesePoint-v0.6-x4pro",
   "installable": false,
   "installable_reason": "Hardware validation and release sign-off are still required."
