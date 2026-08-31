@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "MappedInputManager.h"
+#include "CjkVocabularyActivity.h"
 #include "chinesepoint/CjkSafetyGuard.h"
 #include "chinesepoint/cjk/CjkLearnerStore.h"
 #include "components/UITheme.h"
@@ -55,6 +56,16 @@ void CjkLearnerStatsActivity::rebuildRows() {
   }
 }
 
+void CjkLearnerStatsActivity::activateIndex(const int index) {
+  // The first summary row is intentionally an affordance, not a separate
+  // menu entry: it keeps the reader menu compact on X4 Pro while giving the
+  // user a direct path from the vocabulary total to its local entries.
+  if (!dataAvailable || stats.vocabularyCount == 0 || index != 0) return;
+  app.clearTapFlash();
+  startActivityForResult(std::make_unique<CjkVocabularyActivity>(renderer, mappedInput),
+                         [this](const ActivityResult&) { requestUpdate(); });
+}
+
 void CjkLearnerStatsActivity::buildScreen(UiScreen& screen) {
   const auto& metrics = UITheme::getInstance().getMetrics();
   screen.setContentMargin(fui::Insets{static_cast<int16_t>(metrics.topPadding + metrics.headerHeight), 0,
@@ -65,6 +76,8 @@ void CjkLearnerStatsActivity::buildScreen(UiScreen& screen) {
   fui::ListProps props;
   props.items = rowItems.data();
   props.count = static_cast<uint16_t>(rowItems.size());
+  props.action = ACTION_ROW;
+  props.inputMask = fui::InputTouch;
   props.valueInset = 8;
   props.labelText = screen.theme().smallText;
   props.labelText.maxLines = 2;
@@ -75,6 +88,7 @@ void CjkLearnerStatsActivity::buildScreen(UiScreen& screen) {
 const char* CjkLearnerStatsActivity::headerTitle() const { return tr(STR_CHINESEPOINT_LEARNER); }
 
 void CjkLearnerStatsActivity::drawFooter() {
-  const auto hints = mappedInput.mapLabels(tr(STR_BACK), "", "", "");
+  const auto hints = mappedInput.mapLabels(tr(STR_BACK),
+                                           dataAvailable && stats.vocabularyCount > 0 ? tr(STR_SELECT) : "", "", "");
   GUI.drawButtonHints(renderer, hints.btn1, hints.btn2, hints.btn3, hints.btn4);
 }

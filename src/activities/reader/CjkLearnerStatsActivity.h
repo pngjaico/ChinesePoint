@@ -17,7 +17,7 @@ class CjkLearnerStatsActivity final : public UiListActivity {
  private:
   int listCount() const override { return static_cast<int>(rowItems.size()); }
   void buildScreen(UiScreen& screen) override;
-  void activateIndex(int) override {}
+  void activateIndex(int index) override;
   const char* headerTitle() const override;
   void drawFooter() override;
 

@@ -215,6 +215,20 @@ void DictionaryWordSelectActivity::performLookup() {
         [this](const ActivityResult&) { requestUpdate(); });
     return;
   }
+  // A dictionary miss is not a reader or storage failure. For a CJK selection
+  // with a valid local context, keep the word usable: the definition viewer
+  // explicitly says it was not found and still offers the deliberate Save
+  // action. Keep the existing popup for ordinary CrossPoint lookups, and do
+  // not treat SD, decompression, or allocation failures as a harmless miss.
+  if (ok && result == Dictionary::LookupResult::NotFound && learnerContext.has_value()) {
+    popup = Popup::None;
+    startActivityForResult(
+        std::make_unique<DictionaryDefinitionActivity>(renderer, mappedInput, words[selected].text,
+                                                       tr(STR_DICT_NOT_FOUND), false,
+                                                       std::move(learnerContext)),
+        [this](const ActivityResult&) { requestUpdate(); });
+    return;
+  }
   // Name the failure: a genuine miss is "Not found"; a word that WAS found but
   // couldn't be read is a real error — and we distinguish decompression from a
   // low-memory allocation from a generic read error.
