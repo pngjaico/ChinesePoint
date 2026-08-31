@@ -5,8 +5,8 @@
   "target": "xteink-x4-pro",
   "board_tag": "CROSSPOINT-BOARD-V1:x4pro;",
   "filename": "firmware.bin",
-  "bytes": 5326320,
-  "sha256": "8eddc544a8dd5ebd7a9e8d6deb4a81e0dffd8a79934462f4585c79da42080ab8",
+  "bytes": 5336976,
+  "sha256": "1be3542d6dc7af44b498397af8159cf45efb116ef5f91c0ce1e9c427ab521c84",
   "version": "ChinesePoint-v0.6-x4pro",
   "installable": false,
   "installable_reason": "Hardware validation and release sign-off are still required."

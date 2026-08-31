@@ -18,10 +18,10 @@ ChinesePoint v1 does not claim support for X3, original X4, X4 Classic, Sticky, 
 | Baseline app image | 5,324,464 bytes |
 | Baseline app SHA-256 | 0ae10b6ed58940d64d9c0faf4871f1b60fb2b6de2425537e30a7b18a660c96da |
 | ChinesePoint foundation environment | chinesepoint_x4pro |
-| Foundation source commit | 30b5f7bce2d3ae80457027404770246fe9af030e |
-| Foundation app image | 5,326,320 bytes |
-| Foundation app SHA-256 | 8eddc544a8dd5ebd7a9e8d6deb4a81e0dffd8a79934462f4585c79da42080ab8 |
-| Foundation build checks | ESP32-S3 header, valid checksum/hash, one X4 Pro tag, 191 host tests, 4 artifact tests, and [successful SSD1677/UC8179/UC8279 simulator CI](https://github.com/pngjaico/ChinesePoint/actions/runs/33412595871) |
+| Foundation source commit | c3d36692d4459ae4d17bef9eb3a504d76e7cf0af |
+| Foundation app image | 5,336,976 bytes |
+| Foundation app SHA-256 | 1be3542d6dc7af44b498397af8159cf45efb116ef5f91c0ce1e9c427ab521c84 |
+| Foundation build checks | ESP32-S3 header, valid checksum/hash, one X4 Pro tag, 194 host tests, artifact validation, and [successful SSD1677/UC8179/UC8279 simulator CI](https://github.com/pngjaico/ChinesePoint/actions/runs/33414889143) |
 
 The baseline and foundation build are valid ESP32-S3 application images. They prove the starting platform and early safety integration compile, not that CJK changes are hardware-safe. The foundation artifact is not published as installable because it lacks physical display/recovery evidence and its required safe site bundle. The source-side verifier record is `artifacts/chinesepoint-x4pro-foundation.json`; it deliberately carries `installable: false`.
 
