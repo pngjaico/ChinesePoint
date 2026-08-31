@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="ChinesePoint: firmware de leitura e aprendizado CJK para o Xteink X4 Pro. Painel de releases, simuladores e recuperação." />
+  <meta name="theme-color" content="#171715" />
+  <title>ChinesePoint — Xteink X4 Pro</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Ir para o conteúdo</a>
+  <header class="site-header" data-header>
+    <div class="nav-wrap">
+      <a class="brand" href="#top" aria-label="Página inicial ChinesePoint">
+        <span class="brand-mark"><img src="assets/logo-mark.svg" width="38" height="38" alt="" /></span>
+        <span class="brand-copy"><span class="brand-name">Chinese<span>Point</span></span><span class="brand-subtitle">CJK learner · X4 Pro only</span></span>
+      </a>
+      <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span></button>
+      <nav id="site-nav" class="site-nav" aria-label="Navegação principal">
+        <a href="#release">Release</a><a href="#simulator">Simulador</a><a href="#roadmap">Roadmap</a><a href="#recovery">Recuperação</a>
+        <a class="nav-github" href="https://github.com/pngjaico/ChinesePoint" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero hero-technical" id="top">
+      <div class="hero-copy reveal">
+        <div class="project-status-row" aria-label="Estado do projeto"><span class="status-dot status-dot-active"></span><span>FUNDAÇÃO EM DESENVOLVIMENTO</span><span class="status-divider">/</span><span>XTEINK X4 PRO</span><span class="status-divider">/</span><span>NÃO INSTALE AINDA</span></div>
+        <h1>Leitura CJK, com<br /><span>segurança antes do atalho.</span></h1>
+        <p class="hero-tagline">ChinesePoint é um fork de aprendizado do CrossPoint para um único hardware.</p>
+        <p class="hero-description">O foco é leitura em chinês, japonês e coreano com vocabulário local, estatísticas confiáveis e futura integração opcional com Anki. Não é um port genérico: o projeto só suporta o Xteink X4 Pro e preserva as rotas de recuperação do CrossPoint.</p>
+        <div class="hero-actions"><a class="button button-primary" href="#release">Ver estado do release</a><a class="button button-secondary" href="#simulator">Abrir evidência do simulador</a><a class="button button-ghost" href="https://github.com/pngjaico/ChinesePoint" target="_blank" rel="noopener noreferrer">Código-fonte ↗</a></div>
+        <div class="hero-meta" aria-label="Fatos do projeto"><div><strong>Hardware</strong><span>X4 Pro · ESP32-S3</span></div><div><strong>Painéis CI</strong><span>SSD1677 · UC8179 · UC8279</span></div><div><strong>Rotas de fuga</strong><span>Recovery preservado</span></div><div><strong>Distribuição</strong><span>Binário bloqueado</span></div></div>
+      </div>
+      <aside class="hero-status-panel reveal reveal-delay" aria-label="Estado do firmware">
+        <div class="status-panel-head"><div><span class="status-panel-label">Estado do firmware</span><strong data-status-title>Fundação v0.6</strong></div><span class="release-state release-state-source" data-status-badge>Não instalável</span></div>
+        <dl class="status-panel-grid"><div><dt>Compilação X4 Pro</dt><dd class="status-ok">Passou</dd></div><div><dt>Guard de crash CJK</dt><dd class="status-ok">Ativo</dd></div><div><dt>Simulador de painel</dt><dd class="status-ok">3 de 3</dd></div><div><dt>Teste físico</dt><dd class="status-warn">Pendente</dd></div></dl>
+        <div class="status-panel-foot"><span>Manifesto verificado</span><code data-status-hash>d8b8c964…14291</code></div>
+      </aside>
+    </section>
+
+    <section class="firmware-shell" id="release">
+      <div class="firmware-shell-inner">
+        <div class="firmware-intro reveal"><div><p class="section-kicker">Release dashboard</p><h2>Um release só aparece quando a evidência existe.</h2></div><p>Esta página não executa flash via navegador, não aceita arquivos locais e não oferece suporte a outros modelos. O botão de download só será habilitado após a matriz física e o exercício de recuperação.</p></div>
+        <div class="firmware-picker-grid">
+          <section class="picker-panel reveal" aria-labelledby="hardware-heading"><div class="panel-heading"><span class="panel-index">01</span><div><h3 id="hardware-heading">Escopo de hardware</h3><p>Deliberadamente fechado para evitar imagem no dispositivo errado.</p></div></div><div class="device-grid"><div class="device-card is-selected" aria-label="Xteink X4 Pro suportado"><span class="device-chip">S3</span><strong>Xteink X4 Pro</strong><span>Único alvo</span><small>16 MB flash · 8 MB PSRAM</small></div><div class="device-card" aria-label="Outros modelos não suportados"><span class="device-chip">—</span><strong>Outros Xteink</strong><span>Bloqueados</span><small>X3, X4, Classic e outros</small></div><div class="device-card" aria-label="Imagens personalizadas bloqueadas"><span class="device-chip">—</span><strong>Arquivo local</strong><span>Bloqueado</span><small>Nenhum upload de .bin</small></div></div></section>
+          <section class="picker-panel reveal" aria-labelledby="gate-heading"><div class="panel-heading"><span class="panel-index">02</span><div><h3 id="gate-heading">Gate de instalação</h3><p>Compilar e simular não são provas de hardware.</p></div></div><div class="channel-note"><span class="release-state release-state-source">Bloqueado</span><p>Faltam o teste físico do seu X4 Pro, a confirmação visual do painel e o exercício completo de recuperação. Até lá, este dashboard informa, mas não instala.</p></div></section>
+          <section class="release-panel reveal" aria-labelledby="release-heading"><div class="release-topline"><div><p class="eyebrow">Artefato verificado, não publicado</p><h3 id="release-heading" data-release-version>ChinesePoint v0.6 foundation</h3></div><span class="release-badge" data-release-badge>Não instalável</span></div><dl class="release-meta"><div><dt>Alvo</dt><dd data-release-target>Xteink X4 Pro</dd></div><div><dt>Ambiente</dt><dd class="mono" data-release-environment>chinesepoint_x4pro</dd></div><div><dt>Tamanho</dt><dd data-release-bytes>5.326.320 bytes</dd></div><div><dt>SHA-256</dt><dd class="mono" data-release-sha>d8b8c96429cd…</dd></div><div><dt>Testes nativos</dt><dd data-release-tests>176 / 176</dd></div><div><dt>Commit de origem</dt><dd class="mono" data-release-commit>877e79f</dd></div></dl><p class="release-notes" data-release-notes>O verificador aceitou cabeçalho ESP32-S3, tag X4 Pro, checksum e hash. Isto não autoriza instalação antes dos testes físicos.</p><div class="release-actions"><span class="button button-primary is-disabled" aria-disabled="true" data-download>Firmware .bin bloqueado</span><a class="button button-secondary" href="https://github.com/pngjaico/ChinesePoint/blob/cjk/part2.5-safety/artifacts/chinesepoint-x4pro-foundation.json" target="_blank" rel="noopener noreferrer">Ver manifesto ↗</a></div></section>
+        </div>
+      </div>
+    </section>
+
+    <section class="architecture-section" id="simulator">
+      <div class="architecture-copy reveal"><p class="section-kicker section-kicker-dark">Simulador junto do release</p><h2>Três controladores, uma evidência repetível.</h2><p>O CI inicia o simulador oficial do CrossPoint e captura a tela de boot para SSD1677, UC8179 e UC8279. É uma barreira útil contra regressões de interface e inicialização, não um substituto para a tela, alimentação ou touch do seu aparelho.</p><a href="https://github.com/pngjaico/ChinesePoint/actions/runs/33389043901" target="_blank" rel="noopener noreferrer">Ver run #4 e artefatos ↗</a></div>
+      <div class="architecture-stack reveal" aria-label="Matriz do simulador"><div class="arch-layer arch-layer-top"><span>SSD1677</span><strong>Build, boot e captura: passou</strong></div><div class="arch-connector">↓</div><div class="arch-layer"><span>UC8179</span><strong>Build, boot e captura: passou</strong></div><div class="arch-connector">↓</div><div class="arch-layer"><span>UC8279</span><strong>Build, boot e captura: passou</strong></div><div class="arch-connector">↓</div><div class="arch-layer arch-layer-hardware"><span>Limite</span><strong>Não prova hardware físico ou sequência de energia</strong></div></div>
+    </section>
+
+    <section class="features-section" id="features"><div class="section-head-row reveal"><div><p class="section-kicker">Produto</p><h2>O que entra, e o que fica de fora.</h2></div><p>O projeto reaproveita ideias de forks, mas não importa código de display ou boot divergente de plataformas antigas.</p></div><div class="feature-list reveal"><article><span>01</span><div><h3>Leitor CrossPoint atual</h3><p>EPUB, TXT, XTC e a base atual de SD, Wi-Fi, frontlight e recuperação.</p></div><strong>Base</strong></article><article><span>02</span><div><h3>Isolamento de falha CJK</h3><p>Duas falhas seguidas durante sessão CJK desativam só o learner; o leitor continua acessível.</p></div><strong>Implementado</strong></article><article><span>03</span><div><h3>Vocabulário e revisão locais</h3><p>Port seletivo do checkpoint para a base atual, com journal e dados recuperáveis.</p></div><strong class="planned">Próximo</strong></article><article><span>04</span><div><h3>Estatísticas e Anki opcional</h3><p>Export/import auditável e sync LAN autenticado, sem substituir o agendador do Anki Desktop.</p></div><strong class="planned">Planejado</strong></article></div></section>
+
+    <section class="roadmap-section" id="roadmap"><div class="section-head-row reveal"><div><p class="section-kicker">Roadmap</p><h2>O caminho até v1.0.</h2></div><p>Um marco só muda de estado quando há verificação correspondente; não por intenção ou por uma compilação isolada.</p></div><ol class="roadmap-list reveal"><li class="is-complete"><span>01</span><div><strong>v0.6 · Fundação segura</strong><p>Alvo X4 Pro, guard de crash CJK, gate de artefato e simulador em três painéis.</p></div><em>Verificado</em></li><li><span>02</span><div><strong>v0.7 · CJK Learner na base atual</strong><p>Lookup, dicionários, journal, revisão e provisionamento sem pin antigo de SDK.</p></div><em>Em andamento</em></li><li><span>03</span><div><strong>v0.8–0.9 · Insights e Anki</strong><p>Stats, export/import e sync LAN opt-in com batches idempotentes.</p></div><em>Pendente</em></li><li><span>04</span><div><strong>v1.0 · Instalação responsável</strong><p>Matriz física X4 Pro, recovery drill, hashes, instaladores, site e simuladores.</p></div><em>Bloqueado por teste físico</em></li></ol></section>
+
+    <section class="recovery-section" id="recovery"><div class="recovery-card reveal"><div class="recovery-icon">!</div><div class="recovery-copy"><p class="section-kicker">Recuperação e segurança</p><h2>Nenhum recurso vale um dispositivo perdido.</h2><p>O caminho de recuperação do X4 Pro continua sendo segurar <strong>DOWN + POWER</strong>. UP é GPIO0 e não deve ser tratado como tecla de recovery. Antes de qualquer release instalável, esse caminho será testado no aparelho físico.</p><div class="recovery-actions"><a class="button button-primary" href="https://crosspointreader.com/#flash-tools" target="_blank" rel="noopener noreferrer">Ferramentas oficiais CrossPoint ↗</a><a class="button button-secondary" href="https://github.com/pngjaico/ChinesePoint/blob/cjk/part2.5-safety/docs/chinesepoint/v1-architecture.md" target="_blank" rel="noopener noreferrer">Ler arquitetura ↗</a></div></div><ul class="recovery-checks"><li><strong>Sem flasher no site</strong><span>Nenhuma escrita USB/WebSerial é oferecida nesta fase.</span></li><li><strong>Sem binário customizado</strong><span>O site não aceita upload de firmware de terceiros.</span></li><li><strong>Sem alegação física</strong><span>O simulador é marcado como evidência limitada.</span></li></ul></div></section>
+  </main>
+  <footer class="site-footer"><div class="footer-grid"><div class="footer-brand"><span class="brand-mark"><img src="assets/logo-mark.svg" width="38" height="38" alt="" /></span><div><strong>ChinesePoint</strong><span>Learning-first firmware for Xteink X4 Pro</span></div></div><div class="footer-links"><a href="#release">Release</a><a href="#simulator">Simulador</a><a href="#roadmap">Roadmap</a><a href="#recovery">Recuperação</a></div><div class="footer-links"><a href="https://github.com/pngjaico/ChinesePoint" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="https://github.com/crosspoint-reader/crosspoint-reader" target="_blank" rel="noopener noreferrer">CrossPoint ↗</a></div></div><div class="footer-bottom"><span>ChinesePoint © <span data-year></span></span><span>Projeto independente · não afiliado à XTEINK ou CrossPoint</span></div></footer>
+  <script src="script.js"></script>
+</body>
+</html>
