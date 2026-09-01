@@ -16,8 +16,10 @@
 
 void SdFirmwareUpdateActivity::onEnter() {
   Activity::onEnter();
-  // Build-identity marker — confirms which firmware build owns the SD update flow.
-  LOG_INF("FW", "SdFirmwareUpdateActivity build=%s %s recovery=%d", __DATE__, __TIME__, recoveryMode ? 1 : 0);
+  // CROSSPOINT_VERSION is fixed by the X4 Pro build environment. Do not use
+  // compiler timestamps here: they alter the application image on every build
+  // and make release hashes impossible to reproduce.
+  LOG_INF("FW", "SdFirmwareUpdateActivity version=%s recovery=%d", CROSSPOINT_VERSION, recoveryMode ? 1 : 0);
   state = State::PICKING;
   launchPicker();
 }

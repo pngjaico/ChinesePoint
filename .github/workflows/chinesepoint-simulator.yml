@@ -33,6 +33,90 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  unit-tests:
+    name: host-unit-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Install host test tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build
+
+      - uses: actions/cache@v4
+        with:
+          path: build/test/_deps/googletest-src
+          key: ${{ runner.os }}-googletest-${{ hashFiles('test/CMakeLists.txt') }}
+
+      - name: Configure, build and run host tests
+        run: |
+          cmake -S test -B build/test -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/test
+          ctest --test-dir build/test --output-on-failure -j
+
+  firmware:
+    name: deterministic-x4pro-firmware
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install PlatformIO Core
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install https://github.com/pioarduino/platformio-core/archive/refs/tags/v6.1.19.zip
+          python -m pip install "littlefs-python>=0.16.0" "fatfs-ng>=0.1.14" "pyyaml>=6.0.2" \
+            "rich-click>=1.8.6" "zopfli>=0.2.2" "intelhex>=2.3.0" "rich>=14.0.0" "urllib3<2" \
+            "cryptography>=45.0.3" "certifi>=2025.8.3" "ecdsa>=0.19.1" "bitstring>=4.3.1" \
+            "reedsolo>=1.5.3,<1.8" "esp-idf-size>=2.0.0" "esp-coredump>=1.14.0"
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: chinesepoint-x4pro-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
+          restore-keys: chinesepoint-x4pro-${{ runner.os }}-
+
+      - name: Build the same X4 Pro commit twice from clean outputs
+        run: |
+          set -euo pipefail
+          mkdir -p qa-artifacts
+          pio run -e chinesepoint_x4pro -j1 | tee qa-artifacts/pio-first.log
+          cp .pio/build/chinesepoint_x4pro/firmware.bin qa-artifacts/firmware-first.bin
+          pio run -e chinesepoint_x4pro -t clean
+          pio run -e chinesepoint_x4pro -j1 | tee qa-artifacts/pio.log
+          cmp qa-artifacts/firmware-first.bin .pio/build/chinesepoint_x4pro/firmware.bin
+          sha256sum .pio/build/chinesepoint_x4pro/firmware.bin > qa-artifacts/firmware.bin.sha256
+          rm qa-artifacts/firmware-first.bin
+
+      - name: Verify the application image target
+        run: |
+          python tools/chinesepoint/verify_artifact.py \
+            --firmware .pio/build/chinesepoint_x4pro/firmware.bin \
+            --environment chinesepoint_x4pro \
+            --expected-version ChinesePoint-v0.6-x4pro \
+            --manifest qa-artifacts/chinesepoint-x4pro-artifact.json
+
+      - name: Upload X4 Pro pre-physical evidence
+        uses: actions/upload-artifact@v6
+        with:
+          name: chinesepoint-x4pro-prephysical-${{ github.sha }}
+          path: |
+            .pio/build/chinesepoint_x4pro/firmware.bin
+            .pio/build/chinesepoint_x4pro/firmware.elf
+            .pio/build/chinesepoint_x4pro/firmware.map
+            qa-artifacts/
+          if-no-files-found: error
+
   simulator:
     name: ${{ matrix.environment }}
     runs-on: ubuntu-latest
@@ -92,4 +176,45 @@ jobs:
         with:
           name: ${{ matrix.environment }}-evidence
           path: qa-artifacts/${{ matrix.environment }}/
+          if-no-files-found: error
+
+  bundle:
+    name: simulator-evidence-bundle
+    needs: simulator
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Download the three panel captures
+        uses: actions/download-artifact@v7
+        with:
+          pattern: chinesepoint_simulator_x4pro_*-evidence
+          path: downloaded-evidence
+
+      - name: Assemble non-flashing Linux/WSL simulator bundle
+        run: |
+          set -euo pipefail
+          for panel in ssd1677 uc8179 uc8279; do
+            mkdir -p "bundle-captures/${panel}"
+            cp "downloaded-evidence/chinesepoint_simulator_x4pro_${panel}-evidence/boot.bmp" \
+              "bundle-captures/${panel}/boot.bmp"
+          done
+          mkdir -p qa-artifacts
+          python tools/chinesepoint/package_simulator_bundle.py \
+            --source-commit "$GITHUB_SHA" \
+            --captures-dir bundle-captures \
+            --output qa-artifacts/chinesepoint-x4pro-simulator-evidence.zip
+          sha256sum qa-artifacts/chinesepoint-x4pro-simulator-evidence.zip \
+            > qa-artifacts/chinesepoint-x4pro-simulator-evidence.zip.sha256
+
+      - name: Upload simulator bundle
+        uses: actions/upload-artifact@v6
+        with:
+          name: chinesepoint-x4pro-simulator-evidence
+          path: qa-artifacts/
           if-no-files-found: error
