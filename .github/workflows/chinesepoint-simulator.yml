@@ -9,10 +9,17 @@ on:
 permissions:
   contents: read
 
+# A stale queued matrix is not evidence and must not prevent the next source
+# commit from being tested. Keep only the newest run for each branch.
+concurrency:
+  group: chinesepoint-x4pro-simulator-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   simulator:
     name: ${{ matrix.environment }}
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
