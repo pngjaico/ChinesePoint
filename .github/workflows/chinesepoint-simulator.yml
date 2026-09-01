@@ -3,7 +3,24 @@ name: ChinesePoint X4 Pro simulator
 on:
   push:
     branches: [develop, cjk/part2.5-safety]
+    # Manifest, evidence and documentation commits do not alter the simulator
+    # executable. Ignoring them prevents a proof-record commit from cancelling
+    # the exact-source panel run that it needs to record.
+    paths-ignore:
+      - 'README.md'
+      - 'artifacts/**'
+      - 'docs/**'
+      - 'site/**'
+      - 'tools/anki_bridge/**'
+      - 'tools/chinesepoint/**'
   pull_request:
+    paths-ignore:
+      - 'README.md'
+      - 'artifacts/**'
+      - 'docs/**'
+      - 'site/**'
+      - 'tools/anki_bridge/**'
+      - 'tools/chinesepoint/**'
   workflow_dispatch:
 
 permissions:
