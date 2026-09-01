@@ -2,21 +2,21 @@
   "schema": 1,
   "project": "ChinesePoint",
   "target": "xteink-x4-pro",
-  "source_commit": "2fe4c3a9a7d7b31f334a4c90f74a33dcefb9a282",
+  "source_commit": "dd293a2e299342ce220c2400327ad579e52ca3ad",
   "version": "ChinesePoint-v0.6-x4pro",
   "artifact": {
     "filename": "firmware.bin",
-    "bytes": 5357200,
-    "sha256": "27b8175373b0151fcd2dad363b946e8f28083c476dc2c86be81e63ec0ca8b361",
+    "bytes": 5370000,
+    "sha256": "b145a081a270043295563ce3a3e40d1a560d6e0f05087724ade401ff6ba714cd",
     "environment": "chinesepoint_x4pro",
     "board_tag": "CROSSPOINT-BOARD-V1:x4pro;",
     "installable": false,
     "installable_reason": "Hardware panel validation and recovery drill are still required."
   },
   "evidence": {
-    "native_tests": 196,
+    "native_tests": 198,
     "artifact_tests": 4,
-    "simulator_run": "pending for source commit 2fe4c3a",
+    "simulator_run": "pending for source commit dd293a2",
     "simulator_panels": ["SSD1677", "UC8179", "UC8279"],
     "physical_matrix": "pending",
     "recovery_drill": "pending"
