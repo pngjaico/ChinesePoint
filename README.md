@@ -17,7 +17,7 @@ Its release workflows build only `chinesepoint_x4pro`; an upstream-shaped multi-
 - CJK token lookup, local dictionaries, source-aware vocabulary, and review.
 - Inspectable reading and learning statistics with export and import.
 - Optional token-authenticated LAN Anki Desktop sync where Anki remains the scheduler; no cloud relay or background device sync.
-- Desktop and browser simulators with scripted evidence for every release.
+- A versioned Linux/WSL simulator evidence bundle with scripted captures for every release.
 - A release dashboard with hashes, rollback instructions, and clear status labels.
 
 The architecture and safety constraints are in docs/chinesepoint/v1-architecture.md.
@@ -51,7 +51,7 @@ pio run -e chinesepoint_x4pro
 
 ## Simulator
 
-ChinesePoint uses the official CrossPoint X4 Pro simulator for deterministic CI screenshots. It runs on Linux or WSL in CI; upstream has no Windows-native simulator path. ChinesePoint will also deliver a browser simulator alongside releases so Windows users can inspect release UI without flashing hardware.
+ChinesePoint uses the official CrossPoint X4 Pro simulator for deterministic CI screenshots. It runs on Linux or WSL in CI; upstream has no Windows-native simulator path. Each milestone delivers the three verified captures, checksums and a pinned Linux/WSL re-execution bundle. This is evidence only and never flashes hardware.
 
 ## Development map
 

@@ -28,6 +28,14 @@ def test_site_does_not_present_stale_simulator_or_anki_evidence_as_complete():
     assert "transferência real X4 Pro → Anki Desktop ainda é pendente" in html
 
 
+def test_public_docs_do_not_promise_an_unimplemented_browser_simulator():
+    readme = (ROOT.parent / "README.md").read_text(encoding="utf-8").lower()
+    architecture = (ROOT.parent / "docs" / "chinesepoint" / "v1-architecture.md").read_text(encoding="utf-8").lower()
+
+    assert "browser simulator" not in readme
+    assert "browser simulator" not in architecture
+
+
 def test_release_manifest_blocks_installation_until_physical_evidence_exists():
     manifest = json.loads((ROOT / "release-manifest.json").read_text(encoding="utf-8"))
 

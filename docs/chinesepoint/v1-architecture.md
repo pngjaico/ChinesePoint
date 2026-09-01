@@ -54,7 +54,7 @@ CrossPlay v1.8.0 used FreeInk 2b717e95, a divergent line missing the UC8279 orie
 | X4 Pro full USB image | USB rescue install only |
 | ELF, map, manifest, SHA-256 | audit and debugging |
 | Desktop simulator screenshots | deterministic CI evidence |
-| Browser simulator bundle | inspect release UI without flashing |
+| Linux/WSL simulator evidence bundle | re-run a pinned simulator build and inspect the three panel captures without flashing |
 
 Every release manifest records ChinesePoint commit, upstream commit, FreeInk pin, environment, artifact hashes, panel-test status, and rollback steps.
 
