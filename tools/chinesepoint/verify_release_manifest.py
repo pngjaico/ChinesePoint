@@ -36,13 +36,25 @@ def require_state(value: Any, name: str) -> str:
     return value
 
 
-def require_panels(value: Any, name: str) -> dict[str, str]:
+def require_panels(value: Any, name: str) -> dict[str, dict[str, str]]:
     require(isinstance(value, dict), f"{name} must be an object")
     require(set(value) == set(PANEL_IDS), f"{name} must list exactly: {', '.join(PANEL_IDS)}")
-    return {panel: require_state(value[panel], f"{name}.{panel}") for panel in PANEL_IDS}
+    panels: dict[str, dict[str, str]] = {}
+    for panel in PANEL_IDS:
+        entry = value[panel]
+        require(isinstance(entry, dict), f"{name}.{panel} must be an object")
+        panels[panel] = {
+            "state": require_state(entry.get("state"), f"{name}.{panel}.state"),
+            "record": entry.get("record", ""),
+        }
+        require(isinstance(panels[panel]["record"], str), f"{name}.{panel}.record must be text")
+        if panels[panel]["state"] == "passed":
+            require(panels[panel]["record"].strip(), f"{name}.{panel} passed state requires an evidence record")
+    return panels
 
 
 def validate(manifest: dict[str, Any], require_installable: bool = False) -> None:
+    require(isinstance(manifest, dict), "release manifest must be an object")
     require(manifest.get("schema") == 2, "manifest schema must be 2")
     require(manifest.get("project") == "ChinesePoint", "project must be ChinesePoint")
     require(manifest.get("target") == "xteink-x4-pro", "target must be xteink-x4-pro")
@@ -86,12 +98,15 @@ def validate(manifest: dict[str, Any], require_installable: bool = False) -> Non
     require(isinstance(recovery, dict), "recovery evidence must be an object")
     require_state(recovery.get("state"), "recovery.state")
     require(recovery.get("method") == "DOWN+POWER", "recovery method must be DOWN+POWER")
+    require(isinstance(recovery.get("record", ""), str), "recovery.record must be text")
+    if recovery["state"] == "passed":
+        require(recovery["record"].strip(), "passed recovery requires an evidence record")
 
     if require_installable:
         require(artifact["installable"], "release tags require artifact.installable=true")
-        require(simulator["state"] == "passed" and all(value == "passed" for value in simulator_panels.values()),
+        require(simulator["state"] == "passed" and all(value["state"] == "passed" for value in simulator_panels.values()),
                 "release tags require all three simulator panel paths to pass")
-        require(physical["state"] == "passed" and all(value == "passed" for value in physical_panels.values()),
+        require(physical["state"] == "passed" and all(value["state"] == "passed" for value in physical_panels.values()),
                 "release tags require physical evidence for all three X4 Pro panel paths")
         require(recovery["state"] == "passed", "release tags require a passed DOWN+POWER recovery drill")
 

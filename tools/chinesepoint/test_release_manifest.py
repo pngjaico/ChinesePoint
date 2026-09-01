@@ -30,12 +30,21 @@ class ReleaseManifestTest(unittest.TestCase):
         candidate = copy.deepcopy(self.manifest)
         candidate["artifact"]["installable"] = True
         candidate["evidence"]["simulator"]["state"] = "passed"
-        candidate["evidence"]["simulator"]["panels"] = {panel: "passed" for panel in MODULE.PANEL_IDS}
+        candidate["evidence"]["simulator"]["panels"] = {
+            panel: {"state": "passed", "record": f"qa/{panel}.bmp"} for panel in MODULE.PANEL_IDS
+        }
         candidate["evidence"]["physical"]["state"] = "passed"
-        candidate["evidence"]["physical"]["panels"] = {panel: "passed" for panel in MODULE.PANEL_IDS}
+        candidate["evidence"]["physical"]["panels"] = {
+            panel: {"state": "passed", "record": f"evidence/{panel}.md"} for panel in MODULE.PANEL_IDS
+        }
         candidate["evidence"]["recovery"]["state"] = "passed"
+        candidate["evidence"]["recovery"]["record"] = "evidence/recovery.md"
         MODULE.validate(candidate, require_installable=True)
-        candidate["evidence"]["physical"]["panels"]["uc8279"] = "pending"
+        candidate["evidence"]["simulator"]["panels"]["ssd1677"]["record"] = ""
+        with self.assertRaises(MODULE.ReleaseEvidenceError):
+            MODULE.validate(candidate, require_installable=True)
+        candidate["evidence"]["simulator"]["panels"]["ssd1677"]["record"] = "qa/ssd1677.bmp"
+        candidate["evidence"]["physical"]["panels"]["uc8279"]["state"] = "pending"
         with self.assertRaises(MODULE.ReleaseEvidenceError):
             MODULE.validate(candidate, require_installable=True)
 

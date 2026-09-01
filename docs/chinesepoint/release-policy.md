@@ -18,7 +18,8 @@ can be called installable:
 3. A physical pass recorded for each of those panel paths. A result from one
    X4 Pro must not be extrapolated to every panel variant.
 4. A physical recovery drill using **DOWN+POWER**. UP is GPIO0 and does not
-   replace this route.
+   replace this route. Every passed panel and recovery state must reference an
+   evidence record in the manifest; a bare `passed` value is rejected.
 
 The script cannot manufacture this evidence. It only prevents an unchecked
 manifest from enabling a download.

@@ -20,22 +20,23 @@
       "state": "pending",
       "source_commit": "dd293a2e299342ce220c2400327ad579e52ca3ad",
       "panels": {
-        "ssd1677": "pending",
-        "uc8179": "pending",
-        "uc8279": "pending"
+        "ssd1677": {"state": "pending", "record": ""},
+        "uc8179": {"state": "pending", "record": ""},
+        "uc8279": {"state": "pending", "record": ""}
       }
     },
     "physical": {
       "state": "pending",
       "panels": {
-        "ssd1677": "pending",
-        "uc8179": "pending",
-        "uc8279": "pending"
+        "ssd1677": {"state": "pending", "record": ""},
+        "uc8179": {"state": "pending", "record": ""},
+        "uc8279": {"state": "pending", "record": ""}
       }
     },
     "recovery": {
       "state": "pending",
-      "method": "DOWN+POWER"
+      "method": "DOWN+POWER",
+      "record": ""
     }
   }
 }
