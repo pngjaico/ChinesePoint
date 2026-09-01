@@ -86,7 +86,11 @@ CjkAnkiClient::Result CjkAnkiClient::pushVocabulary(LearnerStore& store, const A
   }
 
   WiFiClient client;
+#if !defined(SIMULATOR)
+  // NetworkClient in the official desktop simulator intentionally has no
+  // timeout setter. The simulator does not perform a real LAN Anki transfer.
   client.setTimeout(kTimeoutMs);
+#endif
   if (!client.connect(url.host.c_str(), url.port)) {
     exportFile.close();
     return Result::ConnectionFailed;
