@@ -1,24 +1,19 @@
-name: Compile Release Candidate
+name: Compile ChinesePoint X4 Pro Release Candidate
 
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+# This fork deliberately has one supported target. Do not add upstream board
+# environments here: a successful build for a different Xteink is not a
+# ChinesePoint release candidate and can be dangerous when copied to an SD.
 jobs:
   build-release-candidate:
-    if: startsWith(github.ref_name, 'release/')
+    if: startsWith(github.ref_name, 'release/chinesepoint-')
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - pio_env: gh_release_rc
-            asset: firmware.bin
-          - pio_env: sticky-gh_release_rc
-            asset: firmware-sticky.bin
-          - pio_env: x4pro-gh_release_rc
-            asset: firmware-x4pro.bin
-          - pio_env: papermono-gh_release_rc
-            asset: firmware-papermono.bin
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v6
         with:
@@ -28,54 +23,38 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-        with:
-          version: "latest"
-          enable-cache: false
-
       - name: Install PlatformIO Core
         run: |
-          uv pip install --system -U https://github.com/pioarduino/platformio-core/archive/refs/tags/v6.1.19.zip
-          # platform-espressif32's builder/main.py imports these unconditionally; its own
-          # penv bootstrap (builder/penv_setup.py) is supposed to install them automatically
-          # but isn't picking them up reliably in this runner image, so pin them explicitly.
-          uv pip install --system -U "littlefs-python>=0.16.0" "fatfs-ng>=0.1.14" "pyyaml>=6.0.2" \
+          python -m pip install --upgrade pip
+          python -m pip install https://github.com/pioarduino/platformio-core/archive/refs/tags/v6.1.19.zip
+          python -m pip install "littlefs-python>=0.16.0" "fatfs-ng>=0.1.14" "pyyaml>=6.0.2" \
             "rich-click>=1.8.6" "zopfli>=0.2.2" "intelhex>=2.3.0" "rich>=14.0.0" "urllib3<2" \
             "cryptography>=45.0.3" "certifi>=2025.8.3" "ecdsa>=0.19.1" "bitstring>=4.3.1" \
             "reedsolo>=1.5.3,<1.8" "esp-idf-size>=2.0.0" "esp-coredump>=1.14.0"
 
-      - name: Cache PlatformIO packages
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: ~/.platformio
-          key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
-          restore-keys: pio-${{ runner.os }}-
+          key: chinesepoint-x4pro-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
+          restore-keys: chinesepoint-x4pro-${{ runner.os }}-
 
-      - name: Extract env
+      - name: Build X4 Pro application image only
+        run: pio run -e chinesepoint_x4pro -j1
+
+      - name: Verify target and application artifact
         run: |
-          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
-          echo "BRANCH_SUFFIX=${GITHUB_REF_NAME#release/}" >> $GITHUB_ENV
+          python tools/chinesepoint/verify_artifact.py \
+            --firmware .pio/build/chinesepoint_x4pro/firmware.bin \
+            --environment chinesepoint_x4pro \
+            --expected-version ChinesePoint-v0.6-x4pro \
+            --manifest qa-artifacts/chinesepoint-x4pro-artifact.json
 
-      - name: Build CrossPoint Release Candidate
-        env:
-          CROSSPOINT_RC_HASH: ${{ env.SHORT_SHA }}
-        run: pio run -e ${{ matrix.pio_env }} -j1
-
-      - name: Name release asset
-        run: |
-          if [ "${{ matrix.asset }}" != "firmware.bin" ]; then
-            cp ".pio/build/${{ matrix.pio_env }}/firmware.bin" \
-              ".pio/build/${{ matrix.pio_env }}/${{ matrix.asset }}"
-          fi
-
-      - name: Upload Artifacts
+      - name: Upload X4 Pro candidate evidence
         uses: actions/upload-artifact@v4
         with:
-          name: CrossPoint-RC-${{ env.BRANCH_SUFFIX }}-${{ matrix.pio_env }}
+          name: ChinesePoint-X4-Pro-RC-${{ github.sha }}
           path: |
-            .pio/build/${{ matrix.pio_env }}/bootloader.bin
-            .pio/build/${{ matrix.pio_env }}/${{ matrix.asset }}
-            .pio/build/${{ matrix.pio_env }}/firmware.elf
-            .pio/build/${{ matrix.pio_env }}/firmware.map
-            .pio/build/${{ matrix.pio_env }}/partitions.bin
+            .pio/build/chinesepoint_x4pro/firmware.bin
+            .pio/build/chinesepoint_x4pro/firmware.elf
+            .pio/build/chinesepoint_x4pro/firmware.map
+            qa-artifacts/chinesepoint-x4pro-artifact.json

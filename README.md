@@ -9,6 +9,7 @@ ChinesePoint is an open-source, learning-first e-reader firmware for the **Xtein
 ChinesePoint v1 supports **Xteink X4 Pro only**: ESP32-S3, 16 MB flash, 8 MB PSRAM, touch, dual frontlight, and current FreeInk panel detection.
 
 ChinesePoint does not publish binaries, installation instructions, or support claims for X3, original X4, X4 Classic, Sticky, PaperMono, or other devices.
+Its release workflows build only `chinesepoint_x4pro`; an upstream-shaped multi-board release must not be treated as a ChinesePoint release.
 
 ## What ChinesePoint is becoming
 

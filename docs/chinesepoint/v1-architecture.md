@@ -8,6 +8,8 @@ ChinesePoint retains the current X4 Pro CrossPoint reader and platform as-is: li
 
 ChinesePoint v1 does not claim support for X3, original X4, X4 Classic, Sticky, PaperMono, or any other board. Their upstream source may remain for rebaseability, but ChinesePoint CI, releases, site, installer, documentation, and support build and publish only the X4 Pro.
 
+The dedicated ChinesePoint release and release-candidate workflows build only `chinesepoint_x4pro` and validate its application image. They cannot create or label a binary for another board. Full USB rescue media remains a separately audited artifact and is never assembled for the device updater by release CI.
+
 ## Verified base
 
 | Item | Value |
