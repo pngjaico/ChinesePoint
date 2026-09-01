@@ -63,6 +63,9 @@ ChinesePoint uses the official CrossPoint X4 Pro simulator for deterministic CI 
 
 No milestone is called installable until build, artifact validation, simulator, recovery path, and physical X4 Pro tests have passed.
 
+The exact preflight, panel matrix, learner checks, and evidence format are in
+[`docs/chinesepoint/physical-validation.md`](docs/chinesepoint/physical-validation.md).
+
 ## Upstream and license
 
 ChinesePoint inherits from CrossPoint Reader and FreeInk, both MIT-licensed. Upstream stays configured as crosspoint-reader/crosspoint-reader so ChinesePoint changes remain auditable and selectively rebaseable.

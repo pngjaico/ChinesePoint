@@ -24,6 +24,9 @@ can be called installable:
 The script cannot manufacture this evidence. It only prevents an unchecked
 manifest from enabling a download.
 
+The observable procedure and evidence-file format are in
+[`physical-validation.md`](physical-validation.md).
+
 ## Artifact separation
 
 The device updater receives only the application image. A full USB rescue
