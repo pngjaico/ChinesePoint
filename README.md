@@ -55,10 +55,10 @@ ChinesePoint uses the official CrossPoint X4 Pro simulator for deterministic CI 
 
 ## Development map
 
-1. v0.6: X4 Pro-only build identity, safe CJK isolation, simulator, site manifest.
-2. v0.7: current-base CJK Learner port.
-3. v0.8: statistics and export/import.
-4. v0.9: opt-in Anki synchronization.
+1. v0.6: X4 Pro-only build identity, safe CJK isolation, simulator/release gate, site manifest — implemented; current simulator evidence remains pending.
+2. v0.7: current-base CJK Learner port — implemented in source; physical validation pending.
+3. v0.8: statistics and deterministic export — implemented in source; physical validation pending.
+4. v0.9: opt-in Anki synchronization — implemented in source; Anki Desktop and X4 Pro integration pending.
 5. v1.0: physical X4 Pro matrix, recovery drill, installers, hashes, site, and simulators.
 
 No milestone is called installable until build, artifact validation, simulator, recovery path, and physical X4 Pro tests have passed.

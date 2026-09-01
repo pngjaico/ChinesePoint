@@ -6,7 +6,7 @@ ChinesePoint is a learning-first fork of CrossPoint Reader for the Xteink X4 Pro
 
 ChinesePoint retains the current X4 Pro CrossPoint reader and platform as-is: library, EPUB/TXT/XTC reader, touch, Wi-Fi, frontlight, KOReader Sync, settings, updates, panel detection, and recovery remain CrossPoint responsibilities. ChinesePoint work is additive and limited to the planned CJK learner, learning data, statistics/export, and optional Anki Desktop bridge; it does not replace the reader, boot, display, update, or flasher implementations.
 
-ChinesePoint v1 does not claim support for X3, original X4, X4 Classic, Sticky, PaperMono, or any other board. Their upstream source may remain for rebaseability, but ChinesePoint CI, releases, site, installer, documentation, and support build and publish only the X4 Pro.
+ChinesePoint v1 does not claim support for X3, original X4, X4 Classic, Sticky, PaperMono, or any other board. Their upstream source may remain for rebaseability, but ChinesePoint-specific simulator and release CI, releases, site, installer, documentation, and support build and publish only the X4 Pro.
 
 The dedicated ChinesePoint release and release-candidate workflows build only `chinesepoint_x4pro` and validate its application image. They cannot create or label a binary for another board. Full USB rescue media remains a separately audited artifact and is never assembled for the device updater by release CI.
 
