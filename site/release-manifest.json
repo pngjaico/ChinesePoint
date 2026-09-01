@@ -2,12 +2,12 @@
   "schema": 2,
   "project": "ChinesePoint",
   "target": "xteink-x4-pro",
-  "source_commit": "dd293a2e299342ce220c2400327ad579e52ca3ad",
+  "source_commit": "04338ee5f8a3b12895e8dbced502072e123393f5",
   "version": "ChinesePoint-v0.6-x4pro",
   "artifact": {
     "filename": "firmware.bin",
     "bytes": 5370000,
-    "sha256": "b145a081a270043295563ce3a3e40d1a560d6e0f05087724ade401ff6ba714cd",
+    "sha256": "5febfdceeebba5c7a575601f843773fac81bc4647a651580305191f8aa3fb26b",
     "environment": "chinesepoint_x4pro",
     "board_tag": "CROSSPOINT-BOARD-V1:x4pro;",
     "installable": false,
@@ -18,7 +18,7 @@
     "artifact_tests": 4,
     "simulator": {
       "state": "pending",
-      "source_commit": "dd293a2e299342ce220c2400327ad579e52ca3ad",
+      "source_commit": "04338ee5f8a3b12895e8dbced502072e123393f5",
       "panels": {
         "ssd1677": {"state": "pending", "record": ""},
         "uc8179": {"state": "pending", "record": ""},

@@ -20,9 +20,9 @@ The dedicated ChinesePoint release and release-candidate workflows build only `c
 | Baseline app image | 5,324,464 bytes |
 | Baseline app SHA-256 | 0ae10b6ed58940d64d9c0faf4871f1b60fb2b6de2425537e30a7b18a660c96da |
 | ChinesePoint foundation environment | chinesepoint_x4pro |
-| Pre-physical source commit | dd293a2e299342ce220c2400327ad579e52ca3ad |
+| Pre-physical source commit | 04338ee5f8a3b12895e8dbced502072e123393f5 |
 | Pre-physical app image | 5,370,000 bytes |
-| Pre-physical app SHA-256 | b145a081a270043295563ce3a3e40d1a560d6e0f05087724ade401ff6ba714cd |
+| Pre-physical app SHA-256 | 5febfdceeebba5c7a575601f843773fac81bc4647a651580305191f8aa3fb26b |
 | Pre-physical build checks | ESP32-S3 header, valid checksum/hash, one X4 Pro tag, 198 host tests, artifact validation; exact-source SSD1677/UC8179/UC8279 simulator CI pending |
 
 The baseline and current pre-physical build are valid ESP32-S3 application images. They prove the starting platform and current safety integration compile, not that CJK changes are hardware-safe. The artifact is not published as installable because it lacks physical display/recovery evidence and its required safe site bundle. The source-side verifier record is `artifacts/chinesepoint-x4pro-foundation.json`; it deliberately carries `installable: false`.
