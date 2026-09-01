@@ -36,6 +36,7 @@ The baseline and foundation build are valid ESP32-S3 application images. They pr
 7. Two consecutive crashes during an active CJK session disable CJK until the user explicitly re-enables it. They never disable the reader.
 8. A simulator or a compilation is not physical display proof.
 9. The CC-CEDICT installer accepts one pinned release only: its HTTPS URL, ZIP SHA-256, exact entry names, sizes, and CRCs are verified before an atomic promotion to `/dictionaries/`.
+10. Anki transfer is optional, user-triggered, and private-LAN-only. Firmware can export saved vocabulary but never writes the Anki collection or accepts arbitrary bridge data; the desktop bridge validates bounded NDJSON and uses Anki's main thread.
 
 ## Panel policy
 

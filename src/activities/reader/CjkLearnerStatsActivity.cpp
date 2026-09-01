@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "MappedInputManager.h"
+#include "CjkAnkiSettingsActivity.h"
 #include "CjkVocabularyActivity.h"
 #include "activities/util/ConfirmationActivity.h"
 #include "chinesepoint/CjkSafetyGuard.h"
@@ -40,9 +41,9 @@ void CjkLearnerStatsActivity::rebuildRows() {
   } else if (stats.vocabularyCount == 0) {
     labels.emplace_back(tr(STR_LEARNER_NO_ENTRIES));
   } else {
-    labels = {tr(STR_LEARNER_VOCABULARY), tr(STR_LEARNER_EXPORT), tr(STR_LEARNER_SAVED), tr(STR_LEARNER_LEARNING),
+    labels = {tr(STR_LEARNER_VOCABULARY), tr(STR_LEARNER_EXPORT), tr(STR_LEARNER_ANKI_SYNC), tr(STR_LEARNER_SAVED), tr(STR_LEARNER_LEARNING),
               tr(STR_LEARNER_KNOWN), tr(STR_LEARNER_ENCOUNTERS), tr(STR_LEARNER_BOOKS)};
-    values = {std::to_string(stats.vocabularyCount), exportStatus, std::to_string(stats.savedCount),
+    values = {std::to_string(stats.vocabularyCount), exportStatus, "", std::to_string(stats.savedCount),
               std::to_string(stats.learningCount), std::to_string(stats.knownCount),
               std::to_string(stats.encounterTotal), std::to_string(stats.sourceBookCount)};
   }
@@ -69,6 +70,10 @@ void CjkLearnerStatsActivity::activateIndex(const int index) {
     return;
   }
   if (index == 1) exportEntries();
+  if (index == 2) {
+    startActivityForResult(std::make_unique<CjkAnkiSettingsActivity>(renderer, mappedInput),
+                           [this](const ActivityResult&) { requestUpdate(); });
+  }
 }
 
 void CjkLearnerStatsActivity::exportEntries() {

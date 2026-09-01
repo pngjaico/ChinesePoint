@@ -15,7 +15,7 @@ ChinesePoint does not publish binaries, installation instructions, or support cl
 - EPUB, TXT, and XTC reading on the current CrossPoint reader base.
 - CJK token lookup, local dictionaries, source-aware vocabulary, and review.
 - Inspectable reading and learning statistics with export and import.
-- Optional LAN Anki sync where Anki Desktop remains the scheduler.
+- Optional token-authenticated LAN Anki Desktop sync where Anki remains the scheduler; no cloud relay or background device sync.
 - Desktop and browser simulators with scripted evidence for every release.
 - A release dashboard with hashes, rollback instructions, and clear status labels.
 
