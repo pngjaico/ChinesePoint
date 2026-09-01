@@ -22,7 +22,9 @@ def test_site_is_x4pro_only_and_has_no_flash_engine():
 def test_release_manifest_blocks_installation_until_physical_evidence_exists():
     manifest = json.loads((ROOT / "release-manifest.json").read_text(encoding="utf-8"))
 
+    assert manifest["schema"] == 2
     assert manifest["target"] == "xteink-x4-pro"
     assert manifest["artifact"]["installable"] is False
-    assert manifest["evidence"]["physical_matrix"] == "pending"
-    assert manifest["evidence"]["recovery_drill"] == "pending"
+    assert manifest["evidence"]["simulator"]["state"] == "pending"
+    assert manifest["evidence"]["physical"]["state"] == "pending"
+    assert manifest["evidence"]["recovery"]["state"] == "pending"
