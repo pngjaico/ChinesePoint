@@ -84,7 +84,8 @@ jobs:
           CROSSPOINT_SIM_INPUT_SCRIPT='1800:QUIT' \
           CROSSPOINT_SIM_SCREENSHOTS='900:qa-artifacts/${{ matrix.environment }}/boot.bmp' \
           xvfb-run -a .pio/build/${{ matrix.environment }}/program
-          test -s qa-artifacts/${{ matrix.environment }}/boot.bmp
+          python tools/chinesepoint/verify_simulator_screenshot.py \
+            --screenshot qa-artifacts/${{ matrix.environment }}/boot.bmp
 
       - name: Upload simulator evidence
         uses: actions/upload-artifact@v6
