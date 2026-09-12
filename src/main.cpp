@@ -56,6 +56,22 @@ static unsigned long lastX4ProPowerClickAt = 0;
 namespace {
 constexpr unsigned long X4PRO_POWER_DOUBLE_CLICK_MS = 500;
 constexpr unsigned long X4PRO_POWER_CLICK_MAX_HOLD_MS = 300;
+
+#if FREEINK_DEVICE_X4PRO && !defined(SIMULATOR)
+// The X4 Pro is an N16R8 board. Accepting substantially less than 8 MiB here
+// would let a failed PSRAM init turn into an unrelated renderer, reader, or
+// Wi-Fi crash later in startup. The small tolerance avoids coupling this
+// safety check to one ESP-IDF reporting detail.
+constexpr uint32_t X4PRO_MINIMUM_PSRAM_BYTES = 6U * 1024U * 1024U;
+
+bool hasUsableX4ProPsram() {
+  const uint32_t totalBytes = ESP.getPsramSize();
+  const uint32_t freeBytes = ESP.getFreePsram();
+  LOG_INF("MAIN", "X4 Pro PSRAM: total=%u free=%u", static_cast<unsigned>(totalBytes),
+          static_cast<unsigned>(freeBytes));
+  return totalBytes >= X4PRO_MINIMUM_PSRAM_BYTES;
+}
+#endif
 }  // namespace
 
 // A wake hold must never become an in-app power-button action.  Boot may continue
@@ -433,6 +449,19 @@ void setup() {
         std::make_unique<SdFirmwareUpdateActivity>(renderer, mappedInputManager, /*recoveryMode=*/true));
     return;
   }
+
+#if FREEINK_DEVICE_X4PRO && !defined(SIMULATOR)
+  if (!hasUsableX4ProPsram()) {
+    // Do not continue into the memory-intensive normal reader path when this
+    // board's required external RAM did not initialise. The display is brought
+    // up only to make the fault actionable; recovery remains DOWN + POWER.
+    LOG_ERR("MAIN", "X4 Pro PSRAM is unavailable; normal boot stopped");
+    ButtonNavigator::setMappedInputManager(mappedInputManager);
+    setupDisplayAndFonts(/*seamless=*/false);
+    activityManager.goToFullScreenMessage("PSRAM unavailable. Hold DOWN + POWER for recovery.", EpdFontFamily::BOLD);
+    return;
+  }
+#endif
 
   APP_STATE.loadFromFile();
   const bool isSleepWake = wakeupReason == HalGPIO::WakeupReason::PowerButton;

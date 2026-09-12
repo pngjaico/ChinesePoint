@@ -23,13 +23,18 @@ not satisfy this protocol.
 4. Verify the candidate with `verify_artifact.py` on the build machine and
    compare the displayed SHA-256 with the evidence manifest. Stop on any
    mismatch.
+5. Capture the early serial line `X4 Pro PSRAM: total=... free=...`. A total
+   below 6 MiB must show the PSRAM fault screen and normal reader testing must
+   stop; prove the DOWN+POWER recovery route from that state before retrying a
+   normal candidate.
 
 ## Stop conditions
 
 Stop the test immediately if boot hangs, the screen is blank/mirrored/inverted,
-touch is uncontrolled, the device reboots repeatedly, or the recovery screen
-does not appear. Do not retry a blind flash. Record the condition, remove the
-candidate SD card, and use the previously proven recovery route.
+touch is uncontrolled, the device reboots repeatedly, PSRAM is reported below
+6 MiB, or the recovery screen does not appear. Do not retry a blind flash.
+Record the condition, remove the candidate SD card, and use the previously
+proven recovery route.
 
 ## Per-panel matrix
 

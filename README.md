@@ -66,12 +66,17 @@ On 2026-09-12, the FreeInk pin was advanced to
 driver update implicated by the CrossPlay mirrored-display report. The X4 Pro
 application rebuilt from an isolated cache and verified as target
 `xteink-x4-pro`, SHA-256
-`111a64f758151f980e9388706ba29af3e71c049af8c3e57ce5ca006978d0f1e0`
+`c386f488cbffe849d5729b0cc03e41909eb31d3052d5616c6fb083fd811d9c91`
 (5,375,792 bytes). DOWN+POWER now reaches the SD firmware picker before normal
 reader state, settings, optional services, or frontlight initialization. The
 same candidate boot-rendered in the SSD1677, UC8179, and UC8279 simulator
 profiles. This is still not physical display or recovery evidence, and its
-100% IRAM allocation remains a release blocker.
+100% IRAM allocation remains a release risk. Its listed consumers are ESP-IDF
+flash/PSRAM, FreeRTOS and interrupt paths rather than a movable ChinesePoint
+feature, so it requires physical watchdog and sleep/wake evidence instead of a
+blind source-level "optimization". On real X4 Pro hardware, a reported PSRAM
+total below 6 MiB now stops normal startup with a visible recovery instruction;
+the DOWN+POWER SD route remains available before that check.
 
 ~~~powershell
 $env:PYTHONUTF8 = '1'

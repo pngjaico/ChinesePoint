@@ -32,6 +32,14 @@ class BootSafetyOrderTest(unittest.TestCase):
         ):
             self.assertGreater(self.source.index(ordinary_boot_operation), end)
 
+    def test_x4pro_psram_fault_is_visible_before_normal_boot(self):
+        recovery_end = self.source.index("\n  APP_STATE.loadFromFile();")
+        psram_gate = self.source.index("if (!hasUsableX4ProPsram())")
+        self.assertLess(psram_gate, recovery_end)
+        self.assertIn("X4PRO_MINIMUM_PSRAM_BYTES = 6U * 1024U * 1024U", self.source)
+        self.assertIn("PSRAM unavailable. Hold DOWN + POWER for recovery.", self.source)
+        self.assertIn("setupDisplayAndFonts(/*seamless=*/false);", self.source[psram_gate:recovery_end])
+
     def test_controller_resolution_precedes_display_initialization(self):
         setup_start = self.source.index("void setupDisplayAndFonts(bool seamless = false)")
         setup_end = self.source.index("\nvoid setup()", setup_start)
