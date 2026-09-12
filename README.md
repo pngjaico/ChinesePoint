@@ -121,6 +121,13 @@ python tools\chinesepoint\stage_x4pro_update.py `
   --sd-root E:\
 ~~~
 
+The canonical build deliberately does not reuse PlatformIO's global object
+cache. It previously combined incompatible cached objects after source changes
+and produced missing symbols only at link time. The normal `.pio` directory
+still makes unchanged local rebuilds incremental. After changing a dependency,
+run `pio run -e chinesepoint_x4pro -t clean` once before building; never treat a
+cache-reused binary as a release candidate without the artifact validator.
+
 ## Simulator
 
 ChinesePoint uses the official CrossPoint X4 Pro simulator for deterministic CI screenshots. It runs on Linux or WSL in CI; upstream has no Windows-native simulator path. Each milestone delivers the three verified captures, checksums and a pinned Linux/WSL re-execution bundle. This is evidence only and never flashes hardware.
