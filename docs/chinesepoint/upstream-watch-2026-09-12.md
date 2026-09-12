@@ -8,7 +8,7 @@ blocked release status.
 
 | Base | ChinesePoint pin | Observed upstream head | Decision |
 | --- | --- | --- | --- |
-| FreeInk | `7f6bd0f47a766eea18206dd19f723f3707b6c9d3` | `76e66b140aa0bdbcceb3fc3b04bfc0fd0c3c1eef` | Hold pending physical X4 Pro panel and recovery coverage. |
+| FreeInk | `7f6bd0f47a766eea18206dd19f723f3707b6c9d3` | `c881d219b05520d42ff93c20c2bf3a4c401c64fe` | Hold pending physical X4 Pro panel and recovery coverage. |
 | CrossPoint `develop` | initial base `e7a3bb48817f1cb951b521ca958562723159c2f6` plus ChinesePoint changes | `472b5e485f9f55864133a2f64dd25256749041d8` | Review individual fixes in a dedicated integration branch; do not rebase the diagnostic candidate. |
 
 ## FreeInk: high display risk
@@ -30,6 +30,21 @@ ChinesePoint must not move this pin until all of the following are available:
 
 The hold is deliberate. A simulated BMP cannot validate controller waveforms,
 power sequencing or panel-specific lookup tables.
+
+## FreeInk change since the previous observation
+
+The observed FreeInk head advanced from `76e66b1` to `c881d21`. Relative to
+the ChinesePoint pin, the display, Xteink-detection and BoardConfig range now
+changes 43 files (1,787 additions and 203 deletions). It includes runtime GPIO
+configuration, Xteink probe changes, SSD1677/UC8179/UC8279/UC8279-X4 waveform
+and grayscale work, and new upstream host tests. In particular, it changes
+both the driver-selection probe and the refresh implementations for the three
+X4 Pro controller paths.
+
+That is evidence for a separate integration candidate, not a safe cherry-pick
+set. Pulling only a detector or only a waveform would couple it to an older
+driver contract and make a display failure harder to attribute. ChinesePoint
+keeps `7f6bd0f` until the physical recovery baseline exists.
 
 ## CrossPoint fixes worth staging later
 
