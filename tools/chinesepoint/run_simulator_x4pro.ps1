@@ -2,17 +2,20 @@
 param(
   [ValidateSet('ssd1677', 'uc8179', 'uc8279')]
   [string]$Panel = 'ssd1677',
-  [switch]$NoUpdate
+  [switch]$NoUpdate,
+  [switch]$BuildOnly
 )
 
 $ErrorActionPreference = 'Stop'
 
 $distro = 'ChinesePoint-Emulator'
 $simulatorRepo = '/opt/chinesepoint-src'
-$platformio = '/opt/chinesepoint-pio/bin/pio'
+$platformioHome = '/opt/chinesepoint-tools'
+$platformio = "$platformioHome/bin/pio"
 $platformioCore = '/opt/chinesepoint-platformio'
 $environment = "chinesepoint_simulator_x4pro_$Panel"
 $update = if ($NoUpdate) { '0' } else { '1' }
+$runProgram = if ($BuildOnly) { '0' } else { '1' }
 
 # The Linux working tree and PlatformIO cache live inside a WSL VHDX placed on
 # D:. Building directly through /mnt/d is much slower because SCons performs
@@ -24,9 +27,22 @@ repo="__REPO__"
 pio="__PIO__"
 core="__CORE__"
 environment="__ENVIRONMENT__"
+tool_home="__PIO_HOME__"
+
+# Keep the tool in the distro's VHDX instead of the Windows-mounted worktree.
+# A fresh emulator therefore needs no global pip install or manual setup step.
+if [ ! -x "$pio" ]; then
+  command -v python3 >/dev/null || {
+    echo "Python 3 is required in the ChinesePoint emulator distro." >&2
+    exit 1
+  }
+  echo "Configuring isolated PlatformIO for ChinesePoint-Emulator..."
+  python3 -m venv "$tool_home"
+  "$tool_home/bin/pip" install --upgrade pip platformio
+fi
 
 test -x "$pio" || {
-  echo "PlatformIO was not configured for ChinesePoint-Emulator. Run the ChinesePoint emulator setup first." >&2
+  echo "Could not configure PlatformIO for ChinesePoint-Emulator." >&2
   exit 1
 }
 
@@ -41,14 +57,18 @@ fi
 
 cd "$repo"
 PLATFORMIO_CORE_DIR="$core" "$pio" run -e "$environment"
-exec ".pio/build/$environment/program"
+if [ "__RUN_PROGRAM__" = "1" ]; then
+  exec ".pio/build/$environment/program"
+fi
 '@
 
 $command = $command.Replace('__REPO__', $simulatorRepo).
   Replace('__PIO__', $platformio).
   Replace('__CORE__', $platformioCore).
   Replace('__ENVIRONMENT__', $environment).
-  Replace('__UPDATE__', $update)
+  Replace('__PIO_HOME__', $platformioHome).
+  Replace('__UPDATE__', $update).
+  Replace('__RUN_PROGRAM__', $runProgram)
 $command = $command -replace "`r", ''
 
 # WSL's Windows command-line bridge strips nested shell quotes when a multiline

@@ -47,7 +47,7 @@ hash, and SHA-256 `761324065c89cc08d40577af300fc0694e712a8d80e97df15a3dc36cb473e
 (5,379,216 bytes). Two consecutive X4 Pro builds produced that same SHA-256
 for both `firmware.bin` and the generated `update.bin`; the latter was also
 validated after safe staging into a local test SD root. It passed artifact
-validation, 208 native host tests, eight release-structure tests, and
+validation, 211 native host tests, eight release-structure tests, and
 simulator Home captures in the SSD1677, UC8179, and UC8279 profiles.
 
 It includes word selection, sentence-context saving even for a local dictionary
@@ -147,11 +147,15 @@ For the configured Windows workstation, start an interactive profile with:
 cd D:\Usuario-pc\Projetos\ChinesePoint\firmware
 .\tools\chinesepoint\run_simulator_x4pro.ps1 -Panel ssd1677
 # Other profiles: -Panel uc8179  or  -Panel uc8279
+# Compile only, without opening the simulator window:
+.\tools\chinesepoint\run_simulator_x4pro.ps1 -Panel uc8179 -BuildOnly
 ~~~
 
 The launcher updates an isolated WSL working clone and stores its toolchain,
-cache, and build tree in the `ChinesePoint-Emulator` WSL VHDX on D:. It never
-calls the USB flasher, the SD updater, or an X4 Pro.
+cache, and build tree in the `ChinesePoint-Emulator` WSL VHDX on D:. On its
+first run it creates an isolated Python environment and installs PlatformIO
+there; it never changes the Windows PlatformIO installation. It never calls
+the USB flasher, the SD updater, or an X4 Pro.
 
 ## Emergency CrossPoint restore
 
