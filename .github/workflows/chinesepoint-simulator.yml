@@ -56,7 +56,7 @@ jobs:
       - name: Verify Anki bridge protocol and local HTTP integration
         run: python -m unittest discover -s tools/anki_bridge/tests -p 'test_*.py'
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: build/test/_deps/googletest-src
           key: ${{ runner.os }}-googletest-${{ hashFiles('test/CMakeLists.txt') }}
@@ -89,7 +89,7 @@ jobs:
             "cryptography>=45.0.3" "certifi>=2025.8.3" "ecdsa>=0.19.1" "bitstring>=4.3.1" \
             "reedsolo>=1.5.3,<1.8" "esp-idf-size>=2.0.0" "esp-coredump>=1.14.0"
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ~/.platformio
           key: chinesepoint-x4pro-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
@@ -105,17 +105,25 @@ jobs:
             cp ".pio/build/chinesepoint_x4pro/${artifact}" "qa-artifacts/${artifact}.first"
           done
           rebuild_dir="${GITHUB_WORKSPACE}/../chinesepoint-x4pro-rebuild"
-          git worktree add --detach "$rebuild_dir" "$GITHUB_SHA"
+          # --force permits the same detached commit in both worktrees on all
+          # supported Git versions; neither worktree shares build output.
+          git worktree add --detach --force "$rebuild_dir" "$GITHUB_SHA"
           git -C "$rebuild_dir" submodule update --init --recursive
           (
             cd "$rebuild_dir"
             pio run -e chinesepoint_x4pro -j1 | tee qa-artifacts/pio-second.log
           )
           for artifact in firmware.bin update.bin; do
-            cmp "qa-artifacts/${artifact}.first" "$rebuild_dir/.pio/build/chinesepoint_x4pro/${artifact}"
+            first="qa-artifacts/${artifact}.first"
+            second="$rebuild_dir/.pio/build/chinesepoint_x4pro/${artifact}"
+            test -s "$second"
+            sha256sum "$first" "$second" | tee -a "qa-artifacts/${artifact}.sha256"
+            if ! cmp -s "$first" "$second"; then
+              echo "::error title=Non-deterministic ${artifact}::the two clean worktrees emitted different artifacts"
+              cmp -l "$first" "$second" | head -n 20 || true
+              exit 1
+            fi
           done
-          sha256sum .pio/build/chinesepoint_x4pro/firmware.bin > qa-artifacts/firmware.bin.sha256
-          sha256sum .pio/build/chinesepoint_x4pro/update.bin > qa-artifacts/update.bin.sha256
 
       - name: Verify the application image target
         run: |
@@ -177,7 +185,7 @@ jobs:
             "reedsolo>=1.5.3,<1.8" "esp-idf-size>=2.0.0" "esp-coredump>=1.14.0"
 
       - name: Cache PlatformIO packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.platformio
           key: simulator-${{ runner.os }}-${{ matrix.environment }}-${{ hashFiles('platformio.ini') }}
