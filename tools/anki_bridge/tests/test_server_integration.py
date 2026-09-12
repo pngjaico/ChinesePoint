@@ -164,6 +164,17 @@ class BridgeServerIntegrationTest(unittest.TestCase):
         self.assertEqual(payload, {"error": "unauthorized"})
         self.assertEqual(self.collection.notes, {})
 
+    def test_refuses_to_listen_until_an_anki_profile_is_open(self):
+        server = SERVER.BridgeServer(
+            lambda: {"port": free_port(), "token": TOKEN},
+            lambda _value: None,
+            lambda callback: callback(),
+            lambda: None,
+        )
+        with self.assertRaises(SERVER.BridgeStartError):
+            server.start()
+        self.assertIsNone(server._httpd)
+
 
 if __name__ == "__main__":
     unittest.main()

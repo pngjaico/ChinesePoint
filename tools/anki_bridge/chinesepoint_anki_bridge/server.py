@@ -38,6 +38,13 @@ class BridgeServer:
     def start(self) -> None:
         if self._httpd is not None:
             return
+        # Add-ons can be imported while Anki is still choosing or opening a
+        # profile. Do not expose a socket that would then queue a reader
+        # request behind a non-running main loop for up to the import timeout.
+        # This runs on Anki's UI thread during add-on startup, so reading the
+        # collection reference here is safe.
+        if self._collection_getter() is None:
+            raise BridgeStartError("Anki profile is not open")
         config = self._config()
         try:
             httpd = _BridgeHttpServer(("0.0.0.0", int(config["port"])), self._handler_type())
