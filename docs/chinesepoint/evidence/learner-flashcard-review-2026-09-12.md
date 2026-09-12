@@ -40,3 +40,18 @@ correctly on an individual X4 Pro panel. UC8179 and UC8279 were successfully
 built before this UI change, but must be rebuilt with this exact revision
 before any display-profile claim. Physical device validation, recovery drill,
 and IRAM headroom are still release gates.
+
+## Exact controller rebuild
+
+The review source at `737f9f2` was compiled and linked under every X4 Pro
+simulator profile:
+
+| Profile | Result | Duration |
+| --- | --- | --- |
+| `chinesepoint_simulator_x4pro_ssd1677` | success | 181.003 s |
+| `chinesepoint_simulator_x4pro_uc8179` | success | 230.853 s |
+| `chinesepoint_simulator_x4pro_uc8279` | success | 230.463 s |
+
+The following documentation-only commit (`e373982`) does not alter those build
+inputs. This completes the exact-source compile/link matrix for the review
+change, while leaving visual and physical validation pending.
