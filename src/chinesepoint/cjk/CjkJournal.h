@@ -5,6 +5,7 @@
 #include <cstdint>
 
 #include "chinesepoint/cjk/CjkLearnerModel.h"
+#include "chinesepoint/cjk/CjkStudyClock.h"
 
 namespace ChinesePoint::Cjk::Journal {
 
@@ -54,5 +55,7 @@ DecodeStatus decodeRecord(const uint8_t* data, size_t size, RecordView& output);
 
 bool encodeEntry(const LearnerEntry& entry, PayloadBuffer& output);
 bool decodeEntry(const uint8_t* data, size_t size, LearnerEntry& output);
+bool encodeStudyClock(const StudyClockState& state, PayloadBuffer& output);
+bool decodeStudyClock(const uint8_t* data, size_t size, StudyClockState& output);
 
 }  // namespace ChinesePoint::Cjk::Journal

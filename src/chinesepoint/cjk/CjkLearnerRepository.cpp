@@ -25,8 +25,18 @@ bool LearnerRepository::applySnapshot(const LearnerEntry& entry) {
   return true;
 }
 
+bool LearnerRepository::applyStudyClock(const StudyClockState& state) {
+  if (!validStudyClockState(state) || state.logicalMs < studyClock_.logicalMs ||
+      state.lastTrustedWallMs < studyClock_.lastTrustedWallMs) {
+    return false;
+  }
+  studyClock_ = state;
+  return true;
+}
+
 bool LearnerRepository::replay(const uint8_t* journalBytes, const size_t journalSize) {
   entries_.clear();
+  studyClock_ = {};
   sequence = 0;
   repairNeeded = false;
   if (journalSize == 0) return true;
@@ -36,13 +46,19 @@ bool LearnerRepository::replay(const uint8_t* journalBytes, const size_t journal
   while (position < journalSize) {
     Journal::RecordView record;
     const auto status = Journal::decodeRecord(journalBytes + position, journalSize - position, record);
-    if (status != Journal::DecodeStatus::Ok || record.sequence <= sequence ||
-        record.type != Journal::RecordType::EntrySnapshot) {
+    if (status != Journal::DecodeStatus::Ok || record.sequence <= sequence) {
       repairNeeded = true;
       break;
     }
-    LearnerEntry entry;
-    if (!Journal::decodeEntry(record.payload, record.payloadSize, entry) || !applySnapshot(entry)) {
+    bool applied = false;
+    if (record.type == Journal::RecordType::EntrySnapshot) {
+      LearnerEntry entry;
+      applied = Journal::decodeEntry(record.payload, record.payloadSize, entry) && applySnapshot(entry);
+    } else if (record.type == Journal::RecordType::StudyClock) {
+      StudyClockState clock;
+      applied = Journal::decodeStudyClock(record.payload, record.payloadSize, clock) && applyStudyClock(clock);
+    }
+    if (!applied) {
       repairNeeded = true;
       break;
     }
@@ -51,6 +67,8 @@ bool LearnerRepository::replay(const uint8_t* journalBytes, const size_t journal
   }
   return true;
 }
+
+bool LearnerRepository::recordStudyClock(const StudyClockState& state) { return applyStudyClock(state); }
 
 bool LearnerRepository::record(const std::string_view headword, const std::string_view sentence,
                                const std::string_view bookPath, const TextAnchor& anchor, const int64_t nowMs,
@@ -91,6 +109,14 @@ bool LearnerRepository::prepareSnapshot(const LearnerEntry& entry, Journal::Enco
   Journal::PayloadBuffer payload;
   return Journal::encodeEntry(entry, payload) &&
          Journal::encodeRecord(Journal::RecordType::EntrySnapshot, sequence + 1, payload.bytes.data(), payload.size, output);
+}
+
+bool LearnerRepository::prepareStudyClock(const StudyClockState& state, Journal::EncodedRecord& output) const {
+  if (sequence == std::numeric_limits<uint32_t>::max()) return false;
+  Journal::PayloadBuffer payload;
+  return Journal::encodeStudyClock(state, payload) &&
+         Journal::encodeRecord(Journal::RecordType::StudyClock, sequence + 1, payload.bytes.data(), payload.size,
+                               output);
 }
 
 void LearnerRepository::markSnapshotCommitted() {

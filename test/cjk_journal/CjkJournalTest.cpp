@@ -94,4 +94,18 @@ TEST(CjkJournal, EntryCodecRejectsTrailingOrInvalidData) {
   EXPECT_FALSE(ChinesePoint::Cjk::Journal::decodeEntry(payload.bytes.data(), payload.size, decoded));
 }
 
+TEST(CjkJournal, StudyClockCodecRoundTripsAndRejectsInvalidState) {
+  const ChinesePoint::Cjk::StudyClockState state{1234, 1200};
+  ChinesePoint::Cjk::Journal::PayloadBuffer payload;
+  ASSERT_TRUE(ChinesePoint::Cjk::Journal::encodeStudyClock(state, payload));
+  ChinesePoint::Cjk::StudyClockState decoded;
+  ASSERT_TRUE(ChinesePoint::Cjk::Journal::decodeStudyClock(payload.bytes.data(), payload.size, decoded));
+  EXPECT_EQ(decoded.logicalMs, state.logicalMs);
+  EXPECT_EQ(decoded.lastTrustedWallMs, state.lastTrustedWallMs);
+
+  EXPECT_FALSE(ChinesePoint::Cjk::Journal::encodeStudyClock({100, 101}, payload));
+  payload.size = 1;
+  EXPECT_FALSE(ChinesePoint::Cjk::Journal::decodeStudyClock(payload.bytes.data(), payload.size, decoded));
+}
+
 }  // namespace

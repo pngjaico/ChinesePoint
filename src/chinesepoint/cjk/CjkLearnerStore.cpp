@@ -104,6 +104,19 @@ bool LearnerStore::recordSaved(const std::string_view headword, const std::strin
   return record(headword, sentence, bookPath, anchor, nowMs, WordStatus::Saved);
 }
 
+bool LearnerStore::recordStudyClock(const StudyClockState& state) {
+  if ((!loaded_ && !load()) || (repository_.needsRepair() && !compact())) return false;
+  LearnerRepository candidate = repository_;
+  if (!candidate.recordStudyClock(state)) return false;
+  Journal::EncodedRecord record;
+  if (!candidate.prepareStudyClock(state, record) || !append(record)) {
+    return false;
+  }
+  candidate.markSnapshotCommitted();
+  repository_ = std::move(candidate);
+  return true;
+}
+
 bool LearnerStore::record(const std::string_view headword, const std::string_view sentence,
                           const std::string_view bookPath, const TextAnchor& anchor, const int64_t nowMs,
                           const WordStatus requestedStatus) {
@@ -133,6 +146,16 @@ bool LearnerStore::compact() {
     uint32_t sequence = 0;
     size_t bytesWritten = 0;
     bool writeOk = true;
+    const auto& clock = repository_.studyClock();
+    if (clock.logicalMs != 0 || clock.lastTrustedWallMs != 0) {
+      Journal::PayloadBuffer payload;
+      Journal::EncodedRecord record;
+      writeOk = Journal::encodeStudyClock(clock, payload) &&
+                Journal::encodeRecord(Journal::RecordType::StudyClock, ++sequence, payload.bytes.data(), payload.size,
+                                      record) &&
+                record.size <= kMaxJournalBytes && writeAll(temp, record.bytes.data(), record.size);
+      if (writeOk) bytesWritten = record.size;
+    }
     for (const auto& entry : repository_.entries()) {
       Journal::PayloadBuffer payload;
       Journal::EncodedRecord record;

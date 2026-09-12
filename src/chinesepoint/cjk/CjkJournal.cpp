@@ -283,4 +283,22 @@ bool decodeEntry(const uint8_t* data, size_t size, LearnerEntry& output) {
   return true;
 }
 
+bool encodeStudyClock(const StudyClockState& state, PayloadBuffer& output) {
+  if (!validStudyClockState(state)) return false;
+  PayloadWriter writer(output);
+  return writer.i64(state.logicalMs) && writer.i64(state.lastTrustedWallMs);
+}
+
+bool decodeStudyClock(const uint8_t* data, const size_t size, StudyClockState& output) {
+  if (data == nullptr) return false;
+  PayloadReader reader(data, size);
+  StudyClockState decoded;
+  if (!reader.i64(decoded.logicalMs) || !reader.i64(decoded.lastTrustedWallMs) || !reader.done() ||
+      !validStudyClockState(decoded)) {
+    return false;
+  }
+  output = decoded;
+  return true;
+}
+
 }  // namespace ChinesePoint::Cjk::Journal

@@ -21,22 +21,27 @@ class LearnerRepository final {
   // encountered card to Saved, but never downgrades a Learning or Known card.
   bool recordSaved(std::string_view headword, std::string_view sentence, std::string_view bookPath,
                    const TextAnchor& anchor, int64_t nowMs);
+  bool recordStudyClock(const StudyClockState& state);
 
   bool prepareSnapshot(const LearnerEntry& entry, Journal::EncodedRecord& output) const;
+  bool prepareStudyClock(const StudyClockState& state, Journal::EncodedRecord& output) const;
   void markSnapshotCommitted();
 
   const std::vector<LearnerEntry>& entries() const { return entries_; }
   const LearnerEntry* find(uint64_t wordId, std::string_view headword = {}) const;
+  const StudyClockState& studyClock() const { return studyClock_; }
   bool needsRepair() const { return repairNeeded; }
   uint32_t lastSequence() const { return sequence; }
 
  private:
   bool applySnapshot(const LearnerEntry& entry);
+  bool applyStudyClock(const StudyClockState& state);
   bool record(std::string_view headword, std::string_view sentence, std::string_view bookPath,
               const TextAnchor& anchor, int64_t nowMs, WordStatus requestedStatus);
   size_t findIndex(uint64_t wordId, std::string_view headword) const;
 
   std::vector<LearnerEntry> entries_;
+  StudyClockState studyClock_{};
   uint32_t sequence = 0;
   bool repairNeeded = false;
 };

@@ -1,6 +1,7 @@
 add_executable(CjkJournalTest
   CjkJournalTest.cpp
   ${REPO_ROOT}/src/chinesepoint/cjk/CjkJournal.cpp
+  ${REPO_ROOT}/src/chinesepoint/cjk/CjkStudyClock.cpp
 )
 
 target_include_directories(CjkJournalTest PRIVATE

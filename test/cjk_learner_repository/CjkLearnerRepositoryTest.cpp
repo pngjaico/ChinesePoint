@@ -75,4 +75,26 @@ TEST(CjkLearnerRepository, ReplayRejectsSequenceRollbackWithoutDroppingPriorStat
   EXPECT_TRUE(reader.needsRepair());
 }
 
+TEST(CjkLearnerRepository, StudyClockReplaysBeforeSnapshotsAndCannotRollback) {
+  LearnerRepository writer;
+  const ChinesePoint::Cjk::StudyClockState clock{5000, 4900};
+  ASSERT_TRUE(writer.recordStudyClock(clock));
+  EncodedRecord clockRecord;
+  ASSERT_TRUE(writer.prepareStudyClock(clock, clockRecord));
+  writer.markSnapshotCommitted();
+  ASSERT_TRUE(writer.recordSaved("词", "这个词有上下文。", "/books/a.epub", {}, 5000));
+  EncodedRecord entryRecord;
+  ASSERT_TRUE(writer.prepareSnapshot(writer.entries()[0], entryRecord));
+
+  std::vector<uint8_t> bytes(clockRecord.bytes.begin(), clockRecord.bytes.begin() + clockRecord.size);
+  bytes.insert(bytes.end(), entryRecord.bytes.begin(), entryRecord.bytes.begin() + entryRecord.size);
+  LearnerRepository reader;
+  ASSERT_TRUE(reader.replay(bytes.data(), bytes.size()));
+  EXPECT_EQ(reader.studyClock().logicalMs, 5000);
+  ASSERT_EQ(reader.entries().size(), 1u);
+
+  const ChinesePoint::Cjk::StudyClockState rollback{4999, 4900};
+  EXPECT_FALSE(reader.recordStudyClock(rollback));
+}
+
 }  // namespace
