@@ -1,0 +1,4 @@
+#pragma once
+
+#define LOG_DBG(...) do { } while (false)
+#define LOG_ERR(...) do { } while (false)
