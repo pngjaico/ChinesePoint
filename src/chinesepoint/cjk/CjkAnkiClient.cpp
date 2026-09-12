@@ -12,6 +12,7 @@
 
 #include "chinesepoint/cjk/CjkAnkiProtocol.h"
 #include "chinesepoint/cjk/CjkLearnerStore.h"
+#include "util/TaskWatchdog.h"
 
 namespace ChinesePoint::Cjk {
 namespace {
@@ -23,10 +24,14 @@ bool writeText(WiFiClient& client, const std::string& value) {
   return client.write(reinterpret_cast<const uint8_t*>(value.data()), value.size()) == value.size();
 }
 
-bool readLine(WiFiClient& client, char* output, const size_t capacity, bool* const cancelRequested) {
+bool readLine(WiFiClient& client, char* output, const size_t capacity, const bool* const cancelRequested) {
   size_t length = 0;
   const uint32_t started = millis();
   while (millis() - started < kTimeoutMs) {
+    // The UI activity is waiting synchronously for a trusted-LAN peer. Keep a
+    // subscribed watchdog alive while the peer is slow or temporarily silent;
+    // cancellation and the fixed deadline still bound the wait.
+    resetTaskWatchdogIfSubscribed();
     if (cancelRequested != nullptr && *cancelRequested) return false;
     while (client.available()) {
       const int character = client.read();
@@ -68,7 +73,9 @@ CjkAnkiClient::Result CjkAnkiClient::pushVocabulary(LearnerStore& store, const A
   AnkiBridgeUrl url;
   if (!config.configured() || !parseAnkiBridgeUrl(config.serverUrl, url)) return Result::NotConfigured;
   if (cancelRequested != nullptr && *cancelRequested) return Result::Cancelled;
+  resetTaskWatchdogIfSubscribed();
   if (!store.exportJsonl()) return Result::ExportFailed;
+  resetTaskWatchdogIfSubscribed();
 
   HalFile exportFile;
   if (!Storage.openFileForRead("CJK", store.exportPath(), exportFile)) return Result::ExportFailed;
@@ -91,6 +98,7 @@ CjkAnkiClient::Result CjkAnkiClient::pushVocabulary(LearnerStore& store, const A
   // timeout setter. The simulator does not perform a real LAN Anki transfer.
   client.setTimeout(kTimeoutMs);
 #endif
+  resetTaskWatchdogIfSubscribed();
   if (!client.connect(url.host.c_str(), url.port)) {
     exportFile.close();
     return Result::ConnectionFailed;
@@ -111,6 +119,10 @@ CjkAnkiClient::Result CjkAnkiClient::pushVocabulary(LearnerStore& store, const A
   uint8_t buffer[1024];
   size_t sent = 0;
   while (exportFile.available()) {
+    // SD reads and TCP writes can each block long enough to starve the main
+    // task on a slow card or congested Wi-Fi link. Service around every bounded
+    // transfer chunk instead of only after the full export completes.
+    resetTaskWatchdogIfSubscribed();
     if (cancelRequested != nullptr && *cancelRequested) {
       client.stop();
       exportFile.close();
@@ -123,6 +135,7 @@ CjkAnkiClient::Result CjkAnkiClient::pushVocabulary(LearnerStore& store, const A
       return Result::ConnectionFailed;
     }
     sent += static_cast<size_t>(read);
+    resetTaskWatchdogIfSubscribed();
     if (progress) progress(sent, size);
   }
   const bool closeOk = exportFile.close();
@@ -144,6 +157,7 @@ CjkAnkiClient::Result CjkAnkiClient::pushVocabulary(LearnerStore& store, const A
   size_t headerBytes = 0;
   bool batchMatched = false;
   while (true) {
+    resetTaskWatchdogIfSubscribed();
     if (!readLine(client, line, sizeof(line), cancelRequested)) {
       client.stop();
       return cancelRequested != nullptr && *cancelRequested ? Result::Cancelled : Result::ProtocolFailed;
