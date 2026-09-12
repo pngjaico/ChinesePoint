@@ -10,7 +10,7 @@ constexpr uint8_t kMagic[] = {'C', 'J', 'K', 'L'};
 
 bool isKnownRecordType(uint8_t value) {
   return value >= static_cast<uint8_t>(RecordType::EntrySnapshot) &&
-         value <= static_cast<uint8_t>(RecordType::StudyClock);
+         value <= static_cast<uint8_t>(RecordType::FlashcardAnswer);
 }
 
 void writeU16(uint8_t* output, uint16_t value) {
@@ -318,6 +318,31 @@ bool decodeReviewMutation(const uint8_t* data, const size_t size, LearnerEntry& 
   }
   entry = std::move(decodedEntry);
   clock = decodedClock;
+  return true;
+}
+
+bool encodeFlashcardAnswer(const uint64_t wordId, const std::string_view headword, const std::string_view answer,
+                           PayloadBuffer& output) {
+  if (!validHeadword(headword) || !validCardAnswer(answer)) return false;
+  PayloadWriter writer(output);
+  return writer.u64(wordId) && writer.string(headword) && writer.string(answer);
+}
+
+bool decodeFlashcardAnswer(const uint8_t* data, const size_t size, uint64_t& wordId, std::string& headword,
+                           std::string& answer) {
+  if (data == nullptr) return false;
+  PayloadReader reader(data, size);
+  uint64_t decodedId = 0;
+  std::string decodedHeadword;
+  std::string decodedAnswer;
+  if (!reader.u64(decodedId) || !reader.string(decodedHeadword, kMaxHeadwordBytes) ||
+      !reader.string(decodedAnswer, kMaxCardAnswerBytes) || !reader.done() || !validHeadword(decodedHeadword) ||
+      !validCardAnswer(decodedAnswer)) {
+    return false;
+  }
+  wordId = decodedId;
+  headword = std::move(decodedHeadword);
+  answer = std::move(decodedAnswer);
   return true;
 }
 

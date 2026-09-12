@@ -20,7 +20,7 @@ class LearnerRepository final {
   // A deliberate save is stronger than a passive encounter. It may promote an
   // encountered card to Saved, but never downgrades a Learning or Known card.
   bool recordSaved(std::string_view headword, std::string_view sentence, std::string_view bookPath,
-                   const TextAnchor& anchor, int64_t nowMs);
+                   const TextAnchor& anchor, std::string_view cardAnswer, int64_t nowMs);
   bool recordStudyClock(const StudyClockState& state);
   // Rates only a locally authoritative due card. The supplied clock state must
   // be the exact logical time used for scheduling so it can share one durable
@@ -32,6 +32,7 @@ class LearnerRepository final {
   bool prepareStudyClock(const StudyClockState& state, Journal::EncodedRecord& output) const;
   bool prepareReviewMutation(const LearnerEntry& entry, const StudyClockState& clock,
                              Journal::EncodedRecord& output) const;
+  bool prepareFlashcardAnswer(const LearnerEntry& entry, Journal::EncodedRecord& output) const;
   void markSnapshotCommitted();
 
   const std::vector<LearnerEntry>& entries() const { return entries_; }
@@ -44,8 +45,9 @@ class LearnerRepository final {
   bool applySnapshot(const LearnerEntry& entry);
   bool applyStudyClock(const StudyClockState& state);
   bool applyReviewMutation(const LearnerEntry& entry, const StudyClockState& clock);
+  bool applyFlashcardAnswer(uint64_t wordId, std::string_view headword, std::string_view answer);
   bool record(std::string_view headword, std::string_view sentence, std::string_view bookPath,
-              const TextAnchor& anchor, int64_t nowMs, WordStatus requestedStatus);
+              const TextAnchor& anchor, std::string_view cardAnswer, int64_t nowMs, WordStatus requestedStatus);
   size_t findIndex(uint64_t wordId, std::string_view headword) const;
 
   std::vector<LearnerEntry> entries_;

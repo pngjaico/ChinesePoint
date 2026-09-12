@@ -12,6 +12,10 @@ namespace ChinesePoint::Cjk {
 constexpr size_t kMaxHeadwordBytes = 64;
 constexpr size_t kMaxSentenceBytes = 768;
 constexpr size_t kMaxBookPathBytes = 240;
+// The answer is deliberately bounded separately from the source sentence.
+// Keeping it below one journal record leaves room for the record framing and
+// avoids retaining an unbounded StarDict article in the learner journal.
+constexpr size_t kMaxCardAnswerBytes = 768;
 
 enum class WordStatus : uint8_t { Encountered, Saved, Learning, Known };
 
@@ -36,6 +40,9 @@ constexpr bool validHeadword(const std::string_view value) {
 }
 constexpr bool validSentence(const std::string_view value) { return value.size() <= kMaxSentenceBytes; }
 constexpr bool validBookPath(const std::string_view value) { return value.size() <= kMaxBookPathBytes; }
+constexpr bool validCardAnswer(const std::string_view value) {
+  return !value.empty() && value.size() <= kMaxCardAnswerBytes;
+}
 
 struct LearnerEntry {
   uint64_t wordId = 0;
@@ -47,6 +54,9 @@ struct LearnerEntry {
   std::string bookPath;
   TextAnchor sourceAnchor{};
   std::string sourceSentence;
+  // Persisted in its own checksummed record. Entry snapshots omit it so old
+  // journals remain readable and a large definition cannot overflow them.
+  std::string cardAnswer;
   ReviewState review{};
 };
 

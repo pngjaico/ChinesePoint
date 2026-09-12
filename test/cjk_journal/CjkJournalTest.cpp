@@ -94,6 +94,21 @@ TEST(CjkJournal, EntryCodecRejectsTrailingOrInvalidData) {
   EXPECT_FALSE(ChinesePoint::Cjk::Journal::decodeEntry(payload.bytes.data(), payload.size, decoded));
 }
 
+TEST(CjkJournal, FlashcardAnswerCodecRoundTripsAndRejectsEmptyAnswer) {
+  ChinesePoint::Cjk::Journal::PayloadBuffer payload;
+  const uint64_t id = ChinesePoint::Cjk::stableWordId("学习");
+  ASSERT_TRUE(ChinesePoint::Cjk::Journal::encodeFlashcardAnswer(id, "学习", "to study", payload));
+  uint64_t decodedId = 0;
+  std::string headword;
+  std::string answer;
+  ASSERT_TRUE(ChinesePoint::Cjk::Journal::decodeFlashcardAnswer(payload.bytes.data(), payload.size, decodedId,
+                                                                 headword, answer));
+  EXPECT_EQ(decodedId, id);
+  EXPECT_EQ(headword, "学习");
+  EXPECT_EQ(answer, "to study");
+  EXPECT_FALSE(ChinesePoint::Cjk::Journal::encodeFlashcardAnswer(id, "学习", "", payload));
+}
+
 TEST(CjkJournal, StudyClockCodecRoundTripsAndRejectsInvalidState) {
   const ChinesePoint::Cjk::StudyClockState state{1234, 1200};
   ChinesePoint::Cjk::Journal::PayloadBuffer payload;

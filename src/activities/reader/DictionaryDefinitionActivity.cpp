@@ -32,6 +32,13 @@ constexpr int SIDE_PADDING = 20;
 // path, which holds no per-page copies.
 constexpr size_t MAX_STYLED_HTML_BYTES = 16 * 1024;
 
+void truncateUtf8(std::string& value, const size_t maximum) {
+  if (value.size() <= maximum) return;
+  size_t end = maximum;
+  while (end > 0 && (static_cast<unsigned char>(value[end]) & 0xC0u) == 0x80u) --end;
+  value.resize(end);
+}
+
 }  // namespace
 
 void DictionaryDefinitionActivity::onEnter() {
@@ -39,11 +46,21 @@ void DictionaryDefinitionActivity::onEnter() {
   // Normalize StarDict multi-type separators so the wrap loop and the
   // C-string font APIs below both see the whole definition.
   std::replace(definition.begin(), definition.end(), '\0', '\n');
+  captureLearnerAnswer();
   if (!(htmlDefinition && definition.size() <= MAX_STYLED_HTML_BYTES && layoutHtmlPages())) {
     definition = htmlToPlainText(definition);
     wrapText();
   }
   requestUpdate();
+}
+
+void DictionaryDefinitionActivity::captureLearnerAnswer() {
+  // Only a successful local dictionary lookup may become a card answer. UI
+  // messages such as “dictionary not found” are useful to display but would
+  // make a false flashcard if persisted.
+  if (!learnerContext.has_value() || !definitionIsLearnerAnswer) return;
+  learnerAnswer = htmlToPlainText(definition);
+  truncateUtf8(learnerAnswer, ChinesePoint::Cjk::kMaxCardAnswerBytes);
 }
 
 DictionaryDefinitionActivity::BodyArea DictionaryDefinitionActivity::bodyArea() const {
@@ -242,7 +259,7 @@ void DictionaryDefinitionActivity::saveLearnerEntry() {
   if (!learnerContext.has_value() || !ChinesePoint::CjkSafetyGuard::startLearnerSession()) return;
   learnerSaved = ChinesePoint::Cjk::learnerStore().recordSaved(
       headword, learnerContext->sentence, learnerContext->bookPath, learnerContext->anchor,
-      static_cast<int64_t>(millis()));
+      learnerAnswer, static_cast<int64_t>(millis()));
   ChinesePoint::CjkSafetyGuard::finishLearnerSession();
 }
 

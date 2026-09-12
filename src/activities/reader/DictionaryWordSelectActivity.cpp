@@ -226,7 +226,7 @@ void DictionaryWordSelectActivity::performLookup() {
     startActivityForResult(
         std::make_unique<DictionaryDefinitionActivity>(renderer, mappedInput, std::move(headword),
                                                        std::move(definition), dict.definitionsAreHtml(),
-                                                       std::move(learnerContext)),
+                                                       std::move(learnerContext), true),
         [this](const ActivityResult&) { requestUpdate(); });
     return;
   }

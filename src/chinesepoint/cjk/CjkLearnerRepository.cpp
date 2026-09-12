@@ -20,7 +20,13 @@ const LearnerEntry* LearnerRepository::find(const uint64_t wordId, const std::st
 bool LearnerRepository::applySnapshot(const LearnerEntry& entry) {
   if (!validHeadword(entry.headword) || !validSentence(entry.sourceSentence) || !validBookPath(entry.bookPath)) return false;
   const size_t index = findIndex(entry.wordId, entry.headword);
-  if (index < entries_.size()) entries_[index] = entry;
+  if (index < entries_.size()) {
+    LearnerEntry next = entry;
+    // v1 entry snapshots deliberately omit the answer. A later encounter or
+    // review snapshot must never erase an already durable answer on replay.
+    if (next.cardAnswer.empty()) next.cardAnswer = entries_[index].cardAnswer;
+    entries_[index] = std::move(next);
+  }
   else entries_.push_back(entry);
   return true;
 }
@@ -43,7 +49,18 @@ bool LearnerRepository::applyReviewMutation(const LearnerEntry& entry, const Stu
   const size_t index = findIndex(entry.wordId, entry.headword);
   if (index >= entries_.size()) return false;
   studyClock_ = clock;
-  entries_[index] = entry;
+  LearnerEntry next = entry;
+  if (next.cardAnswer.empty()) next.cardAnswer = entries_[index].cardAnswer;
+  entries_[index] = std::move(next);
+  return true;
+}
+
+bool LearnerRepository::applyFlashcardAnswer(const uint64_t wordId, const std::string_view headword,
+                                             const std::string_view answer) {
+  if (!validHeadword(headword) || !validCardAnswer(answer)) return false;
+  const size_t index = findIndex(wordId, headword);
+  if (index >= entries_.size()) return false;
+  entries_[index].cardAnswer.assign(answer);
   return true;
 }
 
@@ -75,6 +92,12 @@ bool LearnerRepository::replay(const uint8_t* journalBytes, const size_t journal
       StudyClockState clock;
       applied = Journal::decodeReviewMutation(record.payload, record.payloadSize, entry, clock) &&
                 applyReviewMutation(entry, clock);
+    } else if (record.type == Journal::RecordType::FlashcardAnswer) {
+      uint64_t wordId = 0;
+      std::string headword;
+      std::string answer;
+      applied = Journal::decodeFlashcardAnswer(record.payload, record.payloadSize, wordId, headword, answer) &&
+                applyFlashcardAnswer(wordId, headword, answer);
     }
     if (!applied) {
       repairNeeded = true;
@@ -95,7 +118,10 @@ bool LearnerRepository::rateLocalReview(const uint64_t wordId, const std::string
   if (index >= entries_.size()) return false;
   const LearnerEntry& current = entries_[index];
   ReviewScheduler scheduler;
-  if (current.review.authority != ScheduleAuthority::Local || !scheduler.isDue(current.review, nowMs)) return false;
+  if (current.review.authority != ScheduleAuthority::Local || !validCardAnswer(current.cardAnswer) ||
+      !scheduler.isDue(current.review, nowMs)) {
+    return false;
+  }
 
   LearnerEntry next = current;
   next.review = scheduler.rate(current.review, rating, nowMs).state;
@@ -106,9 +132,11 @@ bool LearnerRepository::rateLocalReview(const uint64_t wordId, const std::string
 }
 
 bool LearnerRepository::record(const std::string_view headword, const std::string_view sentence,
-                               const std::string_view bookPath, const TextAnchor& anchor, const int64_t nowMs,
+                               const std::string_view bookPath, const TextAnchor& anchor,
+                               const std::string_view cardAnswer, const int64_t nowMs,
                                const WordStatus requestedStatus) {
-  if (!validHeadword(headword) || !validSentence(sentence) || !validBookPath(bookPath)) return false;
+  if (!validHeadword(headword) || !validSentence(sentence) || !validBookPath(bookPath) ||
+      (!cardAnswer.empty() && !validCardAnswer(cardAnswer))) return false;
   const uint64_t wordId = stableWordId(headword);
   const size_t index = findIndex(wordId, headword);
   LearnerEntry next;
@@ -124,19 +152,20 @@ bool LearnerRepository::record(const std::string_view headword, const std::strin
   next.bookPath.assign(bookPath);
   next.sourceAnchor = anchor;
   next.sourceSentence.assign(sentence);
+  if (!cardAnswer.empty()) next.cardAnswer.assign(cardAnswer);
   return applySnapshot(next);
 }
 
 bool LearnerRepository::recordEncountered(const std::string_view headword, const std::string_view sentence,
                                           const std::string_view bookPath, const TextAnchor& anchor,
                                           const int64_t nowMs) {
-  return record(headword, sentence, bookPath, anchor, nowMs, WordStatus::Encountered);
+  return record(headword, sentence, bookPath, anchor, {}, nowMs, WordStatus::Encountered);
 }
 
 bool LearnerRepository::recordSaved(const std::string_view headword, const std::string_view sentence,
                                     const std::string_view bookPath, const TextAnchor& anchor,
-                                    const int64_t nowMs) {
-  return record(headword, sentence, bookPath, anchor, nowMs, WordStatus::Saved);
+                                    const std::string_view cardAnswer, const int64_t nowMs) {
+  return record(headword, sentence, bookPath, anchor, cardAnswer, nowMs, WordStatus::Saved);
 }
 
 bool LearnerRepository::prepareSnapshot(const LearnerEntry& entry, Journal::EncodedRecord& output) const {
@@ -160,6 +189,14 @@ bool LearnerRepository::prepareReviewMutation(const LearnerEntry& entry, const S
   Journal::PayloadBuffer payload;
   return Journal::encodeReviewMutation(entry, clock, payload) &&
          Journal::encodeRecord(Journal::RecordType::ReviewMutation, sequence + 1, payload.bytes.data(), payload.size,
+                               output);
+}
+
+bool LearnerRepository::prepareFlashcardAnswer(const LearnerEntry& entry, Journal::EncodedRecord& output) const {
+  if (sequence == std::numeric_limits<uint32_t>::max() || !validCardAnswer(entry.cardAnswer)) return false;
+  Journal::PayloadBuffer payload;
+  return Journal::encodeFlashcardAnswer(entry.wordId, entry.headword, entry.cardAnswer, payload) &&
+         Journal::encodeRecord(Journal::RecordType::FlashcardAnswer, sequence + 1, payload.bytes.data(), payload.size,
                                output);
 }
 

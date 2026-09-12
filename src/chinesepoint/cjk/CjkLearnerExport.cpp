@@ -152,7 +152,8 @@ bool writeEntry(const LearnerEntry& entry, const ExportSink sink) {
   const char* phase = phaseName(entry.review.phase);
   const char* authority = authorityName(entry.review.authority);
   if (status == nullptr || phase == nullptr || authority == nullptr || !validHeadword(entry.headword) ||
-      !validSentence(entry.sourceSentence) || !validBookPath(entry.bookPath)) {
+      !validSentence(entry.sourceSentence) || !validBookPath(entry.bookPath) ||
+      (!entry.cardAnswer.empty() && !validCardAnswer(entry.cardAnswer))) {
     return false;
   }
 
@@ -173,7 +174,8 @@ bool writeEntry(const LearnerEntry& entry, const ExportSink sink) {
          writeUnsigned(sink, entry.sourceAnchor.visibleCodepointOffset) && writeLiteral(sink, ",\"codepoint_length\":") &&
          writeUnsigned(sink, entry.sourceAnchor.codepointLength) && writeLiteral(sink, ",\"fingerprint\":") &&
          writeUnsigned(sink, entry.sourceAnchor.fingerprint) && writeLiteral(sink, "},\"sentence\":") &&
-         writeJsonString(sink, entry.sourceSentence) && writeLiteral(sink, ",\"review\":{\"phase\":\"") &&
+         writeJsonString(sink, entry.sourceSentence) && writeLiteral(sink, ",\"answer\":") &&
+         writeJsonString(sink, entry.cardAnswer) && writeLiteral(sink, ",\"review\":{\"phase\":\"") &&
          writeLiteral(sink, phase) && writeLiteral(sink, "\",\"authority\":\"") && writeLiteral(sink, authority) &&
          writeLiteral(sink, "\",\"due_at_ms\":") && writeSigned(sink, entry.review.dueAtMs) &&
          writeLiteral(sink, ",\"last_review_at_ms\":") && writeSigned(sink, entry.review.lastReviewAtMs) &&

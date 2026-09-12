@@ -19,7 +19,7 @@ class LearnerStore final {
   bool recordEncountered(std::string_view headword, std::string_view sentence, std::string_view bookPath,
                          const TextAnchor& anchor, int64_t nowMs);
   bool recordSaved(std::string_view headword, std::string_view sentence, std::string_view bookPath,
-                   const TextAnchor& anchor, int64_t nowMs);
+                   const TextAnchor& anchor, std::string_view cardAnswer, int64_t nowMs);
   bool recordStudyClock(const StudyClockState& state);
   bool rateLocalReview(uint64_t wordId, std::string_view headword, Rating rating, int64_t nowMs,
                        const StudyClockState& clock);
@@ -37,7 +37,7 @@ class LearnerStore final {
   bool restoreBackupIfNeeded();
   bool append(const Journal::EncodedRecord& record);
   bool record(std::string_view headword, std::string_view sentence, std::string_view bookPath,
-              const TextAnchor& anchor, int64_t nowMs, WordStatus requestedStatus);
+              const TextAnchor& anchor, std::string_view cardAnswer, int64_t nowMs, WordStatus requestedStatus);
 
   std::string rootPath_;
   std::string journalPath_;

@@ -26,12 +26,14 @@ class DictionaryDefinitionActivity final : public Activity {
 
   explicit DictionaryDefinitionActivity(GfxRenderer& renderer, MappedInputManager& mappedInput, std::string headword,
                                         std::string definition, bool htmlDefinition = false,
-                                        std::optional<LearnerSaveContext> learnerContext = std::nullopt)
+                                        std::optional<LearnerSaveContext> learnerContext = std::nullopt,
+                                        bool definitionIsLearnerAnswer = false)
       : Activity("DictionaryDefinition", renderer, mappedInput),
         headword(std::move(headword)),
         definition(std::move(definition)),
         htmlDefinition(htmlDefinition),
-        learnerContext(std::move(learnerContext)) {}
+        learnerContext(std::move(learnerContext)),
+        definitionIsLearnerAnswer(definitionIsLearnerAnswer) {}
 
   void onEnter() override;
   void loop() override;
@@ -57,6 +59,7 @@ class DictionaryDefinitionActivity final : public Activity {
   int measureSpan(int fontId, const char* text, size_t len) const;
   void drawBody(int fontId, int x, int startY) const;
   void saveLearnerEntry();
+  void captureLearnerAnswer();
 
   const std::string headword;
   // Not const: onEnter() normalizes embedded NULs (StarDict multi-type
@@ -64,6 +67,8 @@ class DictionaryDefinitionActivity final : public Activity {
   std::string definition;
   const bool htmlDefinition;
   const std::optional<LearnerSaveContext> learnerContext;
+  const bool definitionIsLearnerAnswer;
+  std::string learnerAnswer;
   bool learnerSaveAttempted = false;
   bool learnerSaved = false;
   // Styled path: reader-identical Pages laid out from the HTML definition.

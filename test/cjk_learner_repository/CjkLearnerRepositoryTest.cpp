@@ -32,7 +32,7 @@ TEST(CjkLearnerRepository, EncounterRetainsLearnerStatusAndProducesSnapshot) {
 TEST(CjkLearnerRepository, DeliberateSavePromotesEncounterWithoutDowngradingProgress) {
   LearnerRepository repository;
   ASSERT_TRUE(repository.recordEncountered("学习", "我每天学习中文。", "/books/a.epub", {1, 5, 2, 7}, 100));
-  ASSERT_TRUE(repository.recordSaved("学习", "我每天学习中文。", "/books/a.epub", {1, 5, 2, 7}, 150));
+  ASSERT_TRUE(repository.recordSaved("学习", "我每天学习中文。", "/books/a.epub", {1, 5, 2, 7}, "to study", 150));
   ASSERT_EQ(repository.entries().size(), 1u);
   EXPECT_EQ(repository.entries()[0].status, ChinesePoint::Cjk::WordStatus::Saved);
   EXPECT_EQ(repository.entries()[0].encounterCount, 2u);
@@ -82,7 +82,7 @@ TEST(CjkLearnerRepository, StudyClockReplaysBeforeSnapshotsAndCannotRollback) {
   EncodedRecord clockRecord;
   ASSERT_TRUE(writer.prepareStudyClock(clock, clockRecord));
   writer.markSnapshotCommitted();
-  ASSERT_TRUE(writer.recordSaved("词", "这个词有上下文。", "/books/a.epub", {}, 5000));
+  ASSERT_TRUE(writer.recordSaved("词", "这个词有上下文。", "/books/a.epub", {}, "word", 5000));
   EncodedRecord entryRecord;
   ASSERT_TRUE(writer.prepareSnapshot(writer.entries()[0], entryRecord));
 
@@ -99,7 +99,7 @@ TEST(CjkLearnerRepository, StudyClockReplaysBeforeSnapshotsAndCannotRollback) {
 
 TEST(CjkLearnerRepository, DueLocalReviewPersistsClockAndRatingAsOneMutation) {
   LearnerRepository repository;
-  ASSERT_TRUE(repository.recordSaved("复习", "我要复习这个词。", "/books/a.epub", {}, 100));
+  ASSERT_TRUE(repository.recordSaved("复习", "我要复习这个词。", "/books/a.epub", {}, "review", 100));
   const ChinesePoint::Cjk::StudyClockState clock{1000, 0};
   const uint64_t id = ChinesePoint::Cjk::stableWordId("复习");
   ASSERT_TRUE(repository.rateLocalReview(id, "复习", ChinesePoint::Cjk::Rating::Good, 1000, clock));
@@ -119,7 +119,7 @@ TEST(CjkLearnerRepository, DueLocalReviewPersistsClockAndRatingAsOneMutation) {
   // A separate original snapshot is needed to make the replayed mutation
   // refer to an existing card; prepare it with sequence one in a fresh writer.
   LearnerRepository writer;
-  ASSERT_TRUE(writer.recordSaved("复习", "我要复习这个词。", "/books/a.epub", {}, 100));
+  ASSERT_TRUE(writer.recordSaved("复习", "我要复习这个词。", "/books/a.epub", {}, "review", 100));
   ASSERT_TRUE(writer.prepareSnapshot(writer.entries()[0], original));
   writer.markSnapshotCommitted();
   ASSERT_TRUE(writer.rateLocalReview(id, "复习", ChinesePoint::Cjk::Rating::Good, 1000, clock));
@@ -151,11 +151,45 @@ TEST(CjkLearnerRepository, RejectsFutureAndAnkiAuthoritativeReviews) {
                                                 clock));
 
   LearnerRepository local;
-  ASSERT_TRUE(local.recordSaved("稍后", "稍后复习。", "/books/a.epub", {}, 1));
+  ASSERT_TRUE(local.recordSaved("稍后", "稍后复习。", "/books/a.epub", {}, "later", 1));
   const uint64_t id = ChinesePoint::Cjk::stableWordId("稍后");
   ASSERT_TRUE(local.rateLocalReview(id, "稍后", ChinesePoint::Cjk::Rating::Good, 10, clock));
   EXPECT_FALSE(local.rateLocalReview(id, "稍后", ChinesePoint::Cjk::Rating::Good, 11,
                                      ChinesePoint::Cjk::StudyClockState{11, 0}));
+}
+
+TEST(CjkLearnerRepository, AnswerRecordSurvivesLaterSnapshotsAndIsRequiredForLocalReview) {
+  LearnerRepository writer;
+  ASSERT_TRUE(writer.recordSaved("答案", "有答案的词。", "/books/a.epub", {}, "answer", 1));
+  const auto* saved = writer.find(ChinesePoint::Cjk::stableWordId("答案"), "答案");
+  ASSERT_NE(saved, nullptr);
+  EncodedRecord snapshot;
+  ASSERT_TRUE(writer.prepareSnapshot(*saved, snapshot));
+  writer.markSnapshotCommitted();
+  EncodedRecord answer;
+  ASSERT_TRUE(writer.prepareFlashcardAnswer(*saved, answer));
+  writer.markSnapshotCommitted();
+  ASSERT_TRUE(writer.recordEncountered("答案", "再次遇到答案。", "/books/a.epub", {}, 2));
+  const auto* encountered = writer.find(ChinesePoint::Cjk::stableWordId("答案"), "答案");
+  ASSERT_NE(encountered, nullptr);
+  EncodedRecord laterSnapshot;
+  ASSERT_TRUE(writer.prepareSnapshot(*encountered, laterSnapshot));
+
+  std::vector<uint8_t> bytes(snapshot.bytes.begin(), snapshot.bytes.begin() + snapshot.size);
+  bytes.insert(bytes.end(), answer.bytes.begin(), answer.bytes.begin() + answer.size);
+  bytes.insert(bytes.end(), laterSnapshot.bytes.begin(), laterSnapshot.bytes.begin() + laterSnapshot.size);
+  LearnerRepository replayed;
+  ASSERT_TRUE(replayed.replay(bytes.data(), bytes.size()));
+  const auto* replayedEntry = replayed.find(ChinesePoint::Cjk::stableWordId("答案"), "答案");
+  ASSERT_NE(replayedEntry, nullptr);
+  EXPECT_EQ(replayedEntry->cardAnswer, "answer");
+  EXPECT_TRUE(replayed.rateLocalReview(replayedEntry->wordId, replayedEntry->headword,
+                                       ChinesePoint::Cjk::Rating::Good, 10, {10, 0}));
+
+  LearnerRepository withoutAnswer;
+  ASSERT_TRUE(withoutAnswer.recordSaved("sem", "sem resposta", "/books/a.epub", {}, "", 1));
+  EXPECT_FALSE(withoutAnswer.rateLocalReview(ChinesePoint::Cjk::stableWordId("sem"), "sem",
+                                              ChinesePoint::Cjk::Rating::Good, 10, {10, 0}));
 }
 
 }  // namespace

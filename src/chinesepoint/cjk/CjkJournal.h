@@ -17,6 +17,7 @@ enum class RecordType : uint8_t {
   EntrySnapshot = 1,
   ReviewMutation = 2,
   StudyClock = 3,
+  FlashcardAnswer = 4,
 };
 
 enum class DecodeStatus : uint8_t {
@@ -61,5 +62,10 @@ bool decodeStudyClock(const uint8_t* data, size_t size, StudyClockState& output)
 // checksummed record. Replay never observes one without the other.
 bool encodeReviewMutation(const LearnerEntry& entry, const StudyClockState& clock, PayloadBuffer& output);
 bool decodeReviewMutation(const uint8_t* data, size_t size, LearnerEntry& entry, StudyClockState& clock);
+// Definitions are separate from entry snapshots so the append-only v1 journal
+// stays backward-readable and its fixed payload cap remains enforceable.
+bool encodeFlashcardAnswer(uint64_t wordId, std::string_view headword, std::string_view answer, PayloadBuffer& output);
+bool decodeFlashcardAnswer(const uint8_t* data, size_t size, uint64_t& wordId, std::string& headword,
+                           std::string& answer);
 
 }  // namespace ChinesePoint::Cjk::Journal

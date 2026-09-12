@@ -96,12 +96,13 @@ bool LearnerStore::append(const Journal::EncodedRecord& record) {
 
 bool LearnerStore::recordEncountered(const std::string_view headword, const std::string_view sentence,
                                      const std::string_view bookPath, const TextAnchor& anchor, const int64_t nowMs) {
-  return record(headword, sentence, bookPath, anchor, nowMs, WordStatus::Encountered);
+  return record(headword, sentence, bookPath, anchor, {}, nowMs, WordStatus::Encountered);
 }
 
 bool LearnerStore::recordSaved(const std::string_view headword, const std::string_view sentence,
-                                const std::string_view bookPath, const TextAnchor& anchor, const int64_t nowMs) {
-  return record(headword, sentence, bookPath, anchor, nowMs, WordStatus::Saved);
+                                const std::string_view bookPath, const TextAnchor& anchor,
+                                const std::string_view cardAnswer, const int64_t nowMs) {
+  return record(headword, sentence, bookPath, anchor, cardAnswer, nowMs, WordStatus::Saved);
 }
 
 bool LearnerStore::recordStudyClock(const StudyClockState& state) {
@@ -131,19 +132,27 @@ bool LearnerStore::rateLocalReview(const uint64_t wordId, const std::string_view
 }
 
 bool LearnerStore::record(const std::string_view headword, const std::string_view sentence,
-                          const std::string_view bookPath, const TextAnchor& anchor, const int64_t nowMs,
-                          const WordStatus requestedStatus) {
+                          const std::string_view bookPath, const TextAnchor& anchor,
+                          const std::string_view cardAnswer, const int64_t nowMs, const WordStatus requestedStatus) {
   if ((!loaded_ && !load()) || (repository_.needsRepair() && !compact())) return false;
 
   LearnerRepository candidate = repository_;
   const bool recorded = requestedStatus == WordStatus::Saved
-                            ? candidate.recordSaved(headword, sentence, bookPath, anchor, nowMs)
+                            ? candidate.recordSaved(headword, sentence, bookPath, anchor, cardAnswer, nowMs)
                             : candidate.recordEncountered(headword, sentence, bookPath, anchor, nowMs);
   if (!recorded) return false;
   const LearnerEntry* entry = candidate.find(stableWordId(headword), headword);
   Journal::EncodedRecord record;
   if (entry == nullptr || !candidate.prepareSnapshot(*entry, record) || !append(record)) return false;
   candidate.markSnapshotCommitted();
+  // The entry snapshot is a durable useful save on its own. Commit it in
+  // memory before attempting the optional answer record so an SD write fault
+  // cannot leave RAM with a stale sequence number after the first append.
+  repository_ = candidate;
+  if (requestedStatus == WordStatus::Saved && !cardAnswer.empty()) {
+    if (!candidate.prepareFlashcardAnswer(*entry, record) || !append(record)) return false;
+    candidate.markSnapshotCommitted();
+  }
   repository_ = std::move(candidate);
   return true;
 }
@@ -180,6 +189,17 @@ bool LearnerStore::compact() {
         break;
       }
       bytesWritten += record.size;
+      if (validCardAnswer(entry.cardAnswer)) {
+        if (sequence == std::numeric_limits<uint32_t>::max() || !Journal::encodeFlashcardAnswer(entry.wordId, entry.headword,
+                                                                                                  entry.cardAnswer, payload) ||
+            !Journal::encodeRecord(Journal::RecordType::FlashcardAnswer, ++sequence, payload.bytes.data(), payload.size,
+                                   record) || record.size > kMaxJournalBytes - bytesWritten ||
+            !writeAll(temp, record.bytes.data(), record.size)) {
+          writeOk = false;
+          break;
+        }
+        bytesWritten += record.size;
+      }
     }
     temp.flush();
     const bool closeOk = temp.close();
