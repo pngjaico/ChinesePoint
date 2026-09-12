@@ -40,6 +40,15 @@ class BootSafetyOrderTest(unittest.TestCase):
         self.assertIn("PSRAM unavailable. Hold DOWN + POWER for recovery.", self.source)
         self.assertIn("setupDisplayAndFonts(/*seamless=*/false);", self.source[psram_gate:recovery_end])
 
+    def test_automatic_restore_requires_a_deliberate_hold_and_fixed_backup_contract(self):
+        updater = (MAIN.parent / "activities" / "settings" / "SdFirmwareUpdateActivity.cpp").read_text(encoding="utf-8")
+        self.assertIn("X4PRO_AUTORESTORE_HOLD_MS = 2500", self.source)
+        self.assertIn("isX4ProAutomaticRestoreGesture(recoveryFirmwareMode)", self.source)
+        self.assertIn('RECOVERY_BACKUP_PATH = "/backup/crosspoint-x4pro.bin"', updater)
+        self.assertIn('RECOVERY_BACKUP_SHA256_PATH = "/backup/crosspoint-x4pro.bin.sha256"', updater)
+        self.assertIn("validateFirmware() || !validateBackupChecksum()", updater)
+        self.assertIn("automatic recovery backup changed before flash", updater)
+
     def test_controller_resolution_precedes_display_initialization(self):
         setup_start = self.source.index("void setupDisplayAndFonts(bool seamless = false)")
         setup_end = self.source.index("\nvoid setup()", setup_start)

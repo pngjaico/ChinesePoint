@@ -77,6 +77,14 @@ application. Complete a restore only after the candidate's behavior and hash
 are documented. Record the whole drill in
 `docs/chinesepoint/evidence/recovery.md`.
 
+To exercise the automatic backup route, first record the SHA-256 of the
+operator-selected CrossPoint application. Place it only at
+`/backup/crosspoint-x4pro.bin`, with its lowercase digest at
+`/backup/crosspoint-x4pro.bin.sha256`. From power-off, hold DOWN + POWER for
+2.5 seconds without releasing either key. The firmware must reject a missing,
+wrong-digest, corrupt, oversized, wrong-chip, or wrong-board backup without
+altering the OTA boot target. Only then test a verified backup restore.
+
 Only evidence files with observed results may be referenced by a `passed`
 state in `site/release-manifest.json`. The release verifier rejects an enabled
 download without those records.

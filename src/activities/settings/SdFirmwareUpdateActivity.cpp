@@ -6,6 +6,9 @@
 #include <I18n.h>
 #include <Logging.h>
 #include <esp_ota_ops.h>
+#include <mbedtls/sha256.h>
+
+#include <cctype>
 
 #include "MappedInputManager.h"
 #include "activities/home/FileBrowserActivity.h"
@@ -14,6 +17,26 @@
 #include "fontIds.h"
 #include "network/FirmwareFlasher.h"
 
+namespace {
+constexpr const char* RECOVERY_BACKUP_PATH = "/backup/crosspoint-x4pro.bin";
+constexpr const char* RECOVERY_BACKUP_SHA256_PATH = "/backup/crosspoint-x4pro.bin.sha256";
+constexpr size_t SHA256_HEX_LENGTH = 64;
+
+bool decodeHexDigest(const char* text, uint8_t* output) {
+  for (size_t i = 0; i < SHA256_HEX_LENGTH; ++i) {
+    const unsigned char c = static_cast<unsigned char>(text[i]);
+    if (!std::isxdigit(c)) return false;
+    const uint8_t value = static_cast<uint8_t>(std::isdigit(c) ? c - '0' : std::tolower(c) - 'a' + 10);
+    if ((i & 1U) == 0) {
+      output[i / 2] = static_cast<uint8_t>(value << 4U);
+    } else {
+      output[i / 2] |= value;
+    }
+  }
+  return true;
+}
+}  // namespace
+
 void SdFirmwareUpdateActivity::onEnter() {
   Activity::onEnter();
   // CROSSPOINT_VERSION is fixed by the X4 Pro build environment. Do not use
@@ -21,7 +44,45 @@ void SdFirmwareUpdateActivity::onEnter() {
   // and make release hashes impossible to reproduce.
   LOG_INF("FW", "SdFirmwareUpdateActivity version=%s recovery=%d", CROSSPOINT_VERSION, recoveryMode ? 1 : 0);
   state = State::PICKING;
+  if (autoRestoreBackup) {
+    startAutomaticBackupRestore();
+    return;
+  }
   launchPicker();
+}
+
+void SdFirmwareUpdateActivity::startAutomaticBackupRestore() {
+  // This path intentionally names one file only. It never glob-matches a
+  // "backup" directory, and requires a separate operator-provided digest.
+  firmwarePath = RECOVERY_BACKUP_PATH;
+  if (!Storage.exists(firmwarePath.c_str()) || !Storage.exists(RECOVERY_BACKUP_SHA256_PATH)) {
+    LOG_ERR("FW", "automatic recovery backup or digest missing");
+    autoRestoreBackup = false;
+    launchPicker();
+    return;
+  }
+
+  {
+    RenderLock lock(*this);
+    state = State::VALIDATING;
+  }
+  requestUpdateAndWait();
+  if (!validateFirmware() || !validateBackupChecksum()) {
+    LOG_ERR("FW", "automatic recovery backup rejected");
+    RenderLock lock(*this);
+    state = State::FAILED;
+    requestUpdate();
+    return;
+  }
+
+  {
+    RenderLock lock(*this);
+    state = State::UPDATING;
+    writtenBytes = 0;
+    lastRenderedPercent = 101;
+  }
+  requestUpdateAndWait();
+  performUpdate();
 }
 
 void SdFirmwareUpdateActivity::launchPicker() {
@@ -115,6 +176,58 @@ bool SdFirmwareUpdateActivity::validateFirmware() {
   return true;
 }
 
+bool SdFirmwareUpdateActivity::validateBackupChecksum() {
+  HalFile digestFile;
+  if (!Storage.openFileForRead("FW", RECOVERY_BACKUP_SHA256_PATH, digestFile) || !digestFile) {
+    errorMessage = "Recovery checksum unavailable";
+    return false;
+  }
+  char hex[SHA256_HEX_LENGTH + 1]{};
+  const int got = digestFile.read(reinterpret_cast<uint8_t*>(hex), SHA256_HEX_LENGTH);
+  digestFile.close();
+  if (got != static_cast<int>(SHA256_HEX_LENGTH)) {
+    errorMessage = "Recovery checksum invalid";
+    return false;
+  }
+
+  uint8_t expected[32]{};
+  if (!decodeHexDigest(hex, expected)) {
+    errorMessage = "Recovery checksum invalid";
+    return false;
+  }
+
+  HalFile firmware;
+  if (!Storage.openFileForRead("FW", firmwarePath.c_str(), firmware) || !firmware) {
+    errorMessage = tr(STR_FIRMWARE_FILE_OPEN_FAILED);
+    return false;
+  }
+  mbedtls_sha256_context sha;
+  mbedtls_sha256_init(&sha);
+  mbedtls_sha256_starts(&sha, 0);
+  uint8_t buffer[512];
+  for (;;) {
+    const int count = firmware.read(buffer, sizeof(buffer));
+    if (count < 0) {
+      mbedtls_sha256_free(&sha);
+      firmware.close();
+      errorMessage = "Recovery checksum read failed";
+      return false;
+    }
+    if (count == 0) break;
+    mbedtls_sha256_update(&sha, buffer, static_cast<size_t>(count));
+  }
+  firmware.close();
+
+  uint8_t actual[32];
+  mbedtls_sha256_finish(&sha, actual);
+  mbedtls_sha256_free(&sha);
+  if (std::memcmp(expected, actual, sizeof(expected)) != 0) {
+    errorMessage = "Recovery checksum mismatch";
+    return false;
+  }
+  return true;
+}
+
 void SdFirmwareUpdateActivity::promptConfirmation() {
   {
     RenderLock lock(*this);
@@ -154,6 +267,17 @@ void SdFirmwareUpdateActivity::onConfirmationResult(const ActivityResult& result
 
 void SdFirmwareUpdateActivity::performUpdate() {
   LOG_INF("FW", "SD update: %s (%u bytes)", firmwarePath.c_str(), static_cast<unsigned>(firmwareSize));
+
+  // The SD card can be replaced after the first validation. The regular
+  // flasher repeats its image checks; automatic recovery repeats its external
+  // digest check as well, so it never trusts a stale validated path.
+  if (autoRestoreBackup && !validateBackupChecksum()) {
+    LOG_ERR("FW", "automatic recovery backup changed before flash");
+    RenderLock lock(*this);
+    state = State::FAILED;
+    requestUpdate();
+    return;
+  }
 
   auto progressCb = +[](size_t written, size_t total, void* ctx) {
     auto* self = static_cast<SdFirmwareUpdateActivity*>(ctx);

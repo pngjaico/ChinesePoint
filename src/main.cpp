@@ -56,6 +56,7 @@ static unsigned long lastX4ProPowerClickAt = 0;
 namespace {
 constexpr unsigned long X4PRO_POWER_DOUBLE_CLICK_MS = 500;
 constexpr unsigned long X4PRO_POWER_CLICK_MAX_HOLD_MS = 300;
+constexpr unsigned long X4PRO_AUTORESTORE_HOLD_MS = 2500;
 
 #if FREEINK_DEVICE_X4PRO && !defined(SIMULATOR)
 // The X4 Pro is an N16R8 board. Accepting substantially less than 8 MiB here
@@ -72,6 +73,22 @@ bool hasUsableX4ProPsram() {
   return totalBytes >= X4PRO_MINIMUM_PSRAM_BYTES;
 }
 #endif
+
+bool isX4ProAutomaticRestoreGesture(const bool recoveryFirmwareMode) {
+#if FREEINK_DEVICE_X4PRO && !defined(SIMULATOR)
+  if (!recoveryFirmwareMode) return false;
+  const unsigned long start = millis();
+  while (millis() - start < X4PRO_AUTORESTORE_HOLD_MS) {
+    gpio.update();
+    if (!gpio.isPressed(HalGPIO::BTN_POWER) || !gpio.isPressed(HalGPIO::BTN_DOWN)) return false;
+    delay(10);
+  }
+  return true;
+#else
+  (void)recoveryFirmwareMode;
+  return false;
+#endif
+}
 }  // namespace
 
 // A wake hold must never become an in-app power-button action.  Boot may continue
@@ -402,6 +419,7 @@ void setup() {
                                                                                      : MappedInputManager::Button::Up;
   const bool recoveryFirmwareMode = wakeupReason == HalGPIO::WakeupReason::PowerButton && !BoardConfig::isPaperMono() &&
                                     mappedInputManager.isPressed(recoveryButton);
+  const bool automaticBackupRestore = isX4ProAutomaticRestoreGesture(recoveryFirmwareMode);
 
 #if defined(CHINESEPOINT)
   // Deliberately after recovery-button detection: optional learner state must
@@ -441,12 +459,12 @@ void setup() {
     // settings, optional services, and the frontlight are initialized. Keep
     // the recovery path small: if ordinary startup is the problem, DOWN +
     // POWER must still reach the SD firmware picker.
-    LOG_INF("MAIN", "Recovery firmware mode (%s + POWER held at boot)",
-            (BoardConfig::isX4Pro() || BoardConfig::isX4Classic()) ? "DOWN" : "UP");
+    LOG_INF("MAIN", "Recovery firmware mode (%s + POWER held at boot, automatic restore=%d)",
+            (BoardConfig::isX4Pro() || BoardConfig::isX4Classic()) ? "DOWN" : "UP", automaticBackupRestore ? 1 : 0);
     ButtonNavigator::setMappedInputManager(mappedInputManager);
     setupDisplayAndFonts(/*seamless=*/false);
     activityManager.replaceActivity(
-        std::make_unique<SdFirmwareUpdateActivity>(renderer, mappedInputManager, /*recoveryMode=*/true));
+        std::make_unique<SdFirmwareUpdateActivity>(renderer, mappedInputManager, /*recoveryMode=*/true, automaticBackupRestore));
     return;
   }
 

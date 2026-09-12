@@ -28,8 +28,9 @@ class SdFirmwareUpdateActivity : public Activity {
     FAILED,
   };
 
-  explicit SdFirmwareUpdateActivity(GfxRenderer& renderer, MappedInputManager& mappedInput, bool recoveryMode = false)
-      : Activity("SdFirmwareUpdate", renderer, mappedInput), recoveryMode(recoveryMode) {}
+  explicit SdFirmwareUpdateActivity(GfxRenderer& renderer, MappedInputManager& mappedInput, bool recoveryMode = false,
+                                    bool autoRestoreBackup = false)
+      : Activity("SdFirmwareUpdate", renderer, mappedInput), recoveryMode(recoveryMode), autoRestoreBackup(autoRestoreBackup) {}
 
   void onEnter() override;
   void loop() override;
@@ -40,6 +41,7 @@ class SdFirmwareUpdateActivity : public Activity {
  private:
   State state = State::PICKING;
   bool recoveryMode = false;
+  bool autoRestoreBackup = false;
 
   std::string firmwarePath;
   size_t firmwareSize = 0;
@@ -48,8 +50,10 @@ class SdFirmwareUpdateActivity : public Activity {
   std::string errorMessage;
 
   void launchPicker();
+  void startAutomaticBackupRestore();
   void onPickerResult(const ActivityResult& result);
   bool validateFirmware();
+  bool validateBackupChecksum();
   void promptConfirmation();
   void onConfirmationResult(const ActivityResult& result);
   void performUpdate();

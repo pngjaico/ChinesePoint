@@ -110,6 +110,34 @@ The launcher updates an isolated WSL working clone and stores its toolchain,
 cache, and build tree in the `ChinesePoint-Emulator` WSL VHDX on D:. It never
 calls the USB flasher, the SD updater, or an X4 Pro.
 
+## Emergency CrossPoint restore
+
+ChinesePoint keeps the ordinary **DOWN + POWER** recovery picker. A separate,
+deliberate restore gesture holds those two keys continuously for **2.5 seconds**
+from power-off. It then restores only this exact SD-card contract:
+
+~~~text
+/backup/crosspoint-x4pro.bin
+/backup/crosspoint-x4pro.bin.sha256
+~~~
+
+The `.sha256` file contains exactly the lowercase SHA-256 of the application
+file. The firmware validates that digest twice, plus the ESP image structure,
+chip family, OTA partition size, and X4 Pro board tag before writing. Missing,
+corrupt, wrong-board, or changed files do not flash; recovery falls back to the
+manual picker. Prepare the SD card from Windows without flashing a device:
+
+~~~powershell
+cd D:\Usuario-pc\Projetos\ChinesePoint\firmware
+.\tools\chinesepoint\prepare_recovery_backup.ps1 `
+  -SourceFirmware D:\Downloads\crosspoint-1.6.0-x4pro.bin `
+  -SdRoot E:\
+~~~
+
+The automatic route is compiled and locally validated, but its first use must
+be part of the physical recovery drill. It is not evidence that a particular
+CrossPoint binary is safe until its exact hash has been recorded.
+
 ## Development map
 
 1. v0.6: X4 Pro-only build identity, safe CJK isolation, simulator/release gate, site manifest — implemented; local three-panel simulator smoke passed, physical evidence pending.
