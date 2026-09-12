@@ -40,16 +40,14 @@ The initial source base is CrossPoint develop commit e7a3bb48817f1cb951b521ca958
 
 The unmodified X4 Pro baseline compiled on 2026-08-30 and produced a valid ESP32-S3 application image. It is not yet a ChinesePoint CJK release.
 
-The current local X4 Pro diagnostic build uses the firmware source at
-`d24e15f`; later commits through the current branch change only documentation
-and the desktop Anki add-on, so they do not change this application image. The
-artifact has an ESP32-S3 image header, the current
-`CROSSPOINT-BOARD-V1:x4pro;` tag, a valid Espressif checksum and validation
-hash, and SHA-256 `ea0cb4aaf74002d7f668cf6ec1f2154c392e0a9c93c1667a663cb684b1c4cd83`
+The current local X4 Pro diagnostic build has an ESP32-S3 image header, the
+sole `CROSSPOINT-BOARD-V1:x4pro;` tag, a valid Espressif checksum and validation
+hash, and SHA-256 `60457af20c3d9e16f96c4853af08f8e11866dfd6d7bed7c1446401aef2a1062b`
 (5,390,320 bytes). `firmware.bin` and its generated `update.bin` have that
-same hash. It passed artifact validation, 222 native host tests before this
-firmware-only rebuild, and simulator compile/link coverage in the SSD1677,
-UC8179, and UC8279 profiles.
+same hash. The build regenerates the application from a stripped temporary ELF
+so debug paths from different worktrees cannot change the app-descriptor hash.
+It passed artifact validation and script checks; native host and simulator
+evidence is recorded separately for the exact sources it covers.
 
 It includes word selection, sentence-context saving even for a local dictionary
 miss, optional local StarDict lookup, and Matcha-inspired EPUB language
@@ -68,9 +66,9 @@ panel, Anki transfer, or recovery drill has been performed.
 
 ## Current diagnostic build
 
-The `da0511e` artifact above is the current diagnostic build. Artifact
-validation reports `installable: false`; it is not a GitHub release asset or a
-recovery image.
+Artifact validation reports `installable: false`; it is not a GitHub release
+asset or a recovery image. A deterministic local artifact does not establish
+that it is safe to boot, refresh a panel, or recover a locked device.
 
 This candidate adds bounded, allocation-free CJK phrase lookup after an exact
 StarDict miss. It tries no more than 12 phrases of up to 8 Han code points and

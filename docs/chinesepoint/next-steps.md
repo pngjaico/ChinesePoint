@@ -4,15 +4,18 @@ Status on 2026-09-12: the current candidate is diagnostic only. Its simulator
 matrix passes, but physical panel, recovery, Anki Desktop, and long-session
 evidence are absent. It must not be flashed as a 1.0 release.
 
-Source commit `da0511e` retains the bounded Anki watchdog behavior and adds
-bounded local-dictionary routing from EPUB `dc:language` metadata. It limits
-the route to one language folder and falls back to the existing global
-dictionary when the tag is absent or invalid. Its X4 Pro artifact is
-reproducible across two consecutive builds; `firmware.bin` and `update.bin`
-share SHA-256 `761324065c89cc08d40577af300fc0694e712a8d80e97df15a3dc36cb473e9fe`.
-The exact-source SSD1677/UC8179/UC8279 simulator matrix passes, but it proves
-neither a real dictionary lookup, Anki transfer, nor a physical test record.
-The artifact remains diagnostic and non-installable.
+The current source retains the bounded Anki watchdog behavior and bounded
+local-dictionary routing from EPUB `dc:language` metadata. It limits the route
+to one language folder and falls back to the existing global dictionary when
+the tag is absent or invalid. The X4 Pro post-build step now removes
+worktree-dependent debug metadata before regenerating the application image:
+the observed normalized `firmware.bin` and `update.bin` share SHA-256
+`60457af20c3d9e16f96c4853af08f8e11866dfd6d7bed7c1446401aef2a1062b`.
+Two clean source links had identical loaded segments and yielded the same
+normalized image. This establishes local artifact determinism for those
+inputs, not hardware compatibility. The SSD1677/UC8179/UC8279 simulator matrix
+passes, but it proves neither a real dictionary lookup, Anki transfer, nor a
+physical test record. The artifact remains diagnostic and non-installable.
 
 1. **Prepare a reversible hardware session.** Keep the known-good X4 Pro
    CrossPoint application plus its strict backup checksum on the SD card. From
@@ -63,10 +66,11 @@ The artifact remains diagnostic and non-installable.
 
 ## Mini plan from here
 
-1. **Close the reproducible-build gate.** Rebuild the committed X4 Pro source
-   twice with UTF-8 PlatformIO output, verify identical SHA-256 values for
-   `firmware.bin` and generated `update.bin`, then stage only the app image to
-   a test SD root. Never place it on the device during this diagnostic phase.
+1. **Keep the reproducible-build gate closed.** The post-build normalizer now
+   produces a canonical app image before `update.bin` is copied. Add a clean
+   CI rebuild from a second checkout and require the canonical SHA-256 for both
+   files before any candidate is staged to a test SD root. Never place it on
+   the device during this diagnostic phase.
 2. **Capture emulator evidence again.** Rebuild and photograph the SSD1677,
    UC8179, and UC8279 simulator profiles from that exact commit. This is a
    code-path check, not a panel result.
