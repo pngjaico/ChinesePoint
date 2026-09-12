@@ -26,6 +26,12 @@ The architecture and safety constraints are in docs/chinesepoint/v1-architecture
 
 The X4 Pro has display-controller variants. ChinesePoint stays on current CrossPoint and FreeInk X4 Pro support instead of importing old CrossPlay display code. Recovery remains **DOWN plus POWER**; UP is GPIO0 and is not a recovery key.
 
+On hardware builds, after FreeInk has selected a panel driver, ChinesePoint writes
+`/x4pro-panel-probe.txt` to the SD card. It records the selected SSD1677,
+UC8179, or UC8279 controller and the raw probe fields, so a bad-screen attempt
+can be diagnosed from USB mass-storage or a card reader. The report never
+changes the driver decision and a failed write never delays boot or recovery.
+
 Every release must include:
 
 - an X4 Pro application image for SD or OTA update;

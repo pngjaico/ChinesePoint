@@ -59,6 +59,69 @@ constexpr unsigned long X4PRO_POWER_CLICK_MAX_HOLD_MS = 300;
 constexpr unsigned long X4PRO_AUTORESTORE_HOLD_MS = 2500;
 
 #if FREEINK_DEVICE_X4PRO && !defined(SIMULATOR)
+constexpr const char* X4PRO_PANEL_PROBE_PATH = "/x4pro-panel-probe.txt";
+
+const char* x4ProPanelControllerName(const BoardConfig::DisplayController controller) {
+  switch (controller) {
+    case BoardConfig::DisplayController::SSD1677:
+      return "SSD1677";
+    case BoardConfig::DisplayController::UC8179:
+      return "UC8179";
+    case BoardConfig::DisplayController::UC8279:
+      return "UC8279";
+    default:
+      return "other";
+  }
+}
+
+// A locked X4 Pro may not expose usable USB serial when its panel selection is
+// wrong. Keep the actual probe decision on the SD card so it can be inspected
+// from USB mass-storage or a card reader before another firmware attempt.
+// This is deliberately diagnostic only: it never influences the live probe or
+// the selected driver, and a failed write must never block boot or recovery.
+void persistX4ProPanelProbe() {
+  static bool persisted = false;
+  if (persisted) return;
+  persisted = true;
+
+  const auto& diag = freeink::getXteinkDisplayProbeDiag();
+  if (!diag.valid) {
+    LOG_ERR("XTDET", "X4 Pro display probe produced no diagnostic snapshot");
+    return;
+  }
+
+  char report[512] = {};
+  const int length = snprintf(
+      report, sizeof(report),
+      "ChinesePoint X4 Pro display probe\n"
+      "selected_controller=%s\n"
+      "promoted=%u\n"
+      "verdict=%u\n"
+      "ver=%02X %02X %02X %02X %02X\n"
+      "flg=%02X\n"
+      "mtp_valid=%u\n",
+      x4ProPanelControllerName(BoardConfig::ACTIVE.displayController), static_cast<unsigned>(diag.promoted),
+      static_cast<unsigned>(diag.verdict), diag.ver[0], diag.ver[1], diag.ver[2], diag.ver[3], diag.ver[4], diag.flg,
+      static_cast<unsigned>(diag.mtpValid));
+  if (length <= 0 || static_cast<size_t>(length) >= sizeof(report)) {
+    LOG_ERR("XTDET", "X4 Pro display probe report formatting failed");
+    return;
+  }
+
+  HalFile file;
+  if (!Storage.openFileForWrite("XTDET", X4PRO_PANEL_PROBE_PATH, file)) return;
+  const bool wrote = file.write(report, static_cast<size_t>(length)) == length;
+  file.close();
+  if (!wrote) {
+    Storage.remove(X4PRO_PANEL_PROBE_PATH);
+    LOG_ERR("XTDET", "X4 Pro display probe report write failed");
+    return;
+  }
+  LOG_INF("XTDET", "X4 Pro display probe saved to %s", X4PRO_PANEL_PROBE_PATH);
+}
+#endif
+
+#if FREEINK_DEVICE_X4PRO && !defined(SIMULATOR)
 // The X4 Pro is an N16R8 board. Accepting substantially less than 8 MiB here
 // would let a failed PSRAM init turn into an unrelated renderer, reader, or
 // Wi-Fi crash later in startup. The small tolerance avoids coupling this
@@ -345,6 +408,9 @@ void setupDisplayAndFonts(bool seamless = false) {
 #endif
 
   display.begin(seamless);
+#if FREEINK_DEVICE_X4PRO && !defined(SIMULATOR)
+  persistX4ProPanelProbe();
+#endif
   renderer.begin();
   activityManager.begin();
   LOG_DBG("MAIN", "Display initialized");

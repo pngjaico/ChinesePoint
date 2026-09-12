@@ -55,6 +55,17 @@ class BootSafetyOrderTest(unittest.TestCase):
         setup = self.source[setup_start:setup_end]
         self.assertLess(setup.index("freeink::applyXteinkDisplayController()"), setup.index("display.begin(seamless);"))
 
+    def test_x4pro_panel_probe_is_retrievable_without_serial_and_cannot_block_boot(self):
+        setup_start = self.source.index("void setupDisplayAndFonts(bool seamless = false)")
+        setup_end = self.source.index("\nvoid setup()", setup_start)
+        setup = self.source[setup_start:setup_end]
+        self.assertIn('X4PRO_PANEL_PROBE_PATH = "/x4pro-panel-probe.txt"', self.source)
+        self.assertIn("freeink::getXteinkDisplayProbeDiag()", self.source)
+        self.assertIn("Storage.openFileForWrite", self.source)
+        self.assertIn("failed write must never block boot or recovery", self.source)
+        self.assertLess(setup.index("display.begin(seamless);"), setup.index("persistX4ProPanelProbe();"))
+        self.assertLess(setup.index("persistX4ProPanelProbe();"), setup.index("renderer.begin();"))
+
 
 if __name__ == "__main__":
     unittest.main()
