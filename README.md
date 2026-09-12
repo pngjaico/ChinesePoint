@@ -36,7 +36,7 @@ Every release must include:
 
 ## Verified baseline
 
-The initial source base is CrossPoint develop commit e7a3bb48817f1cb951b521ca958562723159c2f6 with FreeInk f831c1e447a21cfc7def620bb7c9c783e416a0a4.
+The initial source base is CrossPoint develop commit e7a3bb48817f1cb951b521ca958562723159c2f6. ChinesePoint currently pins FreeInk `7f6bd0f47a766eea18206dd19f723f3707b6c9d3`, which contains the upstream X4 Pro display-driver correction.
 
 The unmodified X4 Pro baseline compiled on 2026-08-30 and produced a valid ESP32-S3 application image. It is not yet a ChinesePoint CJK release.
 
