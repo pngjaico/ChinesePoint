@@ -88,36 +88,28 @@ Pro image's 100% IRAM allocation. The firmware compiles, but the remaining
 margin is zero; only a measured device session can establish whether its
 watchdog, sleep/wake, Wi-Fi, and panel behavior are acceptable.
 
-## Critical correction: local flashcard review is incomplete
+## Critical correction: local review exists; Anki schedule integration does not
 
-The learner journal, pure repetition scheduler, vocabulary browser, export, and
-opt-in Anki bridge exist. They do **not** yet form an in-device flashcard
-review feature: no activity presents a due card or records `Again`, `Hard`,
-`Good`, or `Easy`. The scheduler currently receives a monotonic `millis()`
-value, which resets after reboot. The X4 Pro wall-clock path is not proven in
-this firmware, so using it as a due-date source would silently make schedules
-wrong after power loss. This is a product gap, not a documentation issue.
+The learner now has a bounded in-device review activity. It selects only due,
+locally authoritative entries that have a durable answer captured from a
+successful local dictionary lookup, and records `Again`, `Hard`, `Good`, or
+`Easy` through one checksummed review mutation with its study-clock state.
+Entries without an answer stay available in the vocabulary browser but cannot
+be rated as flashcards. The journal keeps answers in their own record so old
+entry snapshots remain readable and later snapshots do not erase an answer.
 
-Anki sync also exports vocabulary without importing review state, so it cannot
-legitimately claim that Anki is the scheduler for cards created on the device.
-The current bridge is a safe, idempotent vocabulary-transfer channel only.
+This is a local scheduler, not an Anki scheduler. The LAN Anki bridge still
+exports vocabulary only and does not import card state, due dates, or reviews.
+Calling the current feature “flashcards integrated with Anki” would be false.
 
-Before the learner is called "flashcards integrated with Anki", implement and
-test this sequence:
+Before Anki becomes a schedule authority, implement and test this sequence:
 
-1. Add a durable study-clock abstraction. It must prefer a verified wall clock,
-   reject invalid or rolled-back time, and preserve a monotonic logical clock
-   across reboot without changing boot, recovery, or reader state.
-2. Add atomic learner-store mutation for a locally authoritative review result;
-   persist the entire snapshot only after a successful journal append. An
-   Anki-authoritative entry must be rejected by this path.
-3. Add a bounded review activity reachable from the learner menu. It must show
-   only locally due entries, accept the four ratings, display an explicit
-   no-due-cards state, and keep normal auto-sleep behavior while idle.
-4. Define the Anki contract before importing or exporting scheduling data.
-   Either keep Anki as a separate review system and state that plainly, or add
-   a versioned, conflict-tested schedule protocol. Do not let two schedulers
-   mutate the same card silently.
-5. Add host tests for reboot, torn journal append, clock rollback, rating
-   transitions, Anki-authority rejection, and the empty/due-card selection.
-   Then add simulator and physical X4 Pro review sessions to the release matrix.
+1. Define a versioned ownership and conflict contract. It must state which
+   scheduler owns a card and reject every unsupported transition.
+2. Build a bounded import/export protocol with idempotency, cancellation,
+   offline retry, malformed-response, duplicate-card, and clock-skew tests.
+3. Run it first against a disposable Anki Desktop collection, then on a real
+   deck only after a user-visible backup/export is available.
+4. Add simulator and physical X4 Pro review sessions for all controller
+   profiles, including four ratings, no-due state, sleep/wake, CJK answer
+   rendering, and recovery after an interrupted SD write.
