@@ -91,13 +91,18 @@ Header: `CPMETA1\0`, `u16 version`, `u16 flags`, `u32 body_bytes`, followed by:
 | desired retention | `f32` | FSRS target |
 | maximum interval | `i32` | FSRS cap in days |
 | new/review daily limits | `u16`, `u16` | Queue limits |
-| FSRS parameters | 21 × `f32` | Versioned Anki-compatible weights |
+| FSRS algorithm / parameter count | `u8`, `u8` | `5,19` or `6,21`; unknown combinations are rejected |
+| FSRS parameters | 21 × `f32` | FSRS-5 uses the first 19 and requires the remaining two to be zero |
 | learning/relearning steps | up to 6 × `f32` each | Minute steps |
 | deck name | `u8 length` + UTF-8 | Display only, maximum 63 bytes |
 
 The bridge supplies the scheduler parameters used by the matching Anki deck.
-If the bridge cannot extract a supported FSRS configuration, it marks the deck
-unsupported instead of silently scheduling with guessed values.
+FSRS-6 (`6,21`) is the current Anki path. FSRS-5 (`5,19`) remains supported
+only as an explicit compatibility mode for older collections; its two unused
+parameter slots are zero. The bridge and device must select the matching
+engine from this pair, never reinterpret 19 values as FSRS-6 or pad them with
+invented values. If the bridge cannot extract a supported configuration, it
+marks the deck unsupported instead of silently scheduling with guessed values.
 
 ### `cards.dat`
 
@@ -261,9 +266,9 @@ contract and Study never writes firmware/update paths.
 ## Delivery phases and acceptance tests
 
 1. **A — offline Study core.** Port/reimplement freestanding deck parser,
-   FSRS scheduler, `state.dat`, and `revlog.dat`. Tests: malformed files,
-   all ratings, reboot after a rating, SD full/write failure, wrong clock,
-   and FSRS vectors.
+   FSRS-5 compatibility and FSRS-6 schedulers, `state.dat`, and `revlog.dat`.
+   Tests: malformed files, all ratings, reboot after a rating, SD full/write
+   failure, wrong clock, and separate Anki-derived FSRS-5/FSRS-6 vectors.
 2. **B — deterministic bridge converter.** Private FastAPI bridge imports an
    Anki mirror and builds bounded generic/CJK decks. Tests: binary format,
    unsupported templates, cloze, media bounds, glyph subset cache, SHA-256.

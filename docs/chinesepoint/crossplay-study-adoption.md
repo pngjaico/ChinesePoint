@@ -28,6 +28,20 @@ Reference audited: `ma-r-s/crossplay`, branch `xteink`, commit
 5. Do not claim desktop-LAN export is AnkiWeb sync. Existing `CjkAnkiClient`
    remains a separate, manually invoked migration/export feature.
 
+## FSRS compatibility boundary
+
+The audited CrossPlay `StudyFsrs` is a freestanding FSRS-5 engine with 19
+parameters. Current Anki code selects FSRS-5 when the parameter list has fewer
+than 21 values and FSRS-6 when it has 21, with the twenty-first FSRS-6 value
+controlling decay. ChinesePoint therefore uses CrossPlay as the strong
+reference for an explicit FSRS-5 compatibility engine, not as the only
+scheduler. FSRS-6 needs its own Anki-derived vectors and implementation before
+any deck using `6,21` can be scheduled on device.
+
+The bridge records the algorithm family and parameter count in every build.
+It must reject unknown counts and must never convert 19 parameters into 21 by
+padding or defaults; that would silently change review intervals.
+
 ## License handling
 
 CrossPlay is MIT. Before copying any source, add its copyright/license text to
