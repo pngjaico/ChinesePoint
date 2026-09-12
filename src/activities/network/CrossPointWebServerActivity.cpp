@@ -8,6 +8,7 @@
 #include <WiFi.h>
 
 #include <cstddef>
+#include <string_view>
 
 #include "MappedInputManager.h"
 #include "NetworkModeSelectionActivity.h"
@@ -22,7 +23,7 @@
 namespace {
 // AP Mode configuration
 constexpr const char* AP_SSID = "CrossPoint-Reader";
-constexpr const char* AP_PASSWORD = nullptr;  // Open network for ease of use
+constexpr std::string_view AP_PASSWORD{};  // Open network for ease of use
 constexpr const char* AP_HOSTNAME = "crosspoint";
 constexpr uint8_t AP_CHANNEL = 1;
 constexpr uint8_t AP_MAX_CONNECTIONS = 4;
@@ -221,8 +222,8 @@ void CrossPointWebServerActivity::startAccessPoint() {
 
   // Start soft AP
   bool apStarted;
-  if (AP_PASSWORD && strlen(AP_PASSWORD) >= 8) {
-    apStarted = WiFi.softAP(AP_SSID, AP_PASSWORD, AP_CHANNEL, false, AP_MAX_CONNECTIONS);
+  if (AP_PASSWORD.size() >= 8) {
+    apStarted = WiFi.softAP(AP_SSID, AP_PASSWORD.data(), AP_CHANNEL, false, AP_MAX_CONNECTIONS);
   } else {
     // Open network (no password)
     apStarted = WiFi.softAP(AP_SSID, nullptr, AP_CHANNEL, false, AP_MAX_CONNECTIONS);

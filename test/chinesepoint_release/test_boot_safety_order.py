@@ -1,0 +1,43 @@
+import unittest
+from pathlib import Path
+
+
+MAIN = Path(__file__).parents[2] / "src" / "main.cpp"
+
+
+class BootSafetyOrderTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.source = MAIN.read_text(encoding="utf-8")
+
+    def test_recovery_picker_precedes_normal_persistent_boot(self):
+        marker = "  if (recoveryFirmwareMode) {\n    // This is the last possible point"
+        start = self.source.index(marker)
+        end = self.source.index("\n  APP_STATE.loadFromFile();", start)
+        route = self.source[start:end]
+
+        self.assertLess(self.source.index("  HalSystem::checkPanic();"), start)
+        self.assertIn("ButtonNavigator::setMappedInputManager(mappedInputManager);", route)
+        self.assertIn("setupDisplayAndFonts(/*seamless=*/false);", route)
+        self.assertIn("SdFirmwareUpdateActivity", route)
+        self.assertIn("    return;", route)
+
+        for ordinary_boot_operation in (
+            "APP_STATE.loadFromFile();",
+            "SETTINGS.loadFromFile();",
+            "RECENT_BOOKS.loadFromFile();",
+            "KOREADER_STORE.loadFromFile();",
+            "OPDS_STORE.loadFromFile();",
+            "Frontlight.begin(",
+        ):
+            self.assertGreater(self.source.index(ordinary_boot_operation), end)
+
+    def test_controller_resolution_precedes_display_initialization(self):
+        setup_start = self.source.index("void setupDisplayAndFonts(bool seamless = false)")
+        setup_end = self.source.index("\nvoid setup()", setup_start)
+        setup = self.source[setup_start:setup_end]
+        self.assertLess(setup.index("freeink::applyXteinkDisplayController()"), setup.index("display.begin(seamless);"))
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -273,7 +273,9 @@ void ReaderToolbarUi::buildPanel(UiScreen& screen) {
   const int pageRows = nav_.pageRows();
   const int totalPages = pageRows > 0 ? (count + pageRows - 1) / pageRows : 0;
   if (totalPages > 1) {
-    char buf[16];
+    // Two signed 32-bit values, a slash, and the terminator require up to 24
+    // bytes. Keep the page indicator intact for unusually large lists.
+    char buf[24];
     snprintf(buf, sizeof(buf), "%d/%d", nav_.top / pageRows + 1, totalPages);
     fui::TextStyle pageStyle = tokens.smallText;
     pageStyle.align = fui::TextAlign::Right;

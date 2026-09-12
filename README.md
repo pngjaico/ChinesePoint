@@ -61,6 +61,18 @@ before it can be considered safe. Host-native tests, formatting, static
 analysis, simulator coverage, every physical panel path, reader acceptance,
 and the DOWN+POWER recovery drill remain release gates.
 
+On 2026-09-12, the FreeInk pin was advanced to
+`7f6bd0f47a766eea18206dd19f723f3707b6c9d3`, including the upstream X4 Pro
+driver update implicated by the CrossPlay mirrored-display report. The X4 Pro
+application rebuilt from an isolated cache and verified as target
+`xteink-x4-pro`, SHA-256
+`111a64f758151f980e9388706ba29af3e71c049af8c3e57ce5ca006978d0f1e0`
+(5,375,792 bytes). DOWN+POWER now reaches the SD firmware picker before normal
+reader state, settings, optional services, or frontlight initialization. The
+same candidate boot-rendered in the SSD1677, UC8179, and UC8279 simulator
+profiles. This is still not physical display or recovery evidence, and its
+100% IRAM allocation remains a release blocker.
+
 ~~~powershell
 $env:PYTHONUTF8 = '1'
 $env:PLATFORMIO_CORE_DIR = 'D:\Usuario-pc\Ferramentas\PlatformIO' # keep toolchains on D:

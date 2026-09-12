@@ -4,6 +4,16 @@ This is a design review of external projects, not an endorsement or a release
 claim.  Their source was inspected at the commits below; no firmware code was
 copied into ChinesePoint from this review.
 
+## Follow-up status — 2026-09-12
+
+The controlled FreeInk update was completed at
+`7f6bd0f47a766eea18206dd19f723f3707b6c9d3`. An isolated-cache X4 Pro build,
+artifact identity check, boot-order test, and all three simulator profiles
+(SSD1677, UC8179, UC8279) passed. The recovery route was moved ahead of normal
+reader state, settings, optional services, and frontlight initialization. None
+of this is a physical-panel, PSRAM, deep-sleep, touch, or recovery-drill result;
+the release manifest remains blocked.
+
 | Project | Reviewed commit | Useful finding | Decision |
 | --- | --- | --- | --- |
 | Papyrix | `4a8afdbe660e72c4a60565ed02b147a1797d2558` | Clear SD update and crash-recovery documentation; explicit image validation | Do not port. Its X4 Pro recovery helper currently returns an SSD1677 fixed panel although its own support matrix lists UC8179 and UC8279. It cannot be the source of ChinesePoint display or recovery code. |

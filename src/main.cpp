@@ -420,14 +420,23 @@ void setup() {
 
   HalSystem::checkPanic();
 
+  if (recoveryFirmwareMode) {
+    // This is the last possible point before normal persistent state, user
+    // settings, optional services, and the frontlight are initialized. Keep
+    // the recovery path small: if ordinary startup is the problem, DOWN +
+    // POWER must still reach the SD firmware picker.
+    LOG_INF("MAIN", "Recovery firmware mode (%s + POWER held at boot)",
+            (BoardConfig::isX4Pro() || BoardConfig::isX4Classic()) ? "DOWN" : "UP");
+    ButtonNavigator::setMappedInputManager(mappedInputManager);
+    setupDisplayAndFonts(/*seamless=*/false);
+    activityManager.replaceActivity(
+        std::make_unique<SdFirmwareUpdateActivity>(renderer, mappedInputManager, /*recoveryMode=*/true));
+    return;
+  }
+
   APP_STATE.loadFromFile();
   const bool isSleepWake = wakeupReason == HalGPIO::WakeupReason::PowerButton;
   const bool isPersistedSleepWake = isSleepWake && !APP_STATE.showBootScreen;
-
-  if (recoveryFirmwareMode) {
-    LOG_INF("MAIN", "Recovery firmware mode (%s + POWER held at boot)",
-            (BoardConfig::isX4Pro() || BoardConfig::isX4Classic()) ? "DOWN" : "UP");
-  }
 
   // Touch boards default the reader menu to the toolbar overlay instead of the
   // full-screen list. Seeded before the load: fromJson() falls back to the
@@ -533,11 +542,7 @@ void setup() {
   // Output polarity is resolved per render by ActivityManager (night mode
   // inverts only the reading surfaces), so nothing to restore here.
 
-  if (recoveryFirmwareMode) {
-    // Skip normal home/reader routing: jump straight into the SD firmware picker.
-    activityManager.replaceActivity(
-        std::make_unique<SdFirmwareUpdateActivity>(renderer, mappedInputManager, /*recoveryMode=*/true));
-  } else if (rebootedFromPanic) {
+  if (rebootedFromPanic) {
     // If we rebooted from a panic, go to crash report screen to show the panic info
     activityManager.goToCrashReport();
   } else if (resume == BootResume::Silent && snapshotTarget == SILENT_REBOOT_TARGET_READER &&

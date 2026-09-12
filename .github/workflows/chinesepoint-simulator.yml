@@ -47,6 +47,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build
 
+      - name: Verify X4 Pro boot safety invariants
+        run: python -m unittest discover -s test/chinesepoint_release -p 'test_*.py'
+
       - uses: actions/cache@v4
         with:
           path: build/test/_deps/googletest-src
