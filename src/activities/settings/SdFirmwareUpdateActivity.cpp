@@ -8,11 +8,13 @@
 #include <esp_ota_ops.h>
 #include <mbedtls/sha256.h>
 
-#include <cctype>
+#include <array>
+#include <cstring>
 
 #include "MappedInputManager.h"
 #include "activities/home/FileBrowserActivity.h"
 #include "activities/util/ConfirmationActivity.h"
+#include "chinesepoint/RecoveryBackupContract.h"
 #include "components/UITheme.h"
 #include "fontIds.h"
 #include "network/FirmwareFlasher.h"
@@ -20,21 +22,6 @@
 namespace {
 constexpr const char* RECOVERY_BACKUP_PATH = "/backup/crosspoint-x4pro.bin";
 constexpr const char* RECOVERY_BACKUP_SHA256_PATH = "/backup/crosspoint-x4pro.bin.sha256";
-constexpr size_t SHA256_HEX_LENGTH = 64;
-
-bool decodeHexDigest(const char* text, uint8_t* output) {
-  for (size_t i = 0; i < SHA256_HEX_LENGTH; ++i) {
-    const unsigned char c = static_cast<unsigned char>(text[i]);
-    if (!std::isxdigit(c)) return false;
-    const uint8_t value = static_cast<uint8_t>(std::isdigit(c) ? c - '0' : std::tolower(c) - 'a' + 10);
-    if ((i & 1U) == 0) {
-      output[i / 2] = static_cast<uint8_t>(value << 4U);
-    } else {
-      output[i / 2] |= value;
-    }
-  }
-  return true;
-}
 }  // namespace
 
 void SdFirmwareUpdateActivity::onEnter() {
@@ -182,16 +169,21 @@ bool SdFirmwareUpdateActivity::validateBackupChecksum() {
     errorMessage = "Recovery checksum unavailable";
     return false;
   }
-  char hex[SHA256_HEX_LENGTH + 1]{};
-  const int got = digestFile.read(reinterpret_cast<uint8_t*>(hex), SHA256_HEX_LENGTH);
+  if (digestFile.fileSize() != ChinesePoint::RecoveryBackup::kSha256HexLength) {
+    digestFile.close();
+    errorMessage = "Recovery checksum invalid";
+    return false;
+  }
+  std::array<char, ChinesePoint::RecoveryBackup::kSha256HexLength> hex{};
+  const int got = digestFile.read(reinterpret_cast<uint8_t*>(hex.data()), hex.size());
   digestFile.close();
-  if (got != static_cast<int>(SHA256_HEX_LENGTH)) {
+  if (got != static_cast<int>(hex.size())) {
     errorMessage = "Recovery checksum invalid";
     return false;
   }
 
-  uint8_t expected[32]{};
-  if (!decodeHexDigest(hex, expected)) {
+  std::array<uint8_t, ChinesePoint::RecoveryBackup::kSha256Bytes> expected{};
+  if (!ChinesePoint::RecoveryBackup::parseExactLowercaseSha256(std::string_view(hex.data(), hex.size()), expected)) {
     errorMessage = "Recovery checksum invalid";
     return false;
   }
@@ -218,10 +210,10 @@ bool SdFirmwareUpdateActivity::validateBackupChecksum() {
   }
   firmware.close();
 
-  uint8_t actual[32];
-  mbedtls_sha256_finish(&sha, actual);
+  std::array<uint8_t, ChinesePoint::RecoveryBackup::kSha256Bytes> actual{};
+  mbedtls_sha256_finish(&sha, actual.data());
   mbedtls_sha256_free(&sha);
-  if (std::memcmp(expected, actual, sizeof(expected)) != 0) {
+  if (std::memcmp(expected.data(), actual.data(), expected.size()) != 0) {
     errorMessage = "Recovery checksum mismatch";
     return false;
   }
