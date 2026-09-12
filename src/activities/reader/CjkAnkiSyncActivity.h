@@ -11,7 +11,7 @@ class CjkAnkiSyncActivity final : public Activity {
   void loop() override;
   void render(RenderLock&&) override;
   bool preventAutoSleep() override;
-  bool skipLoopDelay() override { return true; }
+  bool skipLoopDelay() override;
 
  private:
   enum class State { Wifi, Syncing, Complete, Error, Cancelled };

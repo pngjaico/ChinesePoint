@@ -28,7 +28,9 @@ void CcCedictDownloadActivity::onEnter() {
 }
 
 bool CcCedictDownloadActivity::preventAutoSleep() {
-  return state == State::Downloading || state == State::Complete || state == State::Error || state == State::Cancelled;
+  // A result screen is passive. Keeping it awake indefinitely after a completed,
+  // cancelled, or failed download drains the X4 Pro while no transfer is running.
+  return state == State::Downloading;
 }
 
 void CcCedictDownloadActivity::onConfirmationComplete(const ActivityResult& result) {

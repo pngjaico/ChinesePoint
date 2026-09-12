@@ -19,8 +19,12 @@ CjkAnkiSyncActivity::CjkAnkiSyncActivity(GfxRenderer& renderer, MappedInputManag
     : Activity("CjkAnkiSync", renderer, mappedInput) {}
 
 bool CjkAnkiSyncActivity::preventAutoSleep() {
-  return state == State::Syncing || state == State::Complete || state == State::Error || state == State::Cancelled;
+  // Only an active transfer must keep the device awake. Result screens must
+  // return to ordinary sleep behavior when the user leaves them unattended.
+  return state == State::Syncing;
 }
+
+bool CjkAnkiSyncActivity::skipLoopDelay() { return state == State::Syncing; }
 
 void CjkAnkiSyncActivity::onEnter() {
   Activity::onEnter();
