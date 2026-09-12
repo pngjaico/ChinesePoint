@@ -184,6 +184,12 @@ class BridgeServerIntegrationTest(unittest.TestCase):
         upgraded = self.collection.models.by_name(SERVER.MODEL_NAME)
         self.assertIn("Answer", [field["name"] for field in upgraded["flds"]])
 
+    def test_empty_answer_creates_no_note_or_card_candidate(self):
+        status, _headers, payload = self.post(export("Sem definição.", ""), f"cp-v1-{CLIENT_ID}-1-1")
+        self.assertEqual(status, 200)
+        self.assertEqual(payload, {"batch_id": f"cp-v1-{CLIENT_ID}-1-1", "added": 0, "updated": 0})
+        self.assertEqual(self.collection.notes, {})
+
     def test_rejects_bad_bearer_token_before_touching_collection(self):
         status, _headers, payload = self.post(export("Não importar."), f"cp-v1-{CLIENT_ID}-1-1", token="wrong")
         self.assertEqual(status, 401)

@@ -38,11 +38,11 @@ def load_server():
     return importlib.import_module(f"{package_name}.server")
 
 
-def body(sentence: str, answer: str = "hello") -> bytes:
+def body(sentence: str, answer: str = "hello", word_id: str = "0123456789abcdef") -> bytes:
     header = {"schema": "chinesepoint-learner-export", "version": 1, "format": "ndjson"}
     record = {
         "type": "vocabulary",
-        "word_id": "0123456789abcdef",
+        "word_id": word_id,
         "headword": "你好",
         "status": "saved",
         "sentence": sentence,
@@ -52,12 +52,12 @@ def body(sentence: str, answer: str = "hello") -> bytes:
     return (json.dumps(header) + "\n" + json.dumps(record) + "\n").encode("utf-8")
 
 
-def post(server, port: int, batch: str, sentence: str) -> dict:
+def post(server, port: int, batch: str, sentence: str, answer: str = "hello", word_id: str = "0123456789abcdef") -> dict:
     request = http.client.HTTPConnection("127.0.0.1", port, timeout=5)
     request.request(
         "POST",
         server.ENDPOINT,
-        body=body(sentence),
+        body=body(sentence, answer, word_id),
         headers={
             "Authorization": f"Bearer {TOKEN}",
             "Content-Type": "application/x-ndjson",
@@ -101,14 +101,22 @@ def main() -> int:
             first = post(server, config["port"], f"cp-v1-{CLIENT_ID}-1-1", "Frase inicial.")
             retry = post(server, config["port"], f"cp-v1-{CLIENT_ID}-1-1", "Frase inicial.")
             updated = post(server, config["port"], f"cp-v1-{CLIENT_ID}-2-1", "Frase atualizada.")
+            # A saved word without a dictionary answer must not create a note
+            # or a blank card. A later export with the answer creates it.
+            unanswered_id = "fedcba9876543210"
+            unanswered = post(server, config["port"], f"cp-v1-{CLIENT_ID}-3-1", "Sem resposta.", "", unanswered_id)
+            unanswered_card_ids_before = collection.find_cards(f'"ChinesePointId:{unanswered_id}"')
+            answered = post(server, config["port"], f"cp-v1-{CLIENT_ID}-4-1", "Agora respondida.", "answer", unanswered_id)
             note_ids = collection.find_notes('"ChinesePointId:0123456789abcdef"')
             note = collection.get_note(note_ids[0]) if note_ids else None
             model = collection.models.by_name(server.MODEL_NAME)
+            first_card_ids = collection.find_cards('"ChinesePointId:0123456789abcdef"')
+            unanswered_card_ids = collection.find_cards(f'"ChinesePointId:{unanswered_id}"')
             if (first, retry, updated) != (
                 {"status": 200, "payload": {"batch_id": f"cp-v1-{CLIENT_ID}-1-1", "added": 1, "updated": 0}},
                 {"status": 200, "payload": {"batch_id": f"cp-v1-{CLIENT_ID}-1-1", "added": 0, "updated": 0}},
                 {"status": 200, "payload": {"batch_id": f"cp-v1-{CLIENT_ID}-2-1", "added": 0, "updated": 1}},
-            ) or len(note_ids) != 1 or note is None or note["Sentence"] != "Frase atualizada." or note["Answer"] != "hello" or model is None or "{{#Answer}}" not in model["tmpls"][0]["qfmt"]:
+            ) or unanswered != {"status": 200, "payload": {"batch_id": f"cp-v1-{CLIENT_ID}-3-1", "added": 0, "updated": 0}} or answered != {"status": 200, "payload": {"batch_id": f"cp-v1-{CLIENT_ID}-4-1", "added": 1, "updated": 0}} or len(note_ids) != 1 or note is None or note["Sentence"] != "Frase atualizada." or note["Answer"] != "hello" or model is None or "{{#Answer}}" not in model["tmpls"][0]["qfmt"] or len(first_card_ids) != 1 or unanswered_card_ids_before or len(unanswered_card_ids) != 1:
                 raise RuntimeError("unexpected bridge result against real Anki collection")
             print("real Anki collection bridge smoke passed")
         finally:

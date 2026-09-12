@@ -219,6 +219,12 @@ def _upsert_records(collection: object, records: list[VocabularyRecord]) -> tupl
     deck_id = collection.decks.id(DECK_NAME)
     added = updated = 0
     for record in records:
+        # Anki creates a card object when a note is added even if a Mustache
+        # conditional makes its rendered front empty. Do not create a note at
+        # all until the reader has a real dictionary answer; a later export
+        # with that answer creates the first card without leaving a blank one.
+        if not record.answer:
+            continue
         note_ids = collection.find_notes(f'"ChinesePointId:{record.word_id}"')
         if note_ids:
             note = collection.get_note(note_ids[0])
