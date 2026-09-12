@@ -16,11 +16,15 @@ Its release workflows build only `chinesepoint_x4pro`; an upstream-shaped multi-
 - EPUB, TXT, and XTC reading on the current CrossPoint reader base.
 - CJK token lookup, local dictionaries, source-aware vocabulary, and local review for cards with a saved answer.
 - Inspectable reading and learning statistics with export and import.
-- Optional token-authenticated LAN Anki Desktop flashcard import; no cloud relay, background device sync, or schedule-state pull.
+- Optional token-authenticated LAN Anki Desktop flashcard import; no cloud relay, background device sync, or schedule-state pull in the current build.
+- A planned private Anki/FSRS bridge, designed from CrossPlay Study patterns while retaining ChinesePoint's X4 Pro hardware and recovery layer.
 - A versioned Linux/WSL simulator evidence bundle with scripted captures for every release.
 - A release dashboard with hashes, rollback instructions, and clear status labels.
 
 The architecture and safety constraints are in docs/chinesepoint/v1-architecture.md.
+The Anki/FSRS design and the boundaries for using CrossPlay Study are in
+[study-anki-sync-v1.md](docs/chinesepoint/study-anki-sync-v1.md) and
+[crossplay-study-adoption.md](docs/chinesepoint/crossplay-study-adoption.md).
 
 ## Safety before features
 
