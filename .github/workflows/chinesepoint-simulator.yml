@@ -50,6 +50,7 @@ jobs:
       - name: Verify X4 Pro boot safety invariants
         run: |
           python -m unittest discover -s test/chinesepoint_release -p 'test_*.py'
+          python -m unittest discover -s tools/chinesepoint -p 'test_*.py'
           python tools/chinesepoint/test_verify_iram_attribution.py
 
       - name: Verify Anki bridge protocol and local HTTP integration
@@ -69,7 +70,7 @@ jobs:
   firmware:
     name: deterministic-x4pro-firmware
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v6
         with:
@@ -94,17 +95,27 @@ jobs:
           key: chinesepoint-x4pro-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
           restore-keys: chinesepoint-x4pro-${{ runner.os }}-
 
-      - name: Build the same X4 Pro commit twice from clean outputs
+      - name: Build the same X4 Pro commit in two worktrees
         run: |
           set -euo pipefail
           mkdir -p qa-artifacts
           pio run -e chinesepoint_x4pro -j1 | tee qa-artifacts/pio-first.log
-          cp .pio/build/chinesepoint_x4pro/firmware.bin qa-artifacts/firmware-first.bin
-          pio run -e chinesepoint_x4pro -t clean
-          pio run -e chinesepoint_x4pro -j1 | tee qa-artifacts/pio.log
-          cmp qa-artifacts/firmware-first.bin .pio/build/chinesepoint_x4pro/firmware.bin
+          for artifact in firmware.bin update.bin; do
+            test -s ".pio/build/chinesepoint_x4pro/${artifact}"
+            cp ".pio/build/chinesepoint_x4pro/${artifact}" "qa-artifacts/${artifact}.first"
+          done
+          rebuild_dir="${GITHUB_WORKSPACE}/../chinesepoint-x4pro-rebuild"
+          git worktree add --detach "$rebuild_dir" "$GITHUB_SHA"
+          git -C "$rebuild_dir" submodule update --init --recursive
+          (
+            cd "$rebuild_dir"
+            pio run -e chinesepoint_x4pro -j1 | tee qa-artifacts/pio-second.log
+          )
+          for artifact in firmware.bin update.bin; do
+            cmp "qa-artifacts/${artifact}.first" "$rebuild_dir/.pio/build/chinesepoint_x4pro/${artifact}"
+          done
           sha256sum .pio/build/chinesepoint_x4pro/firmware.bin > qa-artifacts/firmware.bin.sha256
-          rm qa-artifacts/firmware-first.bin
+          sha256sum .pio/build/chinesepoint_x4pro/update.bin > qa-artifacts/update.bin.sha256
 
       - name: Verify the application image target
         run: |
