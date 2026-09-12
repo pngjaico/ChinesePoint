@@ -23,7 +23,7 @@ class BuildIdentityTest(unittest.TestCase):
         config = PLATFORMIO_INI.read_text(encoding="utf-8")
         environment = config.split("[env:chinesepoint_x4pro]", 1)[1].split("[chinesepoint_simulator_base]", 1)[0]
 
-        self.assertIn('-D__DATE__=\\"Jan 01 1970\\"', environment)
+        self.assertIn('-D__DATE__=\\"Jan_01_1970\\"', environment)
         self.assertIn('-D__TIME__=\\"00:00:00\\"', environment)
 
 

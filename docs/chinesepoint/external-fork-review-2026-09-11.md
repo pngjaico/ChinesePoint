@@ -22,15 +22,16 @@ the release manifest remains blocked.
 
 ## Immediate decisions
 
-1. Keep FreeInk as the only X4 Pro display-controller source. Before any
-   candidate is installed, update its pinned revision in a controlled change,
-   inspect the X4 Pro driver and deep-sleep diffs, and rebuild all three
-   simulator profiles. The current pin is not current enough to dismiss the
-   CrossPlay mirrored/inverted-display report.
-2. Do not add a pre-UI automatic `force_update.bin` route. A stale file that
-   flashes automatically is a worse failure mode for a USB-locked device. The
-   existing DOWN+POWER route must instead be made minimal enough to reach the
-   verified SD updater even when optional reader and learner state fail.
+1. Keep FreeInk as the only X4 Pro display-controller source. Its pin is now
+   `7f6bd0f47a766eea18206dd19f723f3707b6c9d3`; any later update needs the same
+   controlled review, isolated build, and three simulator profiles. This still
+   does not dismiss the CrossPlay mirrored/inverted-display report without
+   physical coverage of all three controller paths.
+2. The minimal DOWN+POWER route now reaches the verified SD updater before
+   optional services. A deliberate 2.5-second hold may restore only
+   `/backup/crosspoint-x4pro.bin` with its separately verified SHA-256. It is
+   intentionally not a generic `force_update.bin` route, and has no physical
+   recovery-drill evidence yet.
 3. Do not add Wi-Fi-first features while the PSRAM, display and recovery
    gates are unresolved. The learning flow remains local-first: a bounded
    journal, manual export, then an opt-in token-authenticated Anki Desktop
@@ -40,12 +41,13 @@ the release manifest remains blocked.
 
 1. **Emulator baseline:** build and capture boot screens for SSD1677, UC8179
    and UC8279 from this exact source revision. This checks code paths only.
-2. **Dependency safety update:** review and pin current FreeInk; add a test
-   that requires controller resolution before `display.begin()` and an X4 Pro
-   boot diagnostic for usable PSRAM.
-3. **Recovery isolation:** route DOWN+POWER to the SD updater before reader
-   settings, frontlight, network and learner initialization. Exercise valid,
-   wrong-target and corrupt-image rejection.
+2. **Dependency safety update:** on every new FreeInk revision, review and pin
+   it; rebuild all simulator profiles and retain an X4 Pro boot diagnostic for
+   usable PSRAM.
+3. **Recovery isolation:** physically exercise the minimal DOWN+POWER route
+   and the deliberate backup restore. Demonstrate rejection of missing,
+   wrong-digest, wrong-target, oversized, and corrupt images before a valid
+   restore is attempted.
 4. **Reading and learning acceptance:** verify CJK rendering, dictionary
    misses with preserved context, journal persistence, CC-CEDICT integrity,
    export and idempotent Anki Desktop sync in the emulator where applicable.

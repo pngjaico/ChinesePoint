@@ -40,15 +40,24 @@ The initial source base is CrossPoint develop commit e7a3bb48817f1cb951b521ca958
 
 The unmodified X4 Pro baseline compiled on 2026-08-30 and produced a valid ESP32-S3 application image. It is not yet a ChinesePoint CJK release.
 
-The latest ChinesePoint pre-physical build passed locally on 2026-09-01 at source commit `04338ee`. Its X4 Pro artifact has an ESP32-S3 image header, the current `CROSSPOINT-BOARD-V1:x4pro;` tag, a valid Espressif checksum and validation hash, and SHA-256 `5febfdceeebba5c7a575601f843773fac81bc4647a651580305191f8aa3fb26b`. It passed 198 native tests and artifact validation; the three-panel simulator CI for this exact commit is pending. It includes word selection, sentence-context saving even for a local dictionary miss, optional local StarDict lookup, learner statistics, a read-only vocabulary/context browser, an opt-in verified CC-CEDICT installer, and a manually triggered token-authenticated Anki Desktop bridge. It is explicitly **not installable yet**: no physical panel or recovery drill has been performed.
+The current ChinesePoint pre-physical build is source commit `e407018`. Its X4
+Pro artifact has an ESP32-S3 image header, the current
+`CROSSPOINT-BOARD-V1:x4pro;` tag, a valid Espressif checksum and validation
+hash, and SHA-256 `98e2e0b02c77538d016887873c20819cfd5e3c7c2599945f8719b76ba29d7000`
+(5,377,168 bytes). It passed artifact validation, eight release-structure
+tests, two deterministic-identity tests, and simulator boot captures in the
+SSD1677, UC8179, and UC8279 profiles. It includes word selection,
+sentence-context saving even for a local dictionary miss, optional local
+StarDict lookup, learner statistics, a read-only vocabulary/context browser,
+an opt-in verified CC-CEDICT installer, and a manually triggered
+token-authenticated Anki Desktop bridge. It is explicitly **not installable
+yet**: no physical panel or recovery drill has been performed.
 
 ## Current diagnostic build
 
-On 2026-09-11, the current `chinesepoint_x4pro` working tree compiled as an
-ESP32-S3 X4 Pro application image with `CROSSPOINT-BOARD-V1:x4pro;` and
-SHA-256 `5b1f6bcfee933033903ee4762bd4f6743da38ff452d273d373d297a85a40ab4b`
-(5,370,144 bytes). Artifact validation reports `installable: false`; it is a
-diagnostic build only and is not a GitHub release asset or recovery image.
+The `e407018` artifact above is the current diagnostic build. Artifact
+validation reports `installable: false`; it is not a GitHub release asset or a
+recovery image.
 
 This candidate adds bounded, allocation-free CJK phrase lookup after an exact
 StarDict miss. It tries no more than 12 phrases of up to 8 Han code points and
@@ -65,18 +74,17 @@ On 2026-09-12, the FreeInk pin was advanced to
 `7f6bd0f47a766eea18206dd19f723f3707b6c9d3`, including the upstream X4 Pro
 driver update implicated by the CrossPlay mirrored-display report. The X4 Pro
 application rebuilt from an isolated cache and verified as target
-`xteink-x4-pro`, SHA-256
-`c386f488cbffe849d5729b0cc03e41909eb31d3052d5616c6fb083fd811d9c91`
-(5,375,792 bytes). DOWN+POWER now reaches the SD firmware picker before normal
-reader state, settings, optional services, or frontlight initialization. The
-same candidate boot-rendered in the SSD1677, UC8179, and UC8279 simulator
-profiles. This is still not physical display or recovery evidence, and its
-100% IRAM allocation remains a release risk. Its listed consumers are ESP-IDF
-flash/PSRAM, FreeRTOS and interrupt paths rather than a movable ChinesePoint
-feature, so it requires physical watchdog and sleep/wake evidence instead of a
-blind source-level "optimization". On real X4 Pro hardware, a reported PSRAM
-total below 6 MiB now stops normal startup with a visible recovery instruction;
-the DOWN+POWER SD route remains available before that check.
+`xteink-x4-pro`. DOWN+POWER first reaches the SD firmware picker before normal
+reader state, settings, optional services, or frontlight initialization; a
+continuous 2.5-second hold attempts only the separately hashed backup contract
+documented below. This is still not physical display or recovery evidence, and
+its 100% IRAM allocation remains a release risk. Its listed consumers are
+ESP-IDF flash/PSRAM, FreeRTOS and interrupt paths rather than a movable
+ChinesePoint feature, so it requires physical watchdog and sleep/wake evidence
+instead of a blind source-level "optimization". On real X4 Pro hardware, a
+reported PSRAM total below 6 MiB now stops normal startup with a visible
+recovery instruction; the DOWN+POWER SD route remains available before that
+check.
 
 ~~~powershell
 $env:PYTHONUTF8 = '1'
