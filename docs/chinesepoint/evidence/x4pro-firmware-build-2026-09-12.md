@@ -2,10 +2,11 @@
 
 ## Input and scope
 
-`pio run -e chinesepoint_x4pro` completed successfully in 1,315.83 seconds.
-It built the application source at `d24e15f`. `git diff --name-only
-d24e15f..58171bc` contains only documentation and the desktop Anki bridge, so
-the current branch has the same firmware application inputs as this build.
+`pio run -e chinesepoint_x4pro` completed successfully in 1,100.49 seconds.
+It built the current application source at `b166b10`. That revision contains
+the explicit X4 Pro isolation: the general CrossPoint environment excludes
+ChinesePoint sources, while this feature environment compiles the learner,
+dictionary and Anki paths.
 
 This is a local compiler and artifact record. It is not a flash, a device test,
 or a release approval.
@@ -14,12 +15,14 @@ or a release approval.
 
 | File | Bytes | SHA-256 |
 | --- | ---: | --- |
-| `firmware.bin` | 5,390,320 | `ea0cb4aaf74002d7f668cf6ec1f2154c392e0a9c93c1667a663cb684b1c4cd83` |
-| `update.bin` | 5,390,320 | `ea0cb4aaf74002d7f668cf6ec1f2154c392e0a9c93c1667a663cb684b1c4cd83` |
+| `firmware.bin` | 5,390,320 | `5eb1f9ccc7b828d061f15acc12502fb1686dffbc2976898ea5a6a459f52aff56` |
+| `update.bin` | 5,390,320 | `5eb1f9ccc7b828d061f15acc12502fb1686dffbc2976898ea5a6a459f52aff56` |
 
 `verify_artifact.py` accepted the application as target `xteink-x4-pro`, with
 the sole board tag `CROSSPOINT-BOARD-V1:x4pro;` and version
 `ChinesePoint-v0.6-x4pro`. Its generated manifest keeps `installable: false`.
+The IRAM attribution check also passed: no ChinesePoint symbols appeared in
+the dedicated IRAM sections.
 
 ## Memory observation
 
