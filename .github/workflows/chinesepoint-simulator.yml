@@ -50,6 +50,9 @@ jobs:
       - name: Verify X4 Pro boot safety invariants
         run: python -m unittest discover -s test/chinesepoint_release -p 'test_*.py'
 
+      - name: Verify Anki bridge protocol and local HTTP integration
+        run: python -m unittest discover -s tools/anki_bridge/tests -p 'test_*.py'
+
       - uses: actions/cache@v4
         with:
           path: build/test/_deps/googletest-src

@@ -42,7 +42,9 @@ From this directory, run:
 python -m unittest discover -s tests -v
 ```
 
-These tests exercise only the untrusted HTTP payload parser. They are not a
+These tests exercise the untrusted HTTP payload parser and a synthetic local
+HTTP bridge with a fake collection. The latter verifies bearer authentication,
+first import, idempotent retry, and a later note update. They are not a
 substitute for running the add-on inside a real Anki Desktop profile.
 
 ## Build the add-on archive
