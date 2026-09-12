@@ -40,10 +40,10 @@ The initial source base is CrossPoint develop commit e7a3bb48817f1cb951b521ca958
 
 The unmodified X4 Pro baseline compiled on 2026-08-30 and produced a valid ESP32-S3 application image. It is not yet a ChinesePoint CJK release.
 
-The current ChinesePoint pre-physical build is source commit `ffc89bf`. Its X4
+The current ChinesePoint pre-physical build is source commit `404ff1e`. Its X4
 Pro artifact has an ESP32-S3 image header, the current
 `CROSSPOINT-BOARD-V1:x4pro;` tag, a valid Espressif checksum and validation
-hash, and SHA-256 `131dc34e0afd1f7bbba51a48a462f439a0f61ee30bafffd965ab9fe6956df58b`
+hash, and SHA-256 `c72e14ad12a528fd4475a2705406d1d25b292204eab28681bc6d15c45d38bda5`
 (5,377,568 bytes). It passed artifact validation, 208 native host tests, eight
 release-structure tests, two deterministic-identity tests, and simulator boot
 captures in the SSD1677, UC8179, and UC8279 profiles. It includes word selection,
@@ -51,13 +51,14 @@ sentence-context saving even for a local dictionary miss, optional local
 StarDict lookup, learner statistics, a read-only vocabulary/context browser,
 an opt-in verified CC-CEDICT installer, and a manually triggered
 token-authenticated Anki Desktop bridge. Its bounded Anki export, upload, and
-response waits also service a subscribed watchdog. It is explicitly **not
-installable yet**: no physical panel, Anki transfer, or recovery drill has
-been performed.
+response waits also service a subscribed watchdog; target socket operations
+are capped at three seconds while the complete HTTP response has a 60-second
+deadline. It is explicitly **not installable yet**: no physical panel, Anki
+transfer, or recovery drill has been performed.
 
 ## Current diagnostic build
 
-The `ffc89bf` artifact above is the current diagnostic build. Artifact
+The `404ff1e` artifact above is the current diagnostic build. Artifact
 validation reports `installable: false`; it is not a GitHub release asset or a
 recovery image.
 
