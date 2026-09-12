@@ -60,9 +60,11 @@ the dedicated IRAM sections.
 | RTC slow | 5,524 | 7,680 | 2,156 |
 | RTC fast | 92 | 8,192 | 8,100 |
 
-The zero-byte IRAM margin is unchanged and blocks an installable release. A
-successful link does not prove this image is safe during Wi-Fi, display refresh,
-sleep/wake, or recovery on a locked X4 Pro.
+The zero applies to dedicated IRAM. ESP32-S3 also uses shared D/IRAM, whose
+static remainder is 184,682 bytes in this build; see
+[`x4pro-memory-map-audit-2026-09-12.md`](x4pro-memory-map-audit-2026-09-12.md).
+This still does not prove runtime internal heap or safe operation during Wi-Fi,
+display refresh, sleep/wake, or recovery on a locked X4 Pro.
 
 ## Compiler warnings
 

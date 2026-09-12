@@ -86,11 +86,14 @@ logarithmic-width probes, protects UTF-8 boundaries, and services the
 subscribed watchdog around expensive text measurement. This reduces a known
 indexing-risk path; it is not proof that an X4 Pro cannot freeze.
 
-The build used 27.5% RAM and 82.0% flash. Its IRAM total is fully allocated,
-so adding ISR or flash-cache-sensitive code requires an IRAM budget review
-before it can be considered safe. Host-native tests, formatting, static
-analysis, simulator coverage, every physical panel path, reader acceptance,
-and the DOWN+POWER recovery drill remain release gates.
+The build used 27.5% RAM and 82.0% flash. The size report's 16 KiB
+dedicated-IRAM region is fully assigned, but the ESP32-S3 linker map also has
+341,760 bytes of shared D/IRAM and 184,682 bytes remain after static code and
+data. New ISR or flash-cache-sensitive code still requires an IRAM/DIRAM
+budget review; the actual runtime heap is lower after SDK startup and must be
+measured on hardware. Host-native tests, formatting, static analysis,
+simulator coverage, every physical panel path, reader acceptance, and the
+DOWN+POWER recovery drill remain release gates.
 
 On 2026-09-12, the FreeInk pin was advanced to
 `7f6bd0f47a766eea18206dd19f723f3707b6c9d3`, including the upstream X4 Pro
@@ -99,11 +102,10 @@ application rebuilt from an isolated cache and verified as target
 `xteink-x4-pro`. DOWN+POWER first reaches the SD firmware picker before normal
 reader state, settings, optional services, or frontlight initialization; a
 continuous 2.5-second hold attempts only the separately hashed backup contract
-documented below. This is still not physical display or recovery evidence, and
-its 100% IRAM allocation remains a release risk. Its listed consumers are
-ESP-IDF flash/PSRAM, FreeRTOS and interrupt paths rather than a movable
-ChinesePoint feature, so it requires physical watchdog and sleep/wake evidence
-instead of a blind source-level "optimization". On real X4 Pro hardware, a
+documented below. This is still not physical display or recovery evidence. The
+16 KiB dedicated-IRAM figure is already allocated, while the relevant shared
+D/IRAM static remainder is 184,682 bytes; both values need runtime validation
+rather than a blind source-level "optimization". On real X4 Pro hardware, a
 reported PSRAM total below 6 MiB now stops normal startup with a visible
 recovery instruction; the DOWN+POWER SD route remains available before that
 check.

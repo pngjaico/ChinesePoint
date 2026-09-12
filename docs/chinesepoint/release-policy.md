@@ -24,11 +24,13 @@ can be called installable:
 The script cannot manufacture this evidence. It only prevents an unchecked
 manifest from enabling a download.
 
-The X4 Pro USB-MSC profile has no dedicated-IRAM margin in the current SDK
-prebuild. Every firmware, release-candidate, and tag build runs
-`verify_iram_attribution.py` and rejects a ChinesePoint symbol placed in IRAM.
-This prevents learner work from worsening the fixed platform constraint; it
-does not replace a physical stability test or create IRAM headroom.
+The X4 Pro USB-MSC profile fully assigns its 16 KiB dedicated-IRAM region in
+the current SDK prebuild. The ESP32-S3 map also has shared D/IRAM; its current
+static remainder is 184,682 bytes before SDK startup allocations. Every
+firmware, release-candidate, and tag build runs `verify_iram_attribution.py`
+and rejects a ChinesePoint symbol placed in IRAM. This prevents learner work
+from worsening the critical-code budget; it does not measure runtime heap or
+replace a physical stability test.
 
 The observable procedure and evidence-file format are in
 [`physical-validation.md`](physical-validation.md).

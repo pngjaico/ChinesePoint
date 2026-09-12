@@ -84,12 +84,14 @@ physical test record. The artifact remains diagnostic and non-installable.
 5. **Run the real three-controller matrix.** Each controller variant needs
    cold boot, orientation, refresh, touch, frontlight, sleep/wake, reading,
    slow Wi-Fi, Anki cancellation, and a successful backup restore record.
-   The current zero-byte IRAM margin is a release blocker until this evidence
-   exists.
+   The 16 KiB dedicated-IRAM allocation and the shared D/IRAM runtime margin
+   must be measured during this matrix.
 
 The current technical risk that cannot be solved by documentation is the X4
-Pro image's 100% IRAM allocation. The firmware compiles, but the remaining
-margin is zero; only a measured device session can establish whether its
+Pro image's unmeasured runtime internal-RAM margin. Its 16 KiB dedicated IRAM
+is allocated, while the linker reports 184,682 bytes of shared D/IRAM after
+static code and data. SDK startup, Wi-Fi, USB-MSC, display, and reader use
+reduce the usable heap; only a measured device session can establish whether
 watchdog, sleep/wake, Wi-Fi, and panel behavior are acceptable.
 
 ## Critical correction: local review exists; Anki schedule integration does not

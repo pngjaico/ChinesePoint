@@ -33,5 +33,6 @@ The simulator cannot reproduce which controller an individual X4 Pro chooses
 at boot, nor validate panel orientation, touch, partial refresh, standby,
 recovery, SD flashing, or a device that has been locked by its original
 firmware. The release remains blocked by the separate X4 Pro physical test
-matrix and the zero-byte IRAM margin already recorded in the learner build
-evidence.
+matrix and unmeasured runtime internal heap; the apparent dedicated-IRAM
+zero is explained in
+[`x4pro-memory-map-audit-2026-09-12.md`](x4pro-memory-map-audit-2026-09-12.md).
