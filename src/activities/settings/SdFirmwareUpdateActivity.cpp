@@ -18,10 +18,22 @@
 #include "components/UITheme.h"
 #include "fontIds.h"
 #include "network/FirmwareFlasher.h"
+#include "util/TaskWatchdog.h"
 
 namespace {
 constexpr const char* RECOVERY_BACKUP_PATH = "/backup/crosspoint-x4pro.bin";
 constexpr const char* RECOVERY_BACKUP_SHA256_PATH = "/backup/crosspoint-x4pro.bin.sha256";
+constexpr uint32_t RECOVERY_HASH_WATCHDOG_SERVICE_INTERVAL_MS = 100;
+
+// A verified recovery image is several MiB.  Hash it incrementally without
+// allowing a slow SD card to starve the task watchdog before the updater can
+// either reject it or enter the protected flashing path.
+void serviceRecoveryHashWatchdog(uint32_t& lastServiceMs) {
+  if (millis() - lastServiceMs < RECOVERY_HASH_WATCHDOG_SERVICE_INTERVAL_MS) return;
+  resetTaskWatchdogIfSubscribed();
+  delay(1);
+  lastServiceMs = millis();
+}
 }  // namespace
 
 void SdFirmwareUpdateActivity::onEnter() {
@@ -197,6 +209,7 @@ bool SdFirmwareUpdateActivity::validateBackupChecksum() {
   mbedtls_sha256_init(&sha);
   mbedtls_sha256_starts(&sha, 0);
   uint8_t buffer[512];
+  uint32_t lastWatchdogServiceMs = millis();
   for (;;) {
     const int count = firmware.read(buffer, sizeof(buffer));
     if (count < 0) {
@@ -207,6 +220,7 @@ bool SdFirmwareUpdateActivity::validateBackupChecksum() {
     }
     if (count == 0) break;
     mbedtls_sha256_update(&sha, buffer, static_cast<size_t>(count));
+    serviceRecoveryHashWatchdog(lastWatchdogServiceMs);
   }
   firmware.close();
 

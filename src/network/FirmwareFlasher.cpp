@@ -14,6 +14,7 @@
 
 #include "FirmwareBoardTag.h"
 #include "OtaBootSwitch.h"
+#include "util/TaskWatchdog.h"
 
 namespace firmware_flash {
 
@@ -27,6 +28,20 @@ constexpr size_t SHA_TRAILER = 32;
 constexpr uint8_t CHECKSUM_SEED = 0xEF;
 constexpr size_t HEADER_SIZE = 24;
 constexpr size_t SEG_HEADER_SIZE = 8;
+constexpr uint32_t VALIDATION_WATCHDOG_SERVICE_INTERVAL_MS = 100;
+
+// Image validation reads a full application from removable storage before it
+// changes otadata.  On a slow or marginal SD card that can exceed the loop
+// task watchdog window, even though each individual read succeeds.  Service
+// the subscribed task and yield at a time budget instead of after every 4 KiB
+// chunk, so validation remains responsive without turning a normal SD read
+// into thousands of scheduler delays.
+void serviceValidationWatchdog(uint32_t& lastServiceMs) {
+  if (millis() - lastServiceMs < VALIDATION_WATCHDOG_SERVICE_INTERVAL_MS) return;
+  resetTaskWatchdogIfSubscribed();
+  delay(1);
+  lastServiceMs = millis();
+}
 }  // namespace
 
 const char* resultName(Result r) {
@@ -90,7 +105,7 @@ namespace {
 // both the XOR-checksum and SHA256 accumulators. Used by validateImageFile so the whole image
 // is verified end-to-end without holding it in RAM (ESP32-C3 only has ~380 KB).
 Result feedHashAndChecksum(HalFile& file, size_t length, uint8_t* xorAccum, mbedtls_sha256_context* sha, uint8_t* buf,
-                           board_tag::Scanner* tagScanner) {
+                            board_tag::Scanner* tagScanner, uint32_t& lastWatchdogServiceMs) {
   size_t remaining = length;
   while (remaining > 0) {
     const size_t want = std::min<size_t>(CHUNK, remaining);
@@ -104,6 +119,7 @@ Result feedHashAndChecksum(HalFile& file, size_t length, uint8_t* xorAccum, mbed
       *xorAccum = acc;
     }
     remaining -= want;
+    serviceValidationWatchdog(lastWatchdogServiceMs);
   }
   return Result::OK;
 }
@@ -171,6 +187,7 @@ Result validateImageFile(const char* sdPath, size_t partitionSize) {
   // reads, so the check is free of extra I/O. Only a present-and-mismatched
   // tag rejects; untagged images (forks, other projects) pass.
   board_tag::Scanner tagScanner;
+  uint32_t lastWatchdogServiceMs = millis();
 
   for (uint8_t i = 0; i < segCount; i++) {
     if (pos + SEG_HEADER_SIZE > fileSize) {
@@ -198,7 +215,8 @@ Result validateImageFile(const char* sdPath, size_t partitionSize) {
       return Result::BAD_SEGMENTS;
     }
 
-    const Result feedRes = feedHashAndChecksum(file, dataLen, &xorAccum, &shaCtx, buf.get(), &tagScanner);
+    const Result feedRes =
+        feedHashAndChecksum(file, dataLen, &xorAccum, &shaCtx, buf.get(), &tagScanner, lastWatchdogServiceMs);
     if (feedRes != Result::OK) {
       mbedtls_sha256_free(&shaCtx);
       file.close();
