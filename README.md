@@ -40,10 +40,10 @@ The initial source base is CrossPoint develop commit e7a3bb48817f1cb951b521ca958
 
 The unmodified X4 Pro baseline compiled on 2026-08-30 and produced a valid ESP32-S3 application image. It is not yet a ChinesePoint CJK release.
 
-The current ChinesePoint pre-physical build is source commit `df06a4c`. Its X4
+The current ChinesePoint pre-physical build is source commit `6d1c448`. Its X4
 Pro artifact has an ESP32-S3 image header, the current
 `CROSSPOINT-BOARD-V1:x4pro;` tag, a valid Espressif checksum and validation
-hash, and SHA-256 `a4bd9d0715e26b7606b6d702a8cbd8a0c892c4a72bd8aa25084095bfa7562528`
+hash, and SHA-256 `b0ee4fad6b39c0002a762acfe9a1da3ccb1f091137f44c670875daeb09ae6296`
 (5,377,184 bytes). It passed artifact validation, 204 native host tests, eight
 release-structure tests, two deterministic-identity tests, and simulator boot
 captures in the SSD1677, UC8179, and UC8279 profiles. It includes word selection,
@@ -55,7 +55,7 @@ yet**: no physical panel or recovery drill has been performed.
 
 ## Current diagnostic build
 
-The `df06a4c` artifact above is the current diagnostic build. Artifact
+The `6d1c448` artifact above is the current diagnostic build. Artifact
 validation reports `installable: false`; it is not a GitHub release asset or a
 recovery image.
 
