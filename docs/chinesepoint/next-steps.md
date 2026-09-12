@@ -56,8 +56,10 @@ The artifact remains diagnostic and non-installable.
 - CrossPlay must not donate X4 Pro display initialization: its earlier FreeInk
   pin was missing the upstream X4 Pro display-driver update implicated in
   mirrored output on some controllers.
-- Papyrix hard-codes an SSD1677-oriented recovery path, so importing it would
-  weaken the required three-controller X4 Pro gate.
+- Papyrix currently documents UC8179/UC8279 detection, so the earlier
+  SSD1677-only recovery conclusion is withdrawn. Its `/force_update.bin` route
+  still auto-flashes before the UI and removes the file after an attempt; it
+  cannot replace ChinesePoint's deliberate, separately hashed backup restore.
 
 ## Mini plan from here
 
