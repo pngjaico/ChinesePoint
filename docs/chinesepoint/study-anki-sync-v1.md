@@ -165,6 +165,22 @@ offset on an entry boundary and `ack_prefix_hash` authenticates bytes `[0,
 ack_offset)` so an SD rollback or replacement cannot falsely claim reviews
 were acknowledged.
 
+### `state.dat`
+
+Header: `CPSTATE1`, `u16 version`, `u16 record_bytes = 56`, `u32 record_count`,
+`u64 generation`, `u32 records_crc32`; total 28 bytes. Each 56-byte overlay
+record has: `i64 card_id`; `u8 state`; `u8 step`; `u16 flags = 0`;
+`i64 due_at_ms`; `i64 last_review_at_ms`; `f32 stability`; `f32 difficulty`;
+`u32 reps`; `u32 lapses`; `u64 last_revlog_offset`; and a trailing `u32 CRC32`
+over the first 52 bytes.
+
+A write creates and flushes a complete temporary `state.dat` with the records
+CRC and then atomically replaces the prior file. The loader accepts only a
+header whose count, records CRC, every record CRC, state value, and reserved
+flags validate. It otherwise retains the prior state file and replays the
+valid review log. `generation` increments only after the temporary file is
+complete; it is not a substitute for the review journal.
+
 ## Pairing state machine
 
 ```text
