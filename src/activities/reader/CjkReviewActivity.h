@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "activities/UiListActivity.h"
+#include "chinesepoint/cjk/CjkReviewScheduler.h"
 #include "chinesepoint/cjk/CjkStudyClock.h"
 
 // Bounded local-review surface. It intentionally selects only cards whose
