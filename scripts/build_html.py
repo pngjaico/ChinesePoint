@@ -4,6 +4,15 @@ import gzip
 
 SRC_DIR = "src"
 
+
+def deterministic_gzip(content: bytes) -> bytes:
+    """Return a reproducible gzip member for firmware-embedded web assets."""
+
+    # gzip.compress otherwise writes the current UNIX timestamp in bytes 4..7
+    # of its header. That made independent firmware builds differ despite
+    # identical C++ sources and invalidated release hashes.
+    return gzip.compress(content, compresslevel=9, mtime=0)
+
 def minify_html(html: str) -> str:
     # Tags where whitespace should be preserved
     preserve_tags = ['pre', 'code', 'textarea', 'script', 'style']
@@ -61,7 +70,7 @@ for root, _, files in os.walk(SRC_DIR):
 
             # Compress with gzip (compresslevel 9 is maximum compression)
             # IMPORTANT: we don't use brotli because Firefox doesn't support brotli with insecured context (only supported on HTTPS)
-            compressed = gzip.compress(processed.encode('utf-8'), compresslevel=9)
+            compressed = deterministic_gzip(processed.encode('utf-8'))
 
             # Create valid C identifier from filename
             # Use appropriate suffix based on file type
