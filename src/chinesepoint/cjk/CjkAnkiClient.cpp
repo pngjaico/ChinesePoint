@@ -18,7 +18,11 @@ namespace ChinesePoint::Cjk {
 namespace {
 
 constexpr size_t kMaxExportBytes = 2 * 1024 * 1024;
-constexpr uint32_t kTimeoutMs = 60 * 1000;
+constexpr uint32_t kResponseDeadlineMs = 60 * 1000;
+// A synchronous Anki activity runs on the UI task. Individual socket calls
+// must return well before its watchdog budget; the outer response loop still
+// permits a healthy bridge up to one minute to finish the HTTP response.
+constexpr uint32_t kSocketOperationTimeoutMs = 3 * 1000;
 
 bool writeText(WiFiClient& client, const std::string& value) {
   return client.write(reinterpret_cast<const uint8_t*>(value.data()), value.size()) == value.size();
@@ -27,7 +31,7 @@ bool writeText(WiFiClient& client, const std::string& value) {
 bool readLine(WiFiClient& client, char* output, const size_t capacity, const bool* const cancelRequested) {
   size_t length = 0;
   const uint32_t started = millis();
-  while (millis() - started < kTimeoutMs) {
+  while (millis() - started < kResponseDeadlineMs) {
     // The UI activity is waiting synchronously for a trusted-LAN peer. Keep a
     // subscribed watchdog alive while the peer is slow or temporarily silent;
     // cancellation and the fixed deadline still bound the wait.
@@ -95,11 +99,17 @@ CjkAnkiClient::Result CjkAnkiClient::pushVocabulary(LearnerStore& store, const A
   WiFiClient client;
 #if !defined(SIMULATOR)
   // NetworkClient in the official desktop simulator intentionally has no
-  // timeout setter. The simulator does not perform a real LAN Anki transfer.
-  client.setTimeout(kTimeoutMs);
+  // timeout setter or timeout-taking connect overload. Bound target socket
+  // reads and writes even though the full HTTP response may take longer.
+  client.setTimeout(kSocketOperationTimeoutMs);
 #endif
   resetTaskWatchdogIfSubscribed();
-  if (!client.connect(url.host.c_str(), url.port)) {
+#if !defined(SIMULATOR)
+  const bool connected = client.connect(url.host.c_str(), url.port, kSocketOperationTimeoutMs);
+#else
+  const bool connected = client.connect(url.host.c_str(), url.port);
+#endif
+  if (!connected) {
     exportFile.close();
     return Result::ConnectionFailed;
   }
