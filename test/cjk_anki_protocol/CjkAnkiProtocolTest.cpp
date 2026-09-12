@@ -24,6 +24,7 @@ TEST(CjkAnkiProtocol, ValidatesCredentialMaterialAndMakesStableRetryBatchIds) {
   EXPECT_TRUE(ChinesePoint::Cjk::validAnkiBridgeToken("cjk_token-ABC_123"));
   EXPECT_FALSE(ChinesePoint::Cjk::validAnkiBridgeToken("bad token"));
   EXPECT_FALSE(ChinesePoint::Cjk::validAnkiBridgeClientId("short"));
+  EXPECT_FALSE(ChinesePoint::Cjk::validAnkiBridgeClientId("0123456789ABCDEF0123456789abcdef"));
   EXPECT_EQ(ChinesePoint::Cjk::ankiBridgeBatchId(clientId, 42, 3),
             "cp-v1-0123456789abcdef0123456789abcdef-42-3");
   EXPECT_EQ(ChinesePoint::Cjk::ankiBridgeBatchId(clientId, 42, 3),

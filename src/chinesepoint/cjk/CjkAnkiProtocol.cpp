@@ -76,8 +76,11 @@ bool validAnkiBridgeToken(const std::string_view value) { return printableAscii(
 
 bool validAnkiBridgeClientId(const std::string_view value) {
   if (value.size() != 32) return false;
-  for (const unsigned char character : value) {
-    if (!std::isxdigit(character)) return false;
+  for (const char character : value) {
+    // The desktop bridge accepts lowercase IDs only. Keep the embedded
+    // configuration validator identical so a saved configuration cannot pass
+    // locally and then fail every authenticated HTTP request remotely.
+    if (!((character >= '0' && character <= '9') || (character >= 'a' && character <= 'f'))) return false;
   }
   return true;
 }
