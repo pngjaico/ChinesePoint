@@ -48,7 +48,9 @@ jobs:
           sudo apt-get install -y cmake ninja-build
 
       - name: Verify X4 Pro boot safety invariants
-        run: python -m unittest discover -s test/chinesepoint_release -p 'test_*.py'
+        run: |
+          python -m unittest discover -s test/chinesepoint_release -p 'test_*.py'
+          python tools/chinesepoint/test_verify_iram_attribution.py
 
       - name: Verify Anki bridge protocol and local HTTP integration
         run: python -m unittest discover -s tools/anki_bridge/tests -p 'test_*.py'
@@ -111,6 +113,12 @@ jobs:
             --environment chinesepoint_x4pro \
             --expected-version ChinesePoint-v0.6-x4pro \
             --manifest qa-artifacts/chinesepoint-x4pro-artifact.json
+
+      - name: Reject ChinesePoint code in saturated IRAM
+        run: |
+          python tools/chinesepoint/verify_iram_attribution.py \
+            --elf .pio/build/chinesepoint_x4pro/firmware.elf \
+            --objdump "$HOME/.platformio/packages/toolchain-xtensa-esp-elf/bin/xtensa-esp32s3-elf-objdump"
 
       - name: Upload X4 Pro pre-physical evidence
         uses: actions/upload-artifact@v6

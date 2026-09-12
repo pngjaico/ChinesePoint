@@ -53,6 +53,12 @@ jobs:
             --expected-version ChinesePoint-v0.6-x4pro \
             --manifest qa-artifacts/chinesepoint-x4pro-artifact.json
 
+      - name: Reject ChinesePoint code in saturated IRAM
+        run: |
+          python tools/chinesepoint/verify_iram_attribution.py \
+            --elf .pio/build/chinesepoint_x4pro/firmware.elf \
+            --objdump "$HOME/.platformio/packages/toolchain-xtensa-esp-elf/bin/xtensa-esp32s3-elf-objdump"
+
       - name: Upload X4 Pro release evidence
         uses: actions/upload-artifact@v4
         with:

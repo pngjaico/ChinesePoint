@@ -24,6 +24,12 @@ can be called installable:
 The script cannot manufacture this evidence. It only prevents an unchecked
 manifest from enabling a download.
 
+The X4 Pro USB-MSC profile has no dedicated-IRAM margin in the current SDK
+prebuild. Every firmware, release-candidate, and tag build runs
+`verify_iram_attribution.py` and rejects a ChinesePoint symbol placed in IRAM.
+This prevents learner work from worsening the fixed platform constraint; it
+does not replace a physical stability test or create IRAM headroom.
+
 The observable procedure and evidence-file format are in
 [`physical-validation.md`](physical-validation.md).
 
