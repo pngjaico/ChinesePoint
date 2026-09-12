@@ -18,6 +18,9 @@
 #include <WiFi.h>
 #include <XteinkDetect.h>
 #include <builtinFonts/all.h>
+#if FREEINK_DEVICE_X4PRO && !defined(SIMULATOR)
+#include <esp_heap_caps.h>
+#endif
 #if FREEINK_CAP_TOUCH
 #include <esp_sntp.h>
 #endif
@@ -91,6 +94,14 @@ void persistX4ProPanelProbe() {
   }
 
   char report[512] = {};
+  // ESP.getFreeHeap() can include a different default allocation pool. Record
+  // the byte-addressable internal pool explicitly: this is the budget shared
+  // with D/IRAM code and the one that matters when USB-MSC, Wi-Fi and display
+  // tasks start on the physical X4 Pro.
+  constexpr uint32_t internalCaps = MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT;
+  const size_t internalFree = heap_caps_get_free_size(internalCaps);
+  const size_t internalLargest = heap_caps_get_largest_free_block(internalCaps);
+  const size_t internalMin = heap_caps_get_minimum_free_size(internalCaps);
   const int length = snprintf(
       report, sizeof(report),
       "ChinesePoint X4 Pro display probe\n"
@@ -99,10 +110,14 @@ void persistX4ProPanelProbe() {
       "verdict=%u\n"
       "ver=%02X %02X %02X %02X %02X\n"
       "flg=%02X\n"
-      "mtp_valid=%u\n",
+      "mtp_valid=%u\n"
+      "internal_8bit_free=%u\n"
+      "internal_8bit_largest=%u\n"
+      "internal_8bit_min=%u\n",
       x4ProPanelControllerName(BoardConfig::ACTIVE.displayController), static_cast<unsigned>(diag.promoted),
       static_cast<unsigned>(diag.verdict), diag.ver[0], diag.ver[1], diag.ver[2], diag.ver[3], diag.ver[4], diag.flg,
-      static_cast<unsigned>(diag.mtpValid));
+      static_cast<unsigned>(diag.mtpValid), static_cast<unsigned>(internalFree), static_cast<unsigned>(internalLargest),
+      static_cast<unsigned>(internalMin));
   if (length <= 0 || static_cast<size_t>(length) >= sizeof(report)) {
     LOG_ERR("XTDET", "X4 Pro display probe report formatting failed");
     return;

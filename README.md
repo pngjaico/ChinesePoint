@@ -31,6 +31,8 @@ On hardware builds, after FreeInk has selected a panel driver, ChinesePoint writ
 UC8179, or UC8279 controller and the raw probe fields, so a bad-screen attempt
 can be diagnosed from USB mass-storage or a card reader. The report never
 changes the driver decision and a failed write never delays boot or recovery.
+It also captures the boot-time byte-addressable internal heap (`free`,
+`largest`, and `minimum`) required for the physical memory acceptance record.
 
 Every release must include:
 

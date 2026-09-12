@@ -27,6 +27,12 @@ not satisfy this protocol.
    below 6 MiB must show the PSRAM fault screen and normal reader testing must
    stop; prove the DOWN+POWER recovery route from that state before retrying a
    normal candidate.
+6. After a candidate reaches its first display initialization, retrieve
+   `/x4pro-panel-probe.txt` from the SD card or USB mass-storage. Preserve its
+   `selected_controller`, raw probe fields, and `internal_8bit_free`,
+   `internal_8bit_largest`, and `internal_8bit_min` values in the evidence
+   record. These are observations, not evidence that later reader, Wi-Fi, or
+   USB-MSC activity has enough heap.
 
 ## Stop conditions
 
@@ -59,7 +65,10 @@ serial memory values before an overnight sleep period, then after wake. A
 material unexplained drain, a reset, or a lower memory floor stops release
 work for that candidate. Font download is deferred until this baseline is
 stable; when tested, capture free heap and maximum allocation before and after
-the operation.
+the operation. Also preserve the three `internal_8bit_*` values from the SD
+probe report at first boot; later tests must capture equivalent values after
+Wi-Fi/Anki, USB transfer, reading, refresh, and sleep/wake before a release
+can claim an acceptable runtime internal-memory floor.
 
 For the detected physical panel, continue with the learner checks below. Do
 not force a simulated controller identifier onto the device.
