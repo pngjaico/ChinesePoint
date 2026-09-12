@@ -7,6 +7,7 @@
 
 #include "MappedInputManager.h"
 #include "CjkAnkiSettingsActivity.h"
+#include "CjkReviewActivity.h"
 #include "CjkVocabularyActivity.h"
 #include "activities/util/ConfirmationActivity.h"
 #include "chinesepoint/CjkSafetyGuard.h"
@@ -41,9 +42,10 @@ void CjkLearnerStatsActivity::rebuildRows() {
   } else if (stats.vocabularyCount == 0) {
     labels.emplace_back(tr(STR_LEARNER_NO_ENTRIES));
   } else {
-    labels = {tr(STR_LEARNER_VOCABULARY), tr(STR_LEARNER_EXPORT), tr(STR_LEARNER_ANKI_SYNC), tr(STR_LEARNER_SAVED), tr(STR_LEARNER_LEARNING),
-              tr(STR_LEARNER_KNOWN), tr(STR_LEARNER_ENCOUNTERS), tr(STR_LEARNER_BOOKS)};
-    values = {std::to_string(stats.vocabularyCount), exportStatus, "", std::to_string(stats.savedCount),
+    labels = {tr(STR_LEARNER_REVIEW), tr(STR_LEARNER_VOCABULARY), tr(STR_LEARNER_EXPORT), tr(STR_LEARNER_ANKI_SYNC),
+              tr(STR_LEARNER_SAVED), tr(STR_LEARNER_LEARNING), tr(STR_LEARNER_KNOWN), tr(STR_LEARNER_ENCOUNTERS),
+              tr(STR_LEARNER_BOOKS)};
+    values = {"", std::to_string(stats.vocabularyCount), exportStatus, "", std::to_string(stats.savedCount),
               std::to_string(stats.learningCount), std::to_string(stats.knownCount),
               std::to_string(stats.encounterTotal), std::to_string(stats.sourceBookCount)};
   }
@@ -59,18 +61,23 @@ void CjkLearnerStatsActivity::rebuildRows() {
 }
 
 void CjkLearnerStatsActivity::activateIndex(const int index) {
-  // The first summary row is intentionally an affordance, not a separate
-  // menu entry: it keeps the reader menu compact on X4 Pro while giving the
-  // user a direct path from the vocabulary total to its local entries.
+  // Review is local-only; cards whose answer could not be saved never appear
+  // there. Vocabulary remains available independently of review readiness.
   if (!dataAvailable || stats.vocabularyCount == 0) return;
   if (index == 0) {
+    app.clearTapFlash();
+    startActivityForResult(std::make_unique<CjkReviewActivity>(renderer, mappedInput),
+                           [this](const ActivityResult&) { requestUpdate(); });
+    return;
+  }
+  if (index == 1) {
     app.clearTapFlash();
     startActivityForResult(std::make_unique<CjkVocabularyActivity>(renderer, mappedInput),
                            [this](const ActivityResult&) { requestUpdate(); });
     return;
   }
-  if (index == 1) exportEntries();
-  if (index == 2) {
+  if (index == 2) exportEntries();
+  if (index == 3) {
     startActivityForResult(std::make_unique<CjkAnkiSettingsActivity>(renderer, mappedInput),
                            [this](const ActivityResult&) { requestUpdate(); });
   }
