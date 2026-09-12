@@ -301,4 +301,24 @@ bool decodeStudyClock(const uint8_t* data, const size_t size, StudyClockState& o
   return true;
 }
 
+bool encodeReviewMutation(const LearnerEntry& entry, const StudyClockState& clock, PayloadBuffer& output) {
+  if (!validStudyClockState(clock)) return false;
+  PayloadWriter writer(output);
+  return writer.i64(clock.logicalMs) && writer.i64(clock.lastTrustedWallMs) && encodeEntryToWriter(entry, writer);
+}
+
+bool decodeReviewMutation(const uint8_t* data, const size_t size, LearnerEntry& entry, StudyClockState& clock) {
+  if (data == nullptr) return false;
+  PayloadReader reader(data, size);
+  StudyClockState decodedClock;
+  LearnerEntry decodedEntry;
+  if (!reader.i64(decodedClock.logicalMs) || !reader.i64(decodedClock.lastTrustedWallMs) ||
+      !decodeEntryFromReader(reader, decodedEntry) || !reader.done() || !validStudyClockState(decodedClock)) {
+    return false;
+  }
+  entry = std::move(decodedEntry);
+  clock = decodedClock;
+  return true;
+}
+
 }  // namespace ChinesePoint::Cjk::Journal

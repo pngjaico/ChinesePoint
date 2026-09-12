@@ -108,4 +108,24 @@ TEST(CjkJournal, StudyClockCodecRoundTripsAndRejectsInvalidState) {
   EXPECT_FALSE(ChinesePoint::Cjk::Journal::decodeStudyClock(payload.bytes.data(), payload.size, decoded));
 }
 
+TEST(CjkJournal, ReviewMutationBindsClockAndUpdatedEntry) {
+  ChinesePoint::Cjk::LearnerEntry entry;
+  entry.wordId = ChinesePoint::Cjk::stableWordId("复习");
+  entry.headword = "复习";
+  entry.status = ChinesePoint::Cjk::WordStatus::Learning;
+  entry.review.phase = ChinesePoint::Cjk::ReviewPhase::Review;
+  entry.review.dueAtMs = 9000;
+  entry.review.reps = 2;
+  const ChinesePoint::Cjk::StudyClockState clock{8000, 7000};
+  ChinesePoint::Cjk::Journal::PayloadBuffer payload;
+  ASSERT_TRUE(ChinesePoint::Cjk::Journal::encodeReviewMutation(entry, clock, payload));
+  ChinesePoint::Cjk::LearnerEntry decodedEntry;
+  ChinesePoint::Cjk::StudyClockState decodedClock;
+  ASSERT_TRUE(ChinesePoint::Cjk::Journal::decodeReviewMutation(payload.bytes.data(), payload.size, decodedEntry,
+                                                                decodedClock));
+  EXPECT_EQ(decodedEntry.headword, entry.headword);
+  EXPECT_EQ(decodedEntry.review.dueAtMs, 9000);
+  EXPECT_EQ(decodedClock.logicalMs, 8000);
+}
+
 }  // namespace

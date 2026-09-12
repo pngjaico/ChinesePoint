@@ -21,6 +21,8 @@ class LearnerStore final {
   bool recordSaved(std::string_view headword, std::string_view sentence, std::string_view bookPath,
                    const TextAnchor& anchor, int64_t nowMs);
   bool recordStudyClock(const StudyClockState& state);
+  bool rateLocalReview(uint64_t wordId, std::string_view headword, Rating rating, int64_t nowMs,
+                       const StudyClockState& clock);
   bool compact();
   // Replaces only a derived NDJSON backup. Learner journal contents remain
   // authoritative and untouched if this export fails.

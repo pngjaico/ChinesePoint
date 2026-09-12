@@ -117,6 +117,19 @@ bool LearnerStore::recordStudyClock(const StudyClockState& state) {
   return true;
 }
 
+bool LearnerStore::rateLocalReview(const uint64_t wordId, const std::string_view headword, const Rating rating,
+                                   const int64_t nowMs, const StudyClockState& clock) {
+  if ((!loaded_ && !load()) || (repository_.needsRepair() && !compact())) return false;
+  LearnerRepository candidate = repository_;
+  if (!candidate.rateLocalReview(wordId, headword, rating, nowMs, clock)) return false;
+  const LearnerEntry* entry = candidate.find(wordId, headword);
+  Journal::EncodedRecord record;
+  if (entry == nullptr || !candidate.prepareReviewMutation(*entry, clock, record) || !append(record)) return false;
+  candidate.markSnapshotCommitted();
+  repository_ = std::move(candidate);
+  return true;
+}
+
 bool LearnerStore::record(const std::string_view headword, const std::string_view sentence,
                           const std::string_view bookPath, const TextAnchor& anchor, const int64_t nowMs,
                           const WordStatus requestedStatus) {

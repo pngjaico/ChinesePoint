@@ -22,9 +22,16 @@ class LearnerRepository final {
   bool recordSaved(std::string_view headword, std::string_view sentence, std::string_view bookPath,
                    const TextAnchor& anchor, int64_t nowMs);
   bool recordStudyClock(const StudyClockState& state);
+  // Rates only a locally authoritative due card. The supplied clock state must
+  // be the exact logical time used for scheduling so it can share one durable
+  // review mutation with the entry snapshot.
+  bool rateLocalReview(uint64_t wordId, std::string_view headword, Rating rating, int64_t nowMs,
+                       const StudyClockState& clock);
 
   bool prepareSnapshot(const LearnerEntry& entry, Journal::EncodedRecord& output) const;
   bool prepareStudyClock(const StudyClockState& state, Journal::EncodedRecord& output) const;
+  bool prepareReviewMutation(const LearnerEntry& entry, const StudyClockState& clock,
+                             Journal::EncodedRecord& output) const;
   void markSnapshotCommitted();
 
   const std::vector<LearnerEntry>& entries() const { return entries_; }
@@ -36,6 +43,7 @@ class LearnerRepository final {
  private:
   bool applySnapshot(const LearnerEntry& entry);
   bool applyStudyClock(const StudyClockState& state);
+  bool applyReviewMutation(const LearnerEntry& entry, const StudyClockState& clock);
   bool record(std::string_view headword, std::string_view sentence, std::string_view bookPath,
               const TextAnchor& anchor, int64_t nowMs, WordStatus requestedStatus);
   size_t findIndex(uint64_t wordId, std::string_view headword) const;

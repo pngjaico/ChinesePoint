@@ -57,5 +57,9 @@ bool encodeEntry(const LearnerEntry& entry, PayloadBuffer& output);
 bool decodeEntry(const uint8_t* data, size_t size, LearnerEntry& output);
 bool encodeStudyClock(const StudyClockState& state, PayloadBuffer& output);
 bool decodeStudyClock(const uint8_t* data, size_t size, StudyClockState& output);
+// A review rating and the clock used to calculate its due date share one
+// checksummed record. Replay never observes one without the other.
+bool encodeReviewMutation(const LearnerEntry& entry, const StudyClockState& clock, PayloadBuffer& output);
+bool decodeReviewMutation(const uint8_t* data, size_t size, LearnerEntry& entry, StudyClockState& clock);
 
 }  // namespace ChinesePoint::Cjk::Journal

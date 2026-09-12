@@ -34,6 +34,19 @@ bool LearnerRepository::applyStudyClock(const StudyClockState& state) {
   return true;
 }
 
+bool LearnerRepository::applyReviewMutation(const LearnerEntry& entry, const StudyClockState& clock) {
+  if (!validStudyClockState(clock) || clock.logicalMs < studyClock_.logicalMs ||
+      clock.lastTrustedWallMs < studyClock_.lastTrustedWallMs || !validHeadword(entry.headword) ||
+      !validSentence(entry.sourceSentence) || !validBookPath(entry.bookPath)) {
+    return false;
+  }
+  const size_t index = findIndex(entry.wordId, entry.headword);
+  if (index >= entries_.size()) return false;
+  studyClock_ = clock;
+  entries_[index] = entry;
+  return true;
+}
+
 bool LearnerRepository::replay(const uint8_t* journalBytes, const size_t journalSize) {
   entries_.clear();
   studyClock_ = {};
@@ -57,6 +70,11 @@ bool LearnerRepository::replay(const uint8_t* journalBytes, const size_t journal
     } else if (record.type == Journal::RecordType::StudyClock) {
       StudyClockState clock;
       applied = Journal::decodeStudyClock(record.payload, record.payloadSize, clock) && applyStudyClock(clock);
+    } else if (record.type == Journal::RecordType::ReviewMutation) {
+      LearnerEntry entry;
+      StudyClockState clock;
+      applied = Journal::decodeReviewMutation(record.payload, record.payloadSize, entry, clock) &&
+                applyReviewMutation(entry, clock);
     }
     if (!applied) {
       repairNeeded = true;
@@ -69,6 +87,23 @@ bool LearnerRepository::replay(const uint8_t* journalBytes, const size_t journal
 }
 
 bool LearnerRepository::recordStudyClock(const StudyClockState& state) { return applyStudyClock(state); }
+
+bool LearnerRepository::rateLocalReview(const uint64_t wordId, const std::string_view headword, const Rating rating,
+                                        const int64_t nowMs, const StudyClockState& clock) {
+  if (!validStudyClockState(clock) || nowMs < 0 || clock.logicalMs != nowMs) return false;
+  const size_t index = findIndex(wordId, headword);
+  if (index >= entries_.size()) return false;
+  const LearnerEntry& current = entries_[index];
+  ReviewScheduler scheduler;
+  if (current.review.authority != ScheduleAuthority::Local || !scheduler.isDue(current.review, nowMs)) return false;
+
+  LearnerEntry next = current;
+  next.review = scheduler.rate(current.review, rating, nowMs).state;
+  next.lastSeenStudyMs = std::max(next.lastSeenStudyMs, nowMs);
+  next.status = next.review.phase == ReviewPhase::Review && next.review.reps >= 2 ? WordStatus::Known
+                                                                                     : WordStatus::Learning;
+  return applyReviewMutation(next, clock);
+}
 
 bool LearnerRepository::record(const std::string_view headword, const std::string_view sentence,
                                const std::string_view bookPath, const TextAnchor& anchor, const int64_t nowMs,
@@ -116,6 +151,15 @@ bool LearnerRepository::prepareStudyClock(const StudyClockState& state, Journal:
   Journal::PayloadBuffer payload;
   return Journal::encodeStudyClock(state, payload) &&
          Journal::encodeRecord(Journal::RecordType::StudyClock, sequence + 1, payload.bytes.data(), payload.size,
+                               output);
+}
+
+bool LearnerRepository::prepareReviewMutation(const LearnerEntry& entry, const StudyClockState& clock,
+                                               Journal::EncodedRecord& output) const {
+  if (sequence == std::numeric_limits<uint32_t>::max()) return false;
+  Journal::PayloadBuffer payload;
+  return Journal::encodeReviewMutation(entry, clock, payload) &&
+         Journal::encodeRecord(Journal::RecordType::ReviewMutation, sequence + 1, payload.bytes.data(), payload.size,
                                output);
 }
 

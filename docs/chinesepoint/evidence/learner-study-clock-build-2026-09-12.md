@@ -10,12 +10,16 @@ local flashcard review, Anki schedule synchronization, or a release claim.
   adjustment cannot make cards due early.
 - The learner journal now persists the clock as a sequenced `StudyClock`
   record, replays it before entry snapshots, and keeps it through compaction.
+- A local due-card rating is a single checksummed `ReviewMutation` containing
+  both the updated entry and the clock used to compute its next due time.
+  Anki-authoritative and not-yet-due cards are rejected by that mutation path.
 
 ## Automated evidence
 
 - WSL host build: `ctest --test-dir /tmp/chinesepoint-host-test --output-on-failure`
-  passed **217/217** tests.
-- The directly affected clock, journal, and repository suites passed **15/15**.
+  passed **220/220** tests.
+- The directly affected journal and repository suites passed **14/14** after
+  the review mutation was added; the earlier clock foundation suite also passed.
 - X4 Pro environment: `pio run -e chinesepoint_x4pro` produced a valid
   application image and byte-identical `firmware.bin` / `update.bin` aliases.
 - Artifact verifier result: target `xteink-x4-pro`, board tag
@@ -39,7 +43,6 @@ IRAM margin remains a physical-release blocker.
 
 ## Remaining work
 
-No firmware activity consumes this clock yet. The next change must atomically
-persist a rating together with the updated clock, then expose only local,
-due cards in a bounded review activity. Anki scheduling remains deliberately
-unimplemented until a versioned conflict policy exists.
+No firmware activity exposes ratings to the user yet. The next change must
+expose only local, due cards in a bounded review activity. Anki scheduling
+remains deliberately unimplemented until a versioned conflict policy exists.

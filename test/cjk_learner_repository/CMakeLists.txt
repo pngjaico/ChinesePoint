@@ -2,6 +2,7 @@ add_executable(CjkLearnerRepositoryTest
   CjkLearnerRepositoryTest.cpp
   ${REPO_ROOT}/src/chinesepoint/cjk/CjkJournal.cpp
   ${REPO_ROOT}/src/chinesepoint/cjk/CjkLearnerRepository.cpp
+  ${REPO_ROOT}/src/chinesepoint/cjk/CjkReviewScheduler.cpp
   ${REPO_ROOT}/src/chinesepoint/cjk/CjkStudyClock.cpp
 )
 
