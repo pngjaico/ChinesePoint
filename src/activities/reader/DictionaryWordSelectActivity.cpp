@@ -173,7 +173,7 @@ void DictionaryWordSelectActivity::performLookup() {
     learnerContext = {{learnerSentence.data()}, bookPath, sentenceSelection.anchor};
   }
 
-  if (SETTINGS.dictionaryName[0] == '\0') {
+  if (dictionaryFolder.empty()) {
     startActivityForResult(
         std::make_unique<DictionaryDefinitionActivity>(renderer, mappedInput, words[selected].text,
                                                        tr(STR_DICT_NO_DICT_SET), false,
@@ -185,7 +185,7 @@ void DictionaryWordSelectActivity::performLookup() {
   popup = Popup::Busy;
   if (!dictOpenAttempted) {
     dictOpenAttempted = true;
-    dictOpenOk = dict.open(SETTINGS.dictionaryName);
+    dictOpenOk = dict.open(dictionaryFolder.c_str());
     // needsIndex() opens and validates the .qidx sidecar, so ask it once per
     // open rather than once per word: the answer only changes when we build
     // the sidecar ourselves, which is handled below.

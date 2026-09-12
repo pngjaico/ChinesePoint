@@ -45,14 +45,39 @@ non-installable.
 
 ## Decisions from external projects
 
-- Matcha Reader is a useful product reference for explicit dictionary language
-  selection and split lookup presentation. Its code is not a drop-in CJK
-  implementation here.
+- Matcha Reader contributed one bounded reader improvement: an EPUB may select
+  a local StarDict beneath `/dictionaries/<language>/<dictionary>/` from its
+  `dc:language` primary tag. ChinesePoint accepts only one nested level and
+  falls back to the user's current global dictionary on absent or malformed
+  metadata. The existing flat CC-CEDICT folder remains valid. This is compiled
+  source evidence; it still needs an SD-card EPUB acceptance case.
 - CrossPlay must not donate X4 Pro display initialization: its earlier FreeInk
   pin was missing the upstream X4 Pro display-driver update implicated in
   mirrored output on some controllers.
 - Papyrix hard-codes an SSD1677-oriented recovery path, so importing it would
   weaken the required three-controller X4 Pro gate.
+
+## Mini plan from here
+
+1. **Close the reproducible-build gate.** Rebuild the committed X4 Pro source
+   twice with UTF-8 PlatformIO output, verify identical SHA-256 values for
+   `firmware.bin` and generated `update.bin`, then stage only the app image to
+   a test SD root. Never place it on the device during this diagnostic phase.
+2. **Capture emulator evidence again.** Rebuild and photograph the SSD1677,
+   UC8179, and UC8279 simulator profiles from that exact commit. This is a
+   code-path check, not a panel result.
+3. **Exercise the reader/learning path off-device.** Add an EPUB whose
+   `dc:language` selects a nested dictionary, then verify fallback, malformed
+   metadata, CJK lookup candidates, learner journal export, and the Anki bridge
+   protocol. The first real Anki import must use a disposable collection.
+4. **Establish physical recovery before feature work.** On the locked X4 Pro,
+   demonstrate the existing CrossPoint state, the DOWN+POWER picker, and a
+   rejected bad backup before flashing any ChinesePoint candidate.
+5. **Run the real three-controller matrix.** Each controller variant needs
+   cold boot, orientation, refresh, touch, frontlight, sleep/wake, reading,
+   slow Wi-Fi, Anki cancellation, and a successful backup restore record.
+   The current zero-byte IRAM margin is a release blocker until this evidence
+   exists.
 
 The current technical risk that cannot be solved by documentation is the X4
 Pro image's 100% IRAM allocation. The firmware compiles, but the remaining

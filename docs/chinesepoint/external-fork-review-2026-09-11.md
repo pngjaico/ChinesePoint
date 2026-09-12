@@ -1,8 +1,9 @@
 # External fork review — 2026-09-11
 
 This is a design review of external projects, not an endorsement or a release
-claim.  Their source was inspected at the commits below; no firmware code was
-copied into ChinesePoint from this review.
+claim. Their source was inspected at the commits below. Only the bounded
+dictionary-routing idea from Matcha Reader has been adapted; no display, boot,
+recovery, panel, or updater code was imported.
 
 ## Follow-up status — 2026-09-12
 
@@ -18,7 +19,7 @@ the release manifest remains blocked.
 | --- | --- | --- | --- |
 | Papyrix | `4a8afdbe660e72c4a60565ed02b147a1797d2558` | Clear SD update and crash-recovery documentation; explicit image validation | Do not port. Its X4 Pro recovery helper currently returns an SSD1677 fixed panel although its own support matrix lists UC8179 and UC8279. It cannot be the source of ChinesePoint display or recovery code. |
 | CrossPlay (`xteink`) | `f29f0ab682114000e93d77629704609caadb01c3` | The X4 Pro input budget is genuinely small: touch, two side keys, power and the capacitive Home key | Keep ChinesePoint controls discoverable and avoid features that require legacy bottom buttons. Do not import its app/game stack into a reader build. Its reported mirrored-display incident is a dependency-age warning. |
-| Matcha Reader | `61ca61ba86e3c5709a24d1b9c4f3cf2d41488012` | Dictionary data is split by purpose, and a book-level language override can correct bad automatic detection | Retain this as a product reference. Its deinflector, furigana and vertical layout are Japanese-specific and must not be relabelled as Chinese segmentation. ChinesePoint needs a bounded Chinese tokenizer and CEDICT-based lookup, not a Japanese code port. |
+| Matcha Reader | `61ca61ba86e3c5709a24d1b9c4f3cf2d41488012` | Dictionary data is split by purpose, and book metadata can select the matching local dictionary | Adapted the safe portion: EPUB `dc:language` may choose one StarDict under `/dictionaries/<two-letter-language>/<dictionary>/`; missing or malformed metadata falls back to the existing global selection. Its deinflector, furigana and vertical layout remain Japanese-specific and were not ported. |
 
 ## Immediate decisions
 
@@ -36,6 +37,10 @@ the release manifest remains blocked.
    gates are unresolved. The learning flow remains local-first: a bounded
    journal, manual export, then an opt-in token-authenticated Anki Desktop
    sync.
+4. The Matcha-inspired language routing is restricted to one validated nested
+   directory and a two-letter ASCII primary tag. It does not change CC-CEDICT's
+   existing flat folder or the global fallback, and it never lets EPUB metadata
+   create a path outside a dictionary root.
 
 ## Path to the first installable 1.0 candidate
 

@@ -24,7 +24,8 @@ class DictionaryWordSelectActivity final : public Activity {
   explicit DictionaryWordSelectActivity(GfxRenderer& renderer, MappedInputManager& mappedInput,
                                         std::unique_ptr<Page> page, int marginLeft, int marginTop,
                                         uint16_t spineIndex, bool startsAtSectionBoundary,
-                                        bool endsAtSectionBoundary, std::string bookPath)
+                                        bool endsAtSectionBoundary, std::string bookPath,
+                                        std::string dictionaryFolder)
       : Activity("DictionaryWordSelect", renderer, mappedInput),
         page(std::move(page)),
         marginLeft(marginLeft),
@@ -32,7 +33,8 @@ class DictionaryWordSelectActivity final : public Activity {
         spineIndex(spineIndex),
         startsAtSectionBoundary(startsAtSectionBoundary),
         endsAtSectionBoundary(endsAtSectionBoundary),
-        bookPath(std::move(bookPath)) {}
+        bookPath(std::move(bookPath)),
+        dictionaryFolder(std::move(dictionaryFolder)) {}
 
   void onEnter() override;
   void loop() override;
@@ -74,6 +76,7 @@ class DictionaryWordSelectActivity final : public Activity {
   const bool startsAtSectionBoundary;
   const bool endsAtSectionBoundary;
   const std::string bookPath;
+  const std::string dictionaryFolder;
   int selected = 0;
   uint16_t rowCount = 0;
 

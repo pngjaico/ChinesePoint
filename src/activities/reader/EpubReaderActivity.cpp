@@ -45,6 +45,7 @@
 #include "fontIds.h"
 #include "util/BookmarkUtil.h"
 #include "util/ButtonNavigator.h"
+#include "util/DictionaryRegistry.h"
 #include "util/ScreenshotUtil.h"
 
 namespace {
@@ -299,6 +300,13 @@ void EpubReaderActivity::openDictionaryWordSelect() {
   auto page = section->loadPage(section->currentPage);
   if (!page) return;
 
+  // A book's declared language can select a nested local dictionary (for
+  // example /dictionaries/zh/...). A missing/malformed tag keeps the user's
+  // existing global choice, so lookup remains optional and fail-open.
+  std::string dictionaryFolder;
+  DictionaryRegistry::folderForLanguageOrFallback(epub ? epub->getLanguage() : std::string{}, SETTINGS.dictionaryName,
+                                                  dictionaryFolder);
+
   int orientedMarginTop, orientedMarginRight, orientedMarginBottom, orientedMarginLeft;
   renderer.getOrientedViewableTRBL(&orientedMarginTop, &orientedMarginRight, &orientedMarginBottom,
                                    &orientedMarginLeft);
@@ -309,7 +317,7 @@ void EpubReaderActivity::openDictionaryWordSelect() {
                              renderer, mappedInput, std::move(page), orientedMarginLeft, orientedMarginTop,
                              static_cast<uint16_t>(currentSpineIndex), section->currentPage == 0,
                              section->isBuildComplete() && section->currentPage + 1 >= section->pageCount,
-                             epub->getPath()),
+                             epub->getPath(), std::move(dictionaryFolder)),
                          [this](const ActivityResult&) { requestUpdate(); });
 }
 
