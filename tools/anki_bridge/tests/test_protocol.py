@@ -15,9 +15,18 @@ def payload(record: dict) -> bytes:
 class ProtocolTest(unittest.TestCase):
     def test_accepts_bounded_export_record(self):
         records = parse_vocabulary_ndjson(payload({"type": "vocabulary", "word_id": "0123456789abcdef", "headword": "你好",
-                                                   "status": "saved", "sentence": "你好，世界。",
+                                                   "status": "saved", "sentence": "你好，世界。", "answer": "olá",
                                                    "source": {"book_path": "/books/example.epub"}}))
         self.assertEqual(records[0].headword, "你好")
+        self.assertEqual(records[0].answer, "olá")
+
+    def test_accepts_empty_answer_but_rejects_non_string_answer(self):
+        record = {"type": "vocabulary", "word_id": "0123456789abcdef", "headword": "你好", "status": "saved",
+                  "sentence": "你好", "answer": "", "source": {"book_path": "/a.epub"}}
+        self.assertEqual(parse_vocabulary_ndjson(payload(record))[0].answer, "")
+        record["answer"] = 42
+        with self.assertRaises(ProtocolError):
+            parse_vocabulary_ndjson(payload(record))
 
     def test_rejects_unknown_schema_and_duplicate_ids(self):
         with self.assertRaises(ProtocolError):

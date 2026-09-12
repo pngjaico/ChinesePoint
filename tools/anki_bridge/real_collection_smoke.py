@@ -38,7 +38,7 @@ def load_server():
     return importlib.import_module(f"{package_name}.server")
 
 
-def body(sentence: str) -> bytes:
+def body(sentence: str, answer: str = "hello") -> bytes:
     header = {"schema": "chinesepoint-learner-export", "version": 1, "format": "ndjson"}
     record = {
         "type": "vocabulary",
@@ -46,6 +46,7 @@ def body(sentence: str) -> bytes:
         "headword": "你好",
         "status": "saved",
         "sentence": sentence,
+        "answer": answer,
         "source": {"book_path": "/books/anki-runtime-smoke.epub"},
     }
     return (json.dumps(header) + "\n" + json.dumps(record) + "\n").encode("utf-8")
@@ -101,11 +102,13 @@ def main() -> int:
             retry = post(server, config["port"], f"cp-v1-{CLIENT_ID}-1-1", "Frase inicial.")
             updated = post(server, config["port"], f"cp-v1-{CLIENT_ID}-2-1", "Frase atualizada.")
             note_ids = collection.find_notes('"ChinesePointId:0123456789abcdef"')
+            note = collection.get_note(note_ids[0]) if note_ids else None
+            model = collection.models.by_name(server.MODEL_NAME)
             if (first, retry, updated) != (
                 {"status": 200, "payload": {"batch_id": f"cp-v1-{CLIENT_ID}-1-1", "added": 1, "updated": 0}},
                 {"status": 200, "payload": {"batch_id": f"cp-v1-{CLIENT_ID}-1-1", "added": 0, "updated": 0}},
                 {"status": 200, "payload": {"batch_id": f"cp-v1-{CLIENT_ID}-2-1", "added": 0, "updated": 1}},
-            ) or len(note_ids) != 1 or collection.get_note(note_ids[0])["Sentence"] != "Frase atualizada.":
+            ) or len(note_ids) != 1 or note is None or note["Sentence"] != "Frase atualizada." or note["Answer"] != "hello" or model is None or "{{#Answer}}" not in model["tmpls"][0]["qfmt"]:
                 raise RuntimeError("unexpected bridge result against real Anki collection")
             print("real Anki collection bridge smoke passed")
         finally:

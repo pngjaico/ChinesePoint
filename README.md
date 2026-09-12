@@ -16,7 +16,7 @@ Its release workflows build only `chinesepoint_x4pro`; an upstream-shaped multi-
 - EPUB, TXT, and XTC reading on the current CrossPoint reader base.
 - CJK token lookup, local dictionaries, source-aware vocabulary, and local review for cards with a saved answer.
 - Inspectable reading and learning statistics with export and import.
-- Optional token-authenticated LAN Anki Desktop vocabulary sync; no cloud relay or background device sync.
+- Optional token-authenticated LAN Anki Desktop flashcard import; no cloud relay, background device sync, or schedule-state pull.
 - A versioned Linux/WSL simulator evidence bundle with scripted captures for every release.
 - A release dashboard with hashes, rollback instructions, and clear status labels.
 
@@ -193,7 +193,7 @@ CrossPoint binary is safe until its exact hash has been recorded.
 1. v0.6: X4 Pro-only build identity, safe CJK isolation, simulator/release gate, site manifest — implemented; local three-panel simulator smoke passed, physical evidence pending.
 2. v0.7: current-base CJK Learner port — implemented in source; physical validation pending.
 3. v0.8: statistics and deterministic export — implemented in source; physical validation pending.
-4. v0.9: opt-in Anki synchronization — implemented in source; Anki Desktop and X4 Pro integration pending.
+4. v0.9: opt-in Anki card import — implemented in source and collection-API smoke tested; Anki Desktop UI and X4 Pro Wi-Fi transfer pending.
 5. v1.0: physical X4 Pro matrix, recovery drill, installers, hashes, site, and simulators.
 
 No milestone is called installable until build, artifact validation, simulator, recovery path, and physical X4 Pro tests have passed.

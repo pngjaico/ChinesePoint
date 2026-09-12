@@ -1,12 +1,16 @@
 # ChinesePoint Anki Desktop bridge
 
 This add-on is the only supported network receiver for ChinesePoint v0.6.
-It imports the device's saved vocabulary into Anki Desktop; it does not touch
-the device journal, act as a review scheduler, or expose AnkiConnect.
+It imports the device's saved vocabulary into Anki Desktop. When the reader
+has a saved dictionary answer, the same imported note becomes an Anki card:
+the front shows the word and source sentence; the back shows that answer.
+Entries without an answer remain notes but deliberately generate no blank card.
+Anki Desktop owns all card scheduling after import. The bridge never touches
+the device journal or exposes AnkiConnect.
 
 ## Install
 
-For a packaged build, download `chinesepoint-anki-bridge-v0.6.ankiaddon`
+For a packaged build, download `chinesepoint-anki-bridge-v0.6.1.ankiaddon`
 from the matching ChinesePoint source release and open it with Anki Desktop.
 Restart Anki Desktop, then continue from step 3 below. The package contains no
 top-level folder, as required by Anki add-on archives.
@@ -31,8 +35,10 @@ user-triggered, trusted-LAN operation that can be cancelled safely.
 
 The bridge creates and owns the `ChinesePoint` deck and `ChinesePoint
 Vocabulary` note type. Re-sending the same device batch is idempotent. A
-later export updates the imported fields for the same `ChinesePointId`; do not
-put personal notes in those generated fields.
+later export updates the imported fields for the same `ChinesePointId`. The
+bridge may upgrade that project-owned note type with its `Answer` field and
+card template; do not put personal content in its generated fields or modify
+its template.
 
 ## Test the protocol parser
 
@@ -67,6 +73,6 @@ From this directory, run:
 python package_addon.py
 ```
 
-It writes `dist/chinesepoint-anki-bridge-v0.6.ankiaddon`. Do not distribute a
+It writes `dist/chinesepoint-anki-bridge-v0.6.1.ankiaddon`. Do not distribute a
 package until its source commit, package hash, real Anki Desktop import, and
 X4 Pro transfer test are recorded in the release evidence.

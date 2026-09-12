@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hmac
+import html
 import json
 import secrets
 import threading
@@ -165,18 +166,52 @@ class BridgeServer:
 def _ensure_model(collection: object) -> object:
     models = collection.models
     model = models.by_name(MODEL_NAME)
-    if model:
-        return model
-    model = models.new(MODEL_NAME)
-    for field_name in ("Word", "Sentence", "Source", "Status", "ChinesePointId"):
-        models.add_field(model, models.new_field(field_name))
-    template = models.new_template("Recognition")
-    template["qfmt"] = "{{Word}}<br><br>{{Sentence}}"
-    template["afmt"] = "{{FrontSide}}<hr id=answer>{{Source}}<br>{{Status}}"
-    model["tmpls"].append(template)
-    model["css"] = ".card { font-family: arial; font-size: 28px; text-align: center; }"
-    models.add(model)
+    new_model = model is None
+    if new_model:
+        model = models.new(MODEL_NAME)
+    assert model is not None
+
+    # The v0.6 model did not retain the dictionary answer. Upgrade the
+    # project-owned model in place rather than duplicating existing notes.
+    existing_fields = {field.get("name") for field in model.get("flds", [])}
+    changed = False
+    for field_name in ("Word", "Sentence", "Answer", "Source", "Status", "ChinesePointId"):
+        if field_name not in existing_fields:
+            models.add_field(model, models.new_field(field_name))
+            changed = True
+
+    template = next((item for item in model["tmpls"] if item.get("name") == "Recognition"), None)
+    if template is None:
+        template = models.new_template("Recognition")
+        model["tmpls"].append(template)
+        changed = True
+    # Anki does not generate a card when this conditional front is empty. A
+    # later dictionary answer activates the same imported note as a card.
+    qfmt = "{{#Answer}}<div class=word>{{Word}}</div>{{#Sentence}}<div class=context>{{Sentence}}</div>{{/Sentence}}{{/Answer}}"
+    afmt = "{{FrontSide}}<hr id=answer><div class=answer>{{Answer}}</div><div class=source>{{Source}}</div><div class=status>{{Status}}</div>"
+    css = ".card { font-family: arial; font-size: 28px; text-align: center; } .context, .source, .status { font-size: 18px; margin-top: 1em; } .answer { font-size: 24px; text-align: left; }"
+    if template.get("qfmt") != qfmt or template.get("afmt") != afmt:
+        template["qfmt"] = qfmt
+        template["afmt"] = afmt
+        changed = True
+    if model.get("css") != css:
+        model["css"] = css
+        changed = True
+
+    if new_model:
+        models.add(model)
+    elif changed:
+        # `save()` is exposed by supported Anki releases; `update()` covers
+        # older desktop APIs and the fake collection need not provide either.
+        save = getattr(models, "save", None) or getattr(models, "update", None)
+        if callable(save):
+            save(model)
     return model
+
+
+def _field_text(value: str) -> str:
+    """Store untrusted reader text as text, never executable card HTML."""
+    return html.escape(value, quote=False).replace("\n", "<br>")
 
 
 def _upsert_records(collection: object, records: list[VocabularyRecord]) -> tuple[int, int]:
@@ -191,10 +226,11 @@ def _upsert_records(collection: object, records: list[VocabularyRecord]) -> tupl
         else:
             note = collection.new_note(model)
             added += 1
-        note["Word"] = record.headword
-        note["Sentence"] = record.sentence
-        note["Source"] = record.book_path
-        note["Status"] = record.status
+        note["Word"] = _field_text(record.headword)
+        note["Sentence"] = _field_text(record.sentence)
+        note["Answer"] = _field_text(record.answer)
+        note["Source"] = _field_text(record.book_path)
+        note["Status"] = _field_text(record.status)
         note["ChinesePointId"] = record.word_id
         if note_ids:
             collection.update_note(note)

@@ -48,6 +48,9 @@ class FakeModels:
     def add(self, model):
         self.by_name_result[model["name"]] = model
 
+    def save(self, model):
+        self.by_name_result[model["name"]] = model
+
 
 class FakeDecks:
     @staticmethod
@@ -88,7 +91,7 @@ def free_port():
         return sock.getsockname()[1]
 
 
-def export(sentence):
+def export(sentence, answer="resposta"):
     header = {"schema": "chinesepoint-learner-export", "version": 1, "format": "ndjson"}
     vocabulary = {
         "type": "vocabulary",
@@ -96,6 +99,7 @@ def export(sentence):
         "headword": "你好",
         "status": "saved",
         "sentence": sentence,
+        "answer": answer,
         "source": {"book_path": "/books/example.epub"},
     }
     return (json.dumps(header) + "\n" + json.dumps(vocabulary) + "\n").encode()
@@ -146,6 +150,11 @@ class BridgeServerIntegrationTest(unittest.TestCase):
         self.assertEqual(headers["X-ChinesePoint-Batch"], first_batch)
         self.assertEqual(payload, {"batch_id": first_batch, "added": 1, "updated": 0})
         self.assertEqual(len(self.collection.notes), 1)
+        note = next(iter(self.collection.notes.values()))
+        self.assertEqual(note["Answer"], "resposta")
+        model = self.collection.models.by_name(SERVER.MODEL_NAME)
+        self.assertIn("Answer", [field["name"] for field in model["flds"]])
+        self.assertIn("{{#Answer}}", model["tmpls"][0]["qfmt"])
 
         status, _headers, payload = self.post(export("Primeira frase."), first_batch)
         self.assertEqual(status, 200)
@@ -157,6 +166,23 @@ class BridgeServerIntegrationTest(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(payload, {"batch_id": next_batch, "added": 0, "updated": 1})
         self.assertEqual(next(iter(self.collection.notes.values()))["Sentence"], "Frase atualizada.")
+
+    def test_legacy_model_gains_answer_field_and_imported_html_is_text(self):
+        legacy = self.collection.models.new(SERVER.MODEL_NAME)
+        for field_name in ("Word", "Sentence", "Source", "Status", "ChinesePointId"):
+            self.collection.models.add_field(legacy, self.collection.models.new_field(field_name))
+        template = self.collection.models.new_template("Recognition")
+        template["qfmt"] = "{{Word}}"
+        template["afmt"] = "{{FrontSide}}"
+        legacy["tmpls"].append(template)
+        self.collection.models.add(legacy)
+        status, _headers, _payload = self.post(export("<img src=x>", "<script>x</script>"), f"cp-v1-{CLIENT_ID}-1-1")
+        self.assertEqual(status, 200)
+        note = next(iter(self.collection.notes.values()))
+        self.assertEqual(note["Sentence"], "&lt;img src=x&gt;")
+        self.assertEqual(note["Answer"], "&lt;script&gt;x&lt;/script&gt;")
+        upgraded = self.collection.models.by_name(SERVER.MODEL_NAME)
+        self.assertIn("Answer", [field["name"] for field in upgraded["flds"]])
 
     def test_rejects_bad_bearer_token_before_touching_collection(self):
         status, _headers, payload = self.post(export("Não importar."), f"cp-v1-{CLIENT_ID}-1-1", token="wrong")

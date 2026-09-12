@@ -22,6 +22,7 @@ class VocabularyRecord:
     word_id: str
     headword: str
     sentence: str
+    answer: str
     book_path: str
     status: str
 
@@ -32,6 +33,13 @@ def valid_batch_id(value: str) -> bool:
 
 def _expect_string(value: Any, field: str, maximum: int) -> str:
     if not isinstance(value, str) or not value or len(value.encode("utf-8")) > maximum:
+        raise ProtocolError(f"invalid {field}")
+    return value
+
+
+def _expect_optional_string(value: Any, field: str, maximum: int) -> str:
+    """Accept a bounded empty field when the reader has no card answer yet."""
+    if not isinstance(value, str) or len(value.encode("utf-8")) > maximum:
         raise ProtocolError(f"invalid {field}")
     return value
 
@@ -75,6 +83,9 @@ def parse_vocabulary_ndjson(body: bytes) -> list[VocabularyRecord]:
                 word_id=word_id,
                 headword=_expect_string(value.get("headword"), "headword", 256),
                 sentence=_expect_string(value.get("sentence"), "sentence", 4096),
+                # Firmware emits an empty answer for ordinary saved vocabulary.
+                # Those notes stay visible but generate no blank review card.
+                answer=_expect_optional_string(value.get("answer", ""), "answer", 4096),
                 book_path=_expect_string(source.get("book_path"), "book_path", 1024),
                 status=status,
             )

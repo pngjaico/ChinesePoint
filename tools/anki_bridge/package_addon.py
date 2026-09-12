@@ -9,7 +9,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parent
 ADDON = ROOT / "chinesepoint_anki_bridge"
-DEFAULT_OUTPUT = ROOT / "dist" / "chinesepoint-anki-bridge-v0.6.ankiaddon"
+DEFAULT_OUTPUT = ROOT / "dist" / "chinesepoint-anki-bridge-v0.6.1.ankiaddon"
 
 
 def is_package_file(path: Path) -> bool:

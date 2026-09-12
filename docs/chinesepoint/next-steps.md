@@ -98,14 +98,17 @@ Entries without an answer stay available in the vocabulary browser but cannot
 be rated as flashcards. The journal keeps answers in their own record so old
 entry snapshots remain readable and later snapshots do not erase an answer.
 
-This is a local scheduler, not an Anki scheduler. The LAN Anki bridge still
-exports vocabulary only and does not import card state, due dates, or reviews.
-Calling the current feature “flashcards integrated with Anki” would be false.
+This is a local scheduler, not an Anki scheduler. The LAN bridge imports the
+saved answer into a project-owned Anki note type and creates a real Anki card
+only when that answer is non-empty; Anki Desktop then owns scheduling. The
+bridge does not import card state, due dates, or reviews back to the device.
+Calling it two-way Anki schedule synchronization would be false.
 
 Before Anki becomes a schedule authority, implement and test this sequence:
 
-1. Define a versioned ownership and conflict contract. It must state which
-   scheduler owns a card and reject every unsupported transition.
+1. Define a versioned ownership and conflict contract for future schedule
+   state pull. It must state which scheduler owns a card and reject every
+   unsupported transition.
 2. Build a bounded import/export protocol with idempotency, cancellation,
    offline retry, malformed-response, duplicate-card, and clock-skew tests.
 3. Run it first against a disposable Anki Desktop collection, then on a real
