@@ -1,70 +1,32 @@
-name: Bug Report
-description: Report an issue or unexpected behavior
-title: "Short, descriptive title of the issue"
+name: X4 Pro bug report
+description: Report a reproducible fault in an already assigned ChinesePoint X4 Pro test candidate.
+title: "[x4pro] "
 labels: ["bug", "triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to report this bug! Please fill out the details below.
-
-  - type: dropdown
-    id: device
-    attributes:
-      label: Device
-      description: Which device does this happen on? Pick "Other" for boards CrossPoint does not release firmware for — those are maintained in their own port repositories.
-      options:
-        - Xteink X3
-        - Xteink X4
-        - Xteink X4 Classic
-        - Xteink X4 Pro
-        - Seeed Sticky
-        - M5Stack Paper Mono
-        - Other / not listed
-    validations:
-      required: true
-
+        Use this form only for Xteink X4 Pro and an explicitly assigned hardware-test candidate. Do not flash a blocked or simulator artifact to create a report. For panel, boot, recovery, or orientation results, use the dedicated hardware-test form.
   - type: input
-    id: version
+    id: candidate
     attributes:
-      label: Affected Version
-      description: What version of the project/library are you using? (e.g., v1.2.3, master branch commit SHA)
-      placeholder: Ex. v1.2.3
+      label: Candidate commit and SHA-256
+      placeholder: "commit: ...; sha256: ..."
     validations:
       required: true
-
   - type: textarea
-    id: bug-description
+    id: reproduction
     attributes:
-      label: Describe the Bug
-      description: A clear and concise description of what the bug is.
-      placeholder:
-    validations:
-      required: true
-
-  - type: textarea
-    id: steps-to-reproduce
-    attributes:
-      label: Steps to Reproduce
-      description: Clearly list the steps necessary to reproduce the unexpected behavior.
+      label: Reproduction and observed result
       placeholder: |
-        1. Go to '...'
-        2. Select '...'
-        3. Crash
+        1. ...
+        2. ...
+        Expected: ...
+        Observed: ...
     validations:
       required: true
-
   - type: textarea
-    id: expected-behavior
+    id: evidence
     attributes:
-      label: Expected Behavior
-      description: A clear and concise description of what you expected to happen.
-    validations:
-      required: true
-
-  - type: textarea
-    id: logs
-    attributes:
-      label: Relevant Log Output/Screenshots
-      description: If applicable, error messages, or log output to help explain your problem. You can drag and drop images here.
-      render: shell
+      label: Logs or photos
+      description: Attach relevant logs or photos. Remove personal data and private LAN tokens.

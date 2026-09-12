@@ -42,6 +42,15 @@ Every release must include:
 - a simulator artifact; and
 - a confirmed rollback route.
 
+## Community hardware reports
+
+The public repository can collect controlled hardware evidence without
+pretending that the current build is installable. There is **no open flashing
+call** yet. Before a maintainer assigns an explicit hardware-test candidate,
+the candidate must have a fixed commit and verified application hash, a proven
+known-good recovery image, and a documented simulator result. The reporting
+rules and stop conditions are in
+[community-hardware-testing.md](docs/chinesepoint/community-hardware-testing.md).
 ## Verified baseline
 
 The initial source base is CrossPoint develop commit e7a3bb48817f1cb951b521ca958562723159c2f6. ChinesePoint currently pins FreeInk `7f6bd0f47a766eea18206dd19f723f3707b6c9d3`, which contains the upstream X4 Pro display-driver correction.

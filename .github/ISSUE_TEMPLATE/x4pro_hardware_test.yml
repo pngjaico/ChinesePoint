@@ -1,0 +1,75 @@
+name: X4 Pro hardware-test report
+description: Record a controlled result for an explicitly assigned ChinesePoint X4 Pro test candidate.
+title: "[hardware-test] <panel> - <candidate SHA-256 prefix>"
+labels: ["hardware-test", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Read this first
+
+        This form is only for a ChinesePoint candidate that a maintainer has explicitly identified as a **hardware-test candidate**. Do not flash a build labelled `installable: false`, a simulator artifact, an arbitrary branch build, or a full USB image. Do not use your only locked device. A successful report from one panel does not validate the other X4 Pro panel-controller paths.
+
+        Before a candidate test, prove the known-good **DOWN + POWER** SD recovery route and retain a verified X4 Pro-only recovery application. Stop on a blank, mirrored, inverted, unresponsive, rebooting, or non-recoverable device. Do not retry a blind flash.
+
+        See `docs/chinesepoint/community-hardware-testing.md` in the exact candidate source tree.
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Safety prerequisites
+      options:
+        - label: I tested an Xteink X4 Pro and no other model.
+          required: true
+        - label: I used a candidate explicitly assigned for hardware testing, with the exact SHA-256 below.
+          required: true
+        - label: Before the candidate, I proved DOWN plus POWER SD recovery with a separate known-good X4 Pro application.
+          required: true
+        - label: I retained the recovery image and did not use a full USB image in the SD updater.
+          required: true
+  - type: input
+    id: candidate
+    attributes:
+      label: Candidate commit and SHA-256
+      description: Paste the full Git commit and the full SHA-256 supplied by the maintainer.
+      placeholder: "commit: ...; sha256: ..."
+    validations:
+      required: true
+  - type: dropdown
+    id: panel
+    attributes:
+      label: Panel path from x4pro-panel-probe.txt
+      description: Choose only the value recorded by the candidate after display initialization.
+      options:
+        - SSD1677
+        - UC8179
+        - UC8279
+        - No report available (stop condition)
+    validations:
+      required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: Probe report and test observations
+      description: Paste x4pro-panel-probe.txt and state cold boot, orientation, full/partial refresh, touch, both lights, reader open/close, sleep/wake, Wi-Fi, and any fault.
+      placeholder: |
+        selected_controller=...
+        verdict=...
+        internal_8bit_free=...
+
+        Cold boot: pass/fail
+        Orientation: pass/fail
+        ...
+    validations:
+      required: true
+  - type: textarea
+    id: recovery
+    attributes:
+      label: Recovery result
+      description: State whether DOWN plus POWER still entered the SD updater after the candidate. Do not publish personal identifiers or private network details.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Photos, logs, and anomalies
+      description: Attach screen photos or logs if safe. Describe exact stop conditions; do not conceal failures.
