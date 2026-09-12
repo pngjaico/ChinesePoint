@@ -2,35 +2,35 @@
   "schema": 2,
   "project": "ChinesePoint",
   "target": "xteink-x4-pro",
-  "source_commit": "1c904e4db9273916949b1b1cfd029df33e71aa82",
+  "source_commit": "e7cae8d591b8be5fe4e7b2417565ddf21f97e2b2",
   "version": "ChinesePoint-v0.6-x4pro",
   "artifact": {
     "filename": "firmware.bin",
-    "bytes": 5377312,
-    "sha256": "efe91926b975d58ce173d264f12a39a5744efe794503d8cdff61c1eaaedf92ce",
+    "bytes": 5377536,
+    "sha256": "39b71a74095b2e914986617c89cdeec42b2c062f36bab6cb58a05c96bf4c0324",
     "environment": "chinesepoint_x4pro",
     "board_tag": "CROSSPOINT-BOARD-V1:x4pro;",
     "installable": false,
     "installable_reason": "Hardware panel validation and recovery drill are still required."
   },
   "evidence": {
-    "native_tests": 204,
+    "native_tests": 208,
     "artifact_tests": 4,
     "simulator": {
       "state": "passed",
-      "source_commit": "1c904e4db9273916949b1b1cfd029df33e71aa82",
+      "source_commit": "e7cae8d591b8be5fe4e7b2417565ddf21f97e2b2",
       "panels": {
         "ssd1677": {
           "state": "passed",
-          "record": "docs/chinesepoint/evidence/simulator-1c904e4.md#ssd1677"
+          "record": "docs/chinesepoint/evidence/simulator-e7cae8d.md#ssd1677"
         },
         "uc8179": {
           "state": "passed",
-          "record": "docs/chinesepoint/evidence/simulator-1c904e4.md#uc8179"
+          "record": "docs/chinesepoint/evidence/simulator-e7cae8d.md#uc8179"
         },
         "uc8279": {
           "state": "passed",
-          "record": "docs/chinesepoint/evidence/simulator-1c904e4.md#uc8279"
+          "record": "docs/chinesepoint/evidence/simulator-e7cae8d.md#uc8279"
         }
       }
     },

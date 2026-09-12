@@ -24,6 +24,7 @@ in this repository.
 | Mixed Chinese and Latin | Punctuation does not become a selectable word; Latin selection remains unchanged. |
 | Ruby, tables and images | Render, page-turn, back navigation and orientation changes do not crash or lose the chapter. |
 | Long chapter | Open, navigate to the end, sleep/wake, reopen and preserve the saved progress. |
+| 8 KiB unspaced CJK TXT | Delete its cache, open it, wait for indexing, reopen it, and record elapsed time plus serial `MEM` lines. There must be no watchdog reset, reboot, corrupt UTF-8, or lost progress. |
 
 Run every case in portrait, portrait inverted, landscape clockwise and
 landscape counter-clockwise. A screenshot alone cannot establish correct touch
@@ -47,6 +48,15 @@ selection or power-resume behavior.
 5. Complete the Anki Desktop bridge round trip with an existing deck: first
    sync, second idempotent sync, intentional conflicting edit, and an offline
    device retry. Anki Desktop remains the scheduling authority.
+
+## Stability probes from external reports
+
+CrossPoint and CrossInk issue reports are test targets, not reproductions on
+ChinesePoint. On every available physical panel, run a Wi-Fi scan and connect,
+open a reader, turn pages, sleep/wake, and repeat the scan while collecting a
+serial log and `MEM` values. Repeat the long CJK TXT case after a clean cache.
+A panic, watchdog reset, freeze, mirrored output, stack-overflow message, or
+materially falling free heap blocks release until investigated.
 
 ## Panel and recovery gate
 

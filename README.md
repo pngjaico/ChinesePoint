@@ -40,11 +40,11 @@ The initial source base is CrossPoint develop commit e7a3bb48817f1cb951b521ca958
 
 The unmodified X4 Pro baseline compiled on 2026-08-30 and produced a valid ESP32-S3 application image. It is not yet a ChinesePoint CJK release.
 
-The current ChinesePoint pre-physical build is source commit `1c904e4`. Its X4
+The current ChinesePoint pre-physical build is source commit `e7cae8d`. Its X4
 Pro artifact has an ESP32-S3 image header, the current
 `CROSSPOINT-BOARD-V1:x4pro;` tag, a valid Espressif checksum and validation
-hash, and SHA-256 `efe91926b975d58ce173d264f12a39a5744efe794503d8cdff61c1eaaedf92ce`
-(5,377,312 bytes). It passed artifact validation, 204 native host tests, eight
+hash, and SHA-256 `39b71a74095b2e914986617c89cdeec42b2c062f36bab6cb58a05c96bf4c0324`
+(5,377,536 bytes). It passed artifact validation, 208 native host tests, eight
 release-structure tests, two deterministic-identity tests, and simulator boot
 captures in the SSD1677, UC8179, and UC8279 profiles. It includes word selection,
 sentence-context saving even for a local dictionary miss, optional local
@@ -55,7 +55,7 @@ yet**: no physical panel or recovery drill has been performed.
 
 ## Current diagnostic build
 
-The `1c904e4` artifact above is the current diagnostic build. Artifact
+The `e7cae8d` artifact above is the current diagnostic build. Artifact
 validation reports `installable: false`; it is not a GitHub release asset or a
 recovery image.
 
@@ -63,6 +63,11 @@ This candidate adds bounded, allocation-free CJK phrase lookup after an exact
 StarDict miss. It tries no more than 12 phrases of up to 8 Han code points and
 64 UTF-8 bytes, then preserves dictionary SD, decompression, and low-memory
 errors instead of presenting them as a miss.
+
+It also bounds TXT page-index layout for an 8 KiB unspaced CJK chunk to
+logarithmic-width probes, protects UTF-8 boundaries, and services the
+subscribed watchdog around expensive text measurement. This reduces a known
+indexing-risk path; it is not proof that an X4 Pro cannot freeze.
 
 The build used 27.5% RAM and 82.0% flash. Its IRAM total is fully allocated,
 so adding ISR or flash-cache-sensitive code requires an IRAM budget review
