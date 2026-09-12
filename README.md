@@ -170,6 +170,9 @@ CrossPoint binary is safe until its exact hash has been recorded.
 
 No milestone is called installable until build, artifact validation, simulator, recovery path, and physical X4 Pro tests have passed.
 
+The concrete sequence, release blockers, and external-project decisions are in
+[`docs/chinesepoint/next-steps.md`](docs/chinesepoint/next-steps.md).
+
 The exact preflight, panel matrix, learner checks, and evidence format are in
 [`docs/chinesepoint/physical-validation.md`](docs/chinesepoint/physical-validation.md).
 
