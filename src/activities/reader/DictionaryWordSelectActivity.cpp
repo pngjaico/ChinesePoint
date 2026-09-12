@@ -63,9 +63,13 @@ void DictionaryWordSelectActivity::onEnter() {
 
 void DictionaryWordSelectActivity::extractWords() {
   words.clear();
+#if defined(CHINESEPOINT)
   learnerTokens.clear();
+#endif
   words.reserve(128);
+#if defined(CHINESEPOINT)
   learnerTokens.reserve(128);
+#endif
   rowCount = 0;
 
   // Single walk: collect the selectable words while accumulating their text
@@ -97,9 +101,13 @@ void DictionaryWordSelectActivity::extractWords() {
       box.width = 0;  // measured below, once the advance table is ready
       box.row = rowCount;
       box.text = text;
+#if defined(CHINESEPOINT)
       const bool joinWithoutSpaceBefore = !words.empty() && beginsNonAscii(words.back().text) && beginsNonAscii(text);
+#endif
       words.push_back(box);
+#if defined(CHINESEPOINT)
       learnerTokens.push_back({text, 0, ChinesePoint::Cjk::utf8CodepointCount(text), joinWithoutSpaceBefore});
+#endif
       rowHasWords = true;
 
       pageText.append(text);
@@ -159,6 +167,7 @@ void DictionaryWordSelectActivity::moveVertical(const int direction) {
 }
 
 void DictionaryWordSelectActivity::performLookup() {
+#if defined(CHINESEPOINT)
   // Build the learner context before touching the dictionary. Selection and
   // saving are useful on their own, and must not be disabled merely because a
   // user has not installed a StarDict yet. A configured dictionary still owns
@@ -172,12 +181,16 @@ void DictionaryWordSelectActivity::performLookup() {
                                                 learnerSentence.data(), learnerSentence.size(), sentenceSelection)) {
     learnerContext = {{learnerSentence.data()}, bookPath, sentenceSelection.anchor};
   }
+#endif
 
   if (dictionaryFolder.empty()) {
     startActivityForResult(
         std::make_unique<DictionaryDefinitionActivity>(renderer, mappedInput, words[selected].text,
-                                                       tr(STR_DICT_NO_DICT_SET), false,
-                                                       std::move(learnerContext)),
+                                                       tr(STR_DICT_NO_DICT_SET), false
+#if defined(CHINESEPOINT)
+                                                       , std::move(learnerContext)
+#endif
+                                                       ),
         [this](const ActivityResult&) { requestUpdate(); });
     return;
   }
@@ -210,6 +223,7 @@ void DictionaryWordSelectActivity::performLookup() {
   // Preserve the normal token lookup first, then probe bounded, longest-first
   // local CJK phrases. This is an offline fallback only: the configured
   // StarDict remains the authority and its precise failures are never hidden.
+#if defined(CHINESEPOINT)
   bool cjkFound = found;
   if (!cjkFound && ok && result == Dictionary::LookupResult::NotFound) {
     const size_t candidateCount = ChinesePoint::Cjk::buildCjkLookupCandidates(
@@ -220,16 +234,23 @@ void DictionaryWordSelectActivity::performLookup() {
       if (cjkFound || result != Dictionary::LookupResult::NotFound) break;
     }
   }
+#else
+  const bool cjkFound = found;
+#endif
 
   if (cjkFound) {
     popup = Popup::None;
     startActivityForResult(
         std::make_unique<DictionaryDefinitionActivity>(renderer, mappedInput, std::move(headword),
-                                                       std::move(definition), dict.definitionsAreHtml(),
-                                                       std::move(learnerContext), true),
+                                                       std::move(definition), dict.definitionsAreHtml()
+#if defined(CHINESEPOINT)
+                                                       , std::move(learnerContext), true
+#endif
+                                                       ),
         [this](const ActivityResult&) { requestUpdate(); });
     return;
   }
+#if defined(CHINESEPOINT)
   // A dictionary miss is not a reader or storage failure. For a CJK selection
   // with a valid local context, keep the word usable: the definition viewer
   // explicitly says it was not found and still offers the deliberate Save
@@ -244,6 +265,7 @@ void DictionaryWordSelectActivity::performLookup() {
         [this](const ActivityResult&) { requestUpdate(); });
     return;
   }
+#endif
   // Name the failure: a genuine miss is "Not found"; a word that WAS found but
   // couldn't be read is a real error — and we distinguish decompression from a
   // low-memory allocation from a generic read error.

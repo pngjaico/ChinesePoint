@@ -19,8 +19,10 @@
 
 #include "../../util/BookmarkFile.h"
 #include "BookmarkEntry.h"
+#if defined(CHINESEPOINT)
 #include "CcCedictDownloadActivity.h"
 #include "CjkLearnerStatsActivity.h"
+#endif
 #include "CrossPointSettings.h"
 #include "CrossPointState.h"
 #include "DictionaryWordSelectActivity.h"
@@ -843,6 +845,7 @@ void EpubReaderActivity::onReaderMenuConfirm(EpubReaderMenuActivity::MenuAction 
       openDictionaryWordSelect();
       break;
     }
+#if defined(CHINESEPOINT)
     case EpubReaderMenuActivity::MenuAction::CHINESEPOINT_LEARNER: {
       startActivityForResult(std::make_unique<CjkLearnerStatsActivity>(renderer, mappedInput),
                              [this](const ActivityResult&) { openReaderMenu(); });
@@ -853,6 +856,7 @@ void EpubReaderActivity::onReaderMenuConfirm(EpubReaderMenuActivity::MenuAction 
                              [this](const ActivityResult&) { openReaderMenu(); });
       break;
     }
+#endif
     case EpubReaderMenuActivity::MenuAction::DISPLAY_QR: {
       if (section && section->currentPage >= 0 && section->currentPage < section->pageCount) {
         std::string fullText = section->getTextFromSectionFile();

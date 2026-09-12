@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "activities/Activity.h"
+#if defined(CHINESEPOINT)
 #include "chinesepoint/cjk/CjkLearnerModel.h"
+#endif
 #include "util/ButtonNavigator.h"
 
 // Paged viewer for one dictionary definition. HTML definitions are laid out
@@ -18,22 +20,30 @@
 // page renders spans of the original string, so no per-line copies are held.
 class DictionaryDefinitionActivity final : public Activity {
  public:
+#if defined(CHINESEPOINT)
   struct LearnerSaveContext {
     std::string sentence;
     std::string bookPath;
     ChinesePoint::Cjk::TextAnchor anchor{};
   };
+#endif
 
   explicit DictionaryDefinitionActivity(GfxRenderer& renderer, MappedInputManager& mappedInput, std::string headword,
-                                        std::string definition, bool htmlDefinition = false,
-                                        std::optional<LearnerSaveContext> learnerContext = std::nullopt,
-                                        bool definitionIsLearnerAnswer = false)
+                                        std::string definition, bool htmlDefinition = false
+#if defined(CHINESEPOINT)
+                                        , std::optional<LearnerSaveContext> learnerContext = std::nullopt,
+                                        bool definitionIsLearnerAnswer = false
+#endif
+                                        )
       : Activity("DictionaryDefinition", renderer, mappedInput),
         headword(std::move(headword)),
         definition(std::move(definition)),
-        htmlDefinition(htmlDefinition),
-        learnerContext(std::move(learnerContext)),
-        definitionIsLearnerAnswer(definitionIsLearnerAnswer) {}
+        htmlDefinition(htmlDefinition)
+#if defined(CHINESEPOINT)
+        , learnerContext(std::move(learnerContext)),
+        definitionIsLearnerAnswer(definitionIsLearnerAnswer)
+#endif
+        {}
 
   void onEnter() override;
   void loop() override;
@@ -58,19 +68,23 @@ class DictionaryDefinitionActivity final : public Activity {
   void wrapText();
   int measureSpan(int fontId, const char* text, size_t len) const;
   void drawBody(int fontId, int x, int startY) const;
+#if defined(CHINESEPOINT)
   void saveLearnerEntry();
   void captureLearnerAnswer();
+#endif
 
   const std::string headword;
   // Not const: onEnter() normalizes embedded NULs (StarDict multi-type
   // separators) to newlines so C-string APIs see the whole text.
   std::string definition;
   const bool htmlDefinition;
+#if defined(CHINESEPOINT)
   const std::optional<LearnerSaveContext> learnerContext;
   const bool definitionIsLearnerAnswer;
   std::string learnerAnswer;
   bool learnerSaveAttempted = false;
   bool learnerSaved = false;
+#endif
   // Styled path: reader-identical Pages laid out from the HTML definition.
   // Empty means the plain-text span path below is active.
   std::vector<std::unique_ptr<Page>> pages;

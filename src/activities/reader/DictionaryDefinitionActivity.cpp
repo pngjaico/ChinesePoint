@@ -9,8 +9,10 @@
 #include <cstdio>
 
 #include "CrossPointSettings.h"
+#if defined(CHINESEPOINT)
 #include "chinesepoint/CjkSafetyGuard.h"
 #include "chinesepoint/cjk/CjkLearnerStore.h"
+#endif
 #include "components/UITheme.h"
 #include "fontIds.h"
 #include "util/DictHtmlPages.h"
@@ -32,12 +34,14 @@ constexpr int SIDE_PADDING = 20;
 // path, which holds no per-page copies.
 constexpr size_t MAX_STYLED_HTML_BYTES = 16 * 1024;
 
+#if defined(CHINESEPOINT)
 void truncateUtf8(std::string& value, const size_t maximum) {
   if (value.size() <= maximum) return;
   size_t end = maximum;
   while (end > 0 && (static_cast<unsigned char>(value[end]) & 0xC0u) == 0x80u) --end;
   value.resize(end);
 }
+#endif
 
 }  // namespace
 
@@ -46,7 +50,9 @@ void DictionaryDefinitionActivity::onEnter() {
   // Normalize StarDict multi-type separators so the wrap loop and the
   // C-string font APIs below both see the whole definition.
   std::replace(definition.begin(), definition.end(), '\0', '\n');
+#if defined(CHINESEPOINT)
   captureLearnerAnswer();
+#endif
   if (!(htmlDefinition && definition.size() <= MAX_STYLED_HTML_BYTES && layoutHtmlPages())) {
     definition = htmlToPlainText(definition);
     wrapText();
@@ -54,6 +60,7 @@ void DictionaryDefinitionActivity::onEnter() {
   requestUpdate();
 }
 
+#if defined(CHINESEPOINT)
 void DictionaryDefinitionActivity::captureLearnerAnswer() {
   // Only a successful local dictionary lookup may become a card answer. UI
   // messages such as “dictionary not found” are useful to display but would
@@ -62,6 +69,8 @@ void DictionaryDefinitionActivity::captureLearnerAnswer() {
   learnerAnswer = htmlToPlainText(definition);
   truncateUtf8(learnerAnswer, ChinesePoint::Cjk::kMaxCardAnswerBytes);
 }
+
+#endif
 
 DictionaryDefinitionActivity::BodyArea DictionaryDefinitionActivity::bodyArea() const {
   const auto& metrics = UITheme::getInstance().getMetrics();
@@ -215,12 +224,14 @@ void DictionaryDefinitionActivity::loop() {
     return;
   }
 
+#if defined(CHINESEPOINT)
   if (learnerContext.has_value() && !learnerSaved &&
       mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
     saveLearnerEntry();
     requestUpdate();
     return;
   }
+#endif
 
   // Same tap zones as the reader page turns: left third = previous page,
   // the rest = next. Back is the usual left-edge swipe.
@@ -254,6 +265,7 @@ void DictionaryDefinitionActivity::loop() {
   });
 }
 
+#if defined(CHINESEPOINT)
 void DictionaryDefinitionActivity::saveLearnerEntry() {
   learnerSaveAttempted = true;
   if (!learnerContext.has_value() || !ChinesePoint::CjkSafetyGuard::startLearnerSession()) return;
@@ -262,6 +274,8 @@ void DictionaryDefinitionActivity::saveLearnerEntry() {
       learnerAnswer, static_cast<int64_t>(millis()));
   ChinesePoint::CjkSafetyGuard::finishLearnerSession();
 }
+
+#endif
 
 // Draws the current page: a styled Page when the HTML layout succeeded,
 // otherwise the wrapped line spans (copied into a stack buffer for NUL
@@ -307,12 +321,14 @@ void DictionaryDefinitionActivity::render(RenderLock&&) {
     const int counterWidth = renderer.getTextWidth(UI_10_FONT_ID, counter);
     renderer.drawText(UI_10_FONT_ID, contentX + contentWidth - SIDE_PADDING - counterWidth, headerY, counter);
   }
+#if defined(CHINESEPOINT)
   if (learnerSaveAttempted) {
     const char* status = learnerSaved ? "Saved" : "Save failed";
     const int statusWidth = renderer.getTextWidth(UI_10_FONT_ID, status);
     renderer.drawText(UI_10_FONT_ID, contentX + contentWidth - SIDE_PADDING - statusWidth,
                       headerY + renderer.getLineHeight(UI_10_FONT_ID), status);
   }
+#endif
 
   // Body: two-pass draw inside a prewarm scope (same pattern as the reader's
   // renderContents) so SD-card font glyphs load from SD in one batch instead
@@ -325,9 +341,14 @@ void DictionaryDefinitionActivity::render(RenderLock&&) {
   scope.endScanAndPrewarm();
   drawBody(fontId, contentX + SIDE_PADDING, bodyStartY);
 
-  const auto labels = mappedInput.mapLabels(tr(STR_BACK), learnerContext.has_value() && !learnerSaved ? "Save" : "",
-                                            (currentPage > 0 ? "<" : ""),
-                                            (currentPage + 1 < totalPages ? ">" : ""));
+  const auto labels = mappedInput.mapLabels(
+      tr(STR_BACK),
+#if defined(CHINESEPOINT)
+      learnerContext.has_value() && !learnerSaved ? "Save" : "",
+#else
+      "",
+#endif
+      (currentPage > 0 ? "<" : ""), (currentPage + 1 < totalPages ? ">" : ""));
   GUI.drawButtonHints(renderer, labels.btn1, labels.btn2, labels.btn3, labels.btn4);
   renderer.displayBuffer();
 }

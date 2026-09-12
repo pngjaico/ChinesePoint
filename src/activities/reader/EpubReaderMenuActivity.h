@@ -28,8 +28,10 @@ class EpubReaderMenuActivity final : public UiListActivity {
     SYNC,
     DELETE_CACHE,
     DICTIONARY,
+#if defined(CHINESEPOINT)
     CHINESEPOINT_LEARNER,
-    CHINESEPOINT_CEDICT
+    CHINESEPOINT_CEDICT,
+#endif
   };
 
   struct MenuItem {

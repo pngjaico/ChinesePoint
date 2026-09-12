@@ -4,13 +4,17 @@
 #include <I18n.h>
 
 #include <memory>
+#if defined(CHINESEPOINT)
 #include <array>
+#endif
 #include <string>
 #include <vector>
 
 #include "activities/Activity.h"
+#if defined(CHINESEPOINT)
 #include "chinesepoint/cjk/CjkLookupCandidates.h"
 #include "chinesepoint/cjk/CjkSentenceSelection.h"
+#endif
 #include "util/Dictionary.h"
 
 // Word selection over the current reader page: Left/Right step through words
@@ -69,9 +73,11 @@ class DictionaryWordSelectActivity final : public Activity {
   int lineHeight = 0;
 
   std::vector<WordBox> words;
+#if defined(CHINESEPOINT)
   std::vector<ChinesePoint::Cjk::SelectableToken> learnerTokens;
   std::array<ChinesePoint::Cjk::LookupCandidate, ChinesePoint::Cjk::kMaxLookupCandidates> lookupCandidates{};
   std::array<char, ChinesePoint::Cjk::kMaxSentenceBytes + 1> learnerSentence{};
+#endif
   const uint16_t spineIndex;
   const bool startsAtSectionBoundary;
   const bool endsAtSectionBoundary;
