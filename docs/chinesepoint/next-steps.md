@@ -4,13 +4,15 @@ Status on 2026-09-12: the current candidate is diagnostic only. Its simulator
 matrix passes, but physical panel, recovery, Anki Desktop, and long-session
 evidence are absent. It must not be flashed as a 1.0 release.
 
-Source commit `404ff1e` additionally services a subscribed task watchdog
-during bounded Anki export, upload, and response waits. It limits individual
-target socket connection, read, and write operations to three seconds while
-retaining a 60-second overall response deadline. Its retained X4 Pro artifact
-and SSD1677/UC8179/UC8279 simulator matrix pass, but neither proves a real
-Anki transfer nor a physical test record. The artifact remains diagnostic and
-non-installable.
+Source commit `da0511e` retains the bounded Anki watchdog behavior and adds
+bounded local-dictionary routing from EPUB `dc:language` metadata. It limits
+the route to one language folder and falls back to the existing global
+dictionary when the tag is absent or invalid. Its X4 Pro artifact is
+reproducible across two consecutive builds; `firmware.bin` and `update.bin`
+share SHA-256 `761324065c89cc08d40577af300fc0694e712a8d80e97df15a3dc36cb473e9fe`.
+The exact-source SSD1677/UC8179/UC8279 simulator matrix passes, but it proves
+neither a real dictionary lookup, Anki transfer, nor a physical test record.
+The artifact remains diagnostic and non-installable.
 
 1. **Prepare a reversible hardware session.** Keep the known-good X4 Pro
    CrossPoint application plus its strict backup checksum on the SD card. From

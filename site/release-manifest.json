@@ -2,12 +2,12 @@
   "schema": 2,
   "project": "ChinesePoint",
   "target": "xteink-x4-pro",
-  "source_commit": "404ff1e87d610c92a580c5af8c5f00a07d20fe3d",
+  "source_commit": "da0511ea72cfb25db2a45a5633705401e29c0244",
   "version": "ChinesePoint-v0.6-x4pro",
   "artifact": {
     "filename": "firmware.bin",
-    "bytes": 5377568,
-    "sha256": "c72e14ad12a528fd4475a2705406d1d25b292204eab28681bc6d15c45d38bda5",
+    "bytes": 5379216,
+    "sha256": "761324065c89cc08d40577af300fc0694e712a8d80e97df15a3dc36cb473e9fe",
     "environment": "chinesepoint_x4pro",
     "board_tag": "CROSSPOINT-BOARD-V1:x4pro;",
     "installable": false,
@@ -18,19 +18,19 @@
     "artifact_tests": 4,
     "simulator": {
       "state": "passed",
-      "source_commit": "404ff1e87d610c92a580c5af8c5f00a07d20fe3d",
+      "source_commit": "da0511ea72cfb25db2a45a5633705401e29c0244",
       "panels": {
         "ssd1677": {
           "state": "passed",
-          "record": "docs/chinesepoint/evidence/simulator-404ff1e.md#ssd1677"
+          "record": "docs/chinesepoint/evidence/simulator-da0511e.md#ssd1677"
         },
         "uc8179": {
           "state": "passed",
-          "record": "docs/chinesepoint/evidence/simulator-404ff1e.md#uc8179"
+          "record": "docs/chinesepoint/evidence/simulator-da0511e.md#uc8179"
         },
         "uc8279": {
           "state": "passed",
-          "record": "docs/chinesepoint/evidence/simulator-404ff1e.md#uc8279"
+          "record": "docs/chinesepoint/evidence/simulator-da0511e.md#uc8279"
         }
       }
     },

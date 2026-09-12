@@ -38,6 +38,14 @@ The device updater receives only the application image. A full USB rescue
 image, if ever produced after separate review, must be labelled as rescue-only
 and must never be offered through the on-device updater or website flasher.
 
+For `chinesepoint_x4pro`, the build creates `update.bin` beside
+`firmware.bin`. They must have identical byte counts and SHA-256 values; the
+alias is a convenience for an SD updater that expects that filename, never a
+USB rescue image. `tools/chinesepoint/stage_x4pro_update.py` verifies the
+source and copied application, writes `update.bin.sha256`, and refuses an
+existing update unless `--force` is explicitly supplied after inspection. It
+only accepts an existing user-selected SD root and never opens a serial port.
+
 ## Current state
 
 The current manifest remains blocked. The checked-in build is useful for

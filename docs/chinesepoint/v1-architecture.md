@@ -15,7 +15,7 @@ The dedicated ChinesePoint release and release-candidate workflows build only `c
 | Item | Value |
 | --- | --- |
 | CrossPoint base | e7a3bb48817f1cb951b521ca958562723159c2f6 |
-| FreeInk pin | f831c1e447a21cfc7def620bb7c9c783e416a0a4 |
+| FreeInk pin | 7f6bd0f47a766eea18206dd19f723f3707b6c9d3 |
 | Baseline environment | x4pro |
 | Baseline app image | 5,324,464 bytes |
 | Baseline app SHA-256 | 0ae10b6ed58940d64d9c0faf4871f1b60fb2b6de2425537e30a7b18a660c96da |
