@@ -47,6 +47,18 @@ HTTP bridge with a fake collection. The latter verifies bearer authentication,
 first import, idempotent retry, and a later note update. They are not a
 substitute for running the add-on inside a real Anki Desktop profile.
 
+To also exercise the real Anki collection API without opening or modifying a
+profile, run this workstation-only smoke test with the local Anki installation:
+
+```powershell
+python real_collection_smoke.py `
+  --anki-app-packages 'C:\Users\Usuario-pc\AppData\Local\Programs\Anki\app_packages'
+```
+
+It creates a temporary collection, verifies first import, idempotent retry and
+update, then deletes that temporary collection. It does not prove add-on GUI
+startup or X4 Pro Wi-Fi transfer.
+
 ## Build the add-on archive
 
 From this directory, run:
