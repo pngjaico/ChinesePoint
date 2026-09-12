@@ -51,13 +51,20 @@ and the pinned SDK until hardware logs resolve the actual controller.
 
 ## FreeInk change since the previous observation
 
-The observed FreeInk head advanced from `76e66b1` to `c881d21`. Relative to
-the ChinesePoint pin, the display, Xteink-detection and BoardConfig range now
-changes 43 files (1,787 additions and 203 deletions). It includes runtime GPIO
-configuration, Xteink probe changes, SSD1677/UC8179/UC8279/UC8279-X4 waveform
-and grayscale work, and new upstream host tests. In particular, it changes
-both the driver-selection probe and the refresh implementations for the three
-X4 Pro controller paths.
+After fetching the observed `c881d21` head again on 2026-09-12, the range from
+the ChinesePoint pin was larger than the earlier count: 80 files, 7,065
+additions and 1,515 deletions. It includes runtime GPIO configuration,
+Xteink-probe changes, SSD1677/UC8179/UC8279/UC8279-X4 waveform and grayscale
+work, SPI buffer tracking, FreeInkUI work, and new upstream host tests. In
+particular, it changes both the driver-selection probe and the refresh
+implementations for the three X4 Pro controller paths.
+
+CrossInk RC-6 says that its newer FreeInk revision addresses a battery-drain
+report. The unmerged range's `BatteryMonitor` and `PowerManager` edits target
+the Waveshare 3.97 board's AXP2101 paths; they do not establish an X4 Pro
+sleep, frontlight, or battery fix. ChinesePoint must not represent the newer
+head as a solution for the X4 Pro battery reports without measured hardware
+evidence.
 
 That is evidence for a separate integration candidate, not a safe cherry-pick
 set. Pulling only a detector or only a waveform would couple it to an older
