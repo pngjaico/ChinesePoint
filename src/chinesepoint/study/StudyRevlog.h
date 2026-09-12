@@ -4,12 +4,13 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "chinesepoint/study/StudyTypes.h"
+
 namespace ChinesePoint::Study {
 
 constexpr size_t kReviewEntryBytes = 64;
 constexpr size_t kReviewEntryIdBytes = 16;
 
-enum class CardState : uint8_t { New = 0, Learning = 1, Review = 2, Relearning = 3 };
 
 enum class ReviewDecodeStatus : uint8_t {
   Ok,
