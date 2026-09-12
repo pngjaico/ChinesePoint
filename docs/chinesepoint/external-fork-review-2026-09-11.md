@@ -41,6 +41,10 @@ the release manifest remains blocked.
    directory and a two-letter ASCII primary tag. It does not change CC-CEDICT's
    existing flat folder or the global fallback, and it never lets EPUB metadata
    create a path outside a dictionary root.
+5. Matcha's review-oriented reader UX is not portable as a quick patch. The
+   current ChinesePoint scheduler lacks a reboot-safe time source and no review
+   activity exists. Adding buttons around it now would create unreliable due
+   dates; the durable-clock and atomic-review-mutation work is a prerequisite.
 
 ## Path to the first installable 1.0 candidate
 

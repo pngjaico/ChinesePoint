@@ -87,3 +87,37 @@ The current technical risk that cannot be solved by documentation is the X4
 Pro image's 100% IRAM allocation. The firmware compiles, but the remaining
 margin is zero; only a measured device session can establish whether its
 watchdog, sleep/wake, Wi-Fi, and panel behavior are acceptable.
+
+## Critical correction: local flashcard review is incomplete
+
+The learner journal, pure repetition scheduler, vocabulary browser, export, and
+opt-in Anki bridge exist. They do **not** yet form an in-device flashcard
+review feature: no activity presents a due card or records `Again`, `Hard`,
+`Good`, or `Easy`. The scheduler currently receives a monotonic `millis()`
+value, which resets after reboot. The X4 Pro wall-clock path is not proven in
+this firmware, so using it as a due-date source would silently make schedules
+wrong after power loss. This is a product gap, not a documentation issue.
+
+Anki sync also exports vocabulary without importing review state, so it cannot
+legitimately claim that Anki is the scheduler for cards created on the device.
+The current bridge is a safe, idempotent vocabulary-transfer channel only.
+
+Before the learner is called "flashcards integrated with Anki", implement and
+test this sequence:
+
+1. Add a durable study-clock abstraction. It must prefer a verified wall clock,
+   reject invalid or rolled-back time, and preserve a monotonic logical clock
+   across reboot without changing boot, recovery, or reader state.
+2. Add atomic learner-store mutation for a locally authoritative review result;
+   persist the entire snapshot only after a successful journal append. An
+   Anki-authoritative entry must be rejected by this path.
+3. Add a bounded review activity reachable from the learner menu. It must show
+   only locally due entries, accept the four ratings, display an explicit
+   no-due-cards state, and keep normal auto-sleep behavior while idle.
+4. Define the Anki contract before importing or exporting scheduling data.
+   Either keep Anki as a separate review system and state that plainly, or add
+   a versioned, conflict-tested schedule protocol. Do not let two schedulers
+   mutate the same card silently.
+5. Add host tests for reboot, torn journal append, clock rollback, rating
+   transitions, Anki-authority rejection, and the empty/due-card selection.
+   Then add simulator and physical X4 Pro review sessions to the release matrix.

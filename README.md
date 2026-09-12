@@ -14,9 +14,9 @@ Its release workflows build only `chinesepoint_x4pro`; an upstream-shaped multi-
 ## What ChinesePoint is becoming
 
 - EPUB, TXT, and XTC reading on the current CrossPoint reader base.
-- CJK token lookup, local dictionaries, source-aware vocabulary, and review.
+- CJK token lookup, local dictionaries, source-aware vocabulary, and planned local review.
 - Inspectable reading and learning statistics with export and import.
-- Optional token-authenticated LAN Anki Desktop sync where Anki remains the scheduler; no cloud relay or background device sync.
+- Optional token-authenticated LAN Anki Desktop vocabulary sync; no cloud relay or background device sync.
 - A versioned Linux/WSL simulator evidence bundle with scripted captures for every release.
 - A release dashboard with hashes, rollback instructions, and clear status labels.
 
@@ -56,7 +56,10 @@ routing: a valid `dc:language` may choose a dictionary under
 `/dictionaries/<language>/<dictionary>/`, otherwise the existing global
 selection remains in force. It also has learner statistics, a read-only
 vocabulary/context browser, an opt-in verified CC-CEDICT installer, and a
-manually triggered token-authenticated Anki Desktop bridge. Its bounded Anki
+manually triggered token-authenticated Anki Desktop bridge. The local review
+screen is not implemented yet: the scheduler is tested but has no durable
+wall-clock source on the X4 Pro, so calling it a usable flashcard feature would
+be misleading. Its bounded Anki
 export, upload, and response waits service a subscribed watchdog; target socket
 operations are capped at three seconds while the complete HTTP response has a
 60-second deadline. It is explicitly **not installable yet**: no physical
