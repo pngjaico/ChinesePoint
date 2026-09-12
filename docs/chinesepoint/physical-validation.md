@@ -48,6 +48,19 @@ covers only one row; the other rows must remain `pending`, not guessed.
 | UC8179 | cold boot; orientation; full and partial refresh; touch; both frontlights; reader open/close | `docs/chinesepoint/evidence/uc8179.md` |
 | UC8279 | cold boot; orientation; full and partial refresh; touch; both frontlights; reader open/close | `docs/chinesepoint/evidence/uc8279.md` |
 
+For each tested row, run cold-only and warm-only frontlight for five minutes,
+then mixed light through three brightness levels, an off/on cycle, and a
+sleep/wake cycle while Wi-Fi is connected. Record any disappearing channel,
+flicker, reset, or change in touch responsiveness. These checks specifically
+address recent upstream X4 Pro reports; a successful boot frame is insufficient.
+
+After recovery and normal reader checks pass, record battery percentage and
+serial memory values before an overnight sleep period, then after wake. A
+material unexplained drain, a reset, or a lower memory floor stops release
+work for that candidate. Font download is deferred until this baseline is
+stable; when tested, capture free heap and maximum allocation before and after
+the operation.
+
 For the detected physical panel, continue with the learner checks below. Do
 not force a simulated controller identifier onto the device.
 

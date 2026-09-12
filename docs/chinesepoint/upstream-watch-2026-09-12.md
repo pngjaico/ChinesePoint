@@ -31,6 +31,24 @@ ChinesePoint must not move this pin until all of the following are available:
 The hold is deliberate. A simulated BMP cannot validate controller waveforms,
 power sequencing or panel-specific lookup tables.
 
+## New X4 Pro risk reports — reviewed 2026-09-12
+
+These are upstream user reports, not reproduced ChinesePoint defects. They
+raise the physical acceptance bar and are reasons not to merge a newer SDK or
+call a simulator result device-safe.
+
+| Report | Observed scope | ChinesePoint decision |
+| --- | --- | --- |
+| [CrossPoint #3371](https://github.com/crosspoint-reader/crosspoint-reader/issues/3371) | An X4 Pro user on v1.6.0 reported that the cold frontlight channel starts then disappears, leaving only warm light. | Require sustained cold-only, warm-only, mixed, off/on, sleep/wake, and Wi-Fi-use frontlight observations on every physical panel row. Do not infer frontlight health from boot or a simulator. |
+| [CrossPoint #3392](https://github.com/crosspoint-reader/crosspoint-reader/issues/3392) | An X4 Pro v1.6.0 report described a memory error when downloading a font immediately after reset. | Keep font download outside the first recovery candidate. In the later reader matrix, capture free heap and maximum allocation before/after download and stop on an allocation failure or falling memory floor. |
+| [CrossPoint v1.6.0 RC discussion #3099](https://github.com/crosspoint-reader/crosspoint-reader/discussions/3099) | Users reported substantial idle battery loss; the discussion linked it to display-variant behavior. | Run an overnight sleep/battery observation only after baseline recovery works. It is a release gate for the tested device, never evidence for untested controller variants. |
+| [CrossPoint simulator README](https://github.com/crosspoint-reader/crosspoint-simulator) | The UC8279 X4 Pro simulator path explicitly remains pending physical validation. | Keep UC8279 `pending` in the release manifest until a separate real unit passes. The Home screenshot is only a code-path check. |
+
+FreeInk's current README describes the X4 Pro as auto-detecting SSD1677 and
+UC8179, while its build-composition table also describes a UC8279 path. That
+documentation discrepancy is itself a reason to retain the three-path matrix
+and the pinned SDK until hardware logs resolve the actual controller.
+
 ## FreeInk change since the previous observation
 
 The observed FreeInk head advanced from `76e66b1` to `c881d21`. Relative to
