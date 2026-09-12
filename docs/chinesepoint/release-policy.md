@@ -27,6 +27,11 @@ manifest from enabling a download.
 The observable procedure and evidence-file format are in
 [`physical-validation.md`](physical-validation.md).
 
+For a 1.0 candidate, the physical record must also cover the reader,
+dictionary, learner and Anki round-trip gates in
+[`reader-acceptance.md`](reader-acceptance.md). A successful boot or a
+simulator screenshot does not satisfy this reader acceptance gate.
+
 ## Artifact separation
 
 The device updater receives only the application image. A full USB rescue

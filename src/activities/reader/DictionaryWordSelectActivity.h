@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "activities/Activity.h"
+#include "chinesepoint/cjk/CjkLookupCandidates.h"
 #include "chinesepoint/cjk/CjkSentenceSelection.h"
 #include "util/Dictionary.h"
 
@@ -67,6 +68,7 @@ class DictionaryWordSelectActivity final : public Activity {
 
   std::vector<WordBox> words;
   std::vector<ChinesePoint::Cjk::SelectableToken> learnerTokens;
+  std::array<ChinesePoint::Cjk::LookupCandidate, ChinesePoint::Cjk::kMaxLookupCandidates> lookupCandidates{};
   std::array<char, ChinesePoint::Cjk::kMaxSentenceBytes + 1> learnerSentence{};
   const uint16_t spineIndex;
   const bool startsAtSectionBoundary;

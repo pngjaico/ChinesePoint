@@ -206,7 +206,22 @@ void DictionaryWordSelectActivity::performLookup() {
   Dictionary::LookupResult result = Dictionary::LookupResult::NotFound;
   const bool found = ok && dict.lookup(words[selected].text, definition, headword, &result);
 
-  if (found) {
+  // EPUBs often expose a Chinese expression as neighbouring one-Hanzi tokens.
+  // Preserve the normal token lookup first, then probe bounded, longest-first
+  // local CJK phrases. This is an offline fallback only: the configured
+  // StarDict remains the authority and its precise failures are never hidden.
+  bool cjkFound = found;
+  if (!cjkFound && ok && result == Dictionary::LookupResult::NotFound) {
+    const size_t candidateCount = ChinesePoint::Cjk::buildCjkLookupCandidates(
+        learnerTokens.data(), learnerTokens.size(), static_cast<size_t>(selected), lookupCandidates.data(),
+        lookupCandidates.size());
+    for (size_t index = 0; index < candidateCount; ++index) {
+      cjkFound = dict.lookup(lookupCandidates[index].text, definition, headword, &result);
+      if (cjkFound || result != Dictionary::LookupResult::NotFound) break;
+    }
+  }
+
+  if (cjkFound) {
     popup = Popup::None;
     startActivityForResult(
         std::make_unique<DictionaryDefinitionActivity>(renderer, mappedInput, std::move(headword),

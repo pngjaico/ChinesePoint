@@ -42,9 +42,28 @@ The unmodified X4 Pro baseline compiled on 2026-08-30 and produced a valid ESP32
 
 The latest ChinesePoint pre-physical build passed locally on 2026-09-01 at source commit `04338ee`. Its X4 Pro artifact has an ESP32-S3 image header, the current `CROSSPOINT-BOARD-V1:x4pro;` tag, a valid Espressif checksum and validation hash, and SHA-256 `5febfdceeebba5c7a575601f843773fac81bc4647a651580305191f8aa3fb26b`. It passed 198 native tests and artifact validation; the three-panel simulator CI for this exact commit is pending. It includes word selection, sentence-context saving even for a local dictionary miss, optional local StarDict lookup, learner statistics, a read-only vocabulary/context browser, an opt-in verified CC-CEDICT installer, and a manually triggered token-authenticated Anki Desktop bridge. It is explicitly **not installable yet**: no physical panel or recovery drill has been performed.
 
+## Current diagnostic build
+
+On 2026-09-11, the current `chinesepoint_x4pro` working tree compiled as an
+ESP32-S3 X4 Pro application image with `CROSSPOINT-BOARD-V1:x4pro;` and
+SHA-256 `5b1f6bcfee933033903ee4762bd4f6743da38ff452d273d373d297a85a40ab4b`
+(5,370,144 bytes). Artifact validation reports `installable: false`; it is a
+diagnostic build only and is not a GitHub release asset or recovery image.
+
+This candidate adds bounded, allocation-free CJK phrase lookup after an exact
+StarDict miss. It tries no more than 12 phrases of up to 8 Han code points and
+64 UTF-8 bytes, then preserves dictionary SD, decompression, and low-memory
+errors instead of presenting them as a miss.
+
+The build used 27.5% RAM and 81.9% flash. Its IRAM total is fully allocated,
+so adding ISR or flash-cache-sensitive code requires an IRAM budget review
+before it can be considered safe. Host-native tests, formatting, static
+analysis, simulator coverage, every physical panel path, reader acceptance,
+and the DOWN+POWER recovery drill remain release gates.
+
 ~~~powershell
 $env:PYTHONUTF8 = '1'
-$env:PLATFORMIO_CORE_DIR = 'D:\ChinesePoint\platformio-core' # keep toolchains on D:
+$env:PLATFORMIO_CORE_DIR = 'D:\Usuario-pc\Ferramentas\PlatformIO' # keep toolchains on D:
 $env:PLATFORMIO_HOME_DIR = $env:PLATFORMIO_CORE_DIR
 pio run -e chinesepoint_x4pro
 ~~~
