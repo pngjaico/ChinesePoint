@@ -72,9 +72,30 @@ pio run -e chinesepoint_x4pro
 
 ChinesePoint uses the official CrossPoint X4 Pro simulator for deterministic CI screenshots. It runs on Linux or WSL in CI; upstream has no Windows-native simulator path. Each milestone delivers the three verified captures, checksums and a pinned Linux/WSL re-execution bundle. This is evidence only and never flashes hardware.
 
+On 2026-09-11, source commit `dc3a7367d16cbc7501f7e709b48a358c746821d3`
+compiled and boot-captured locally through all three X4 Pro profiles: SSD1677,
+UC8179, and UC8279. Every BMP passed
+`tools/chinesepoint/verify_simulator_screenshot.py`; the captures are at
+`D:\Usuario-pc\Projetos\ChinesePoint\simulator-evidence\2026-09-11-dc3a736`.
+The identical Home screenshots demonstrate only the simulated boot and render
+paths. They do not validate physical panel timing, orientation, deep sleep,
+power sequencing, touch, or recovery.
+
+For the configured Windows workstation, start an interactive profile with:
+
+~~~powershell
+cd D:\Usuario-pc\Projetos\ChinesePoint\firmware
+.\tools\chinesepoint\run_simulator_x4pro.ps1 -Panel ssd1677
+# Other profiles: -Panel uc8179  or  -Panel uc8279
+~~~
+
+The launcher updates an isolated WSL working clone and stores its toolchain,
+cache, and build tree in the `ChinesePoint-Emulator` WSL VHDX on D:. It never
+calls the USB flasher, the SD updater, or an X4 Pro.
+
 ## Development map
 
-1. v0.6: X4 Pro-only build identity, safe CJK isolation, simulator/release gate, site manifest — implemented; current simulator evidence remains pending.
+1. v0.6: X4 Pro-only build identity, safe CJK isolation, simulator/release gate, site manifest — implemented; local three-panel simulator smoke passed, physical evidence pending.
 2. v0.7: current-base CJK Learner port — implemented in source; physical validation pending.
 3. v0.8: statistics and deterministic export — implemented in source; physical validation pending.
 4. v0.9: opt-in Anki synchronization — implemented in source; Anki Desktop and X4 Pro integration pending.
