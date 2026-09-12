@@ -15,9 +15,12 @@
 #include "ReaderUtils.h"
 #include "components/UITheme.h"
 #include "fontIds.h"
+#include "util/TaskWatchdog.h"
+#include "util/Utf8LineBreaker.h"
 
 namespace {
 constexpr size_t CHUNK_SIZE = 8 * 1024;  // 8KB chunk for reading
+constexpr uint32_t INDEX_WATCHDOG_SERVICE_INTERVAL_MS = 100;
 // Cache file magic and version
 constexpr uint32_t CACHE_MAGIC = 0x54585449;  // "TXTI"
 constexpr uint8_t CACHE_VERSION = 3;          // Increment when cache format changes
@@ -89,6 +92,7 @@ void TxtReaderActivity::buildPageIndex(GfxRenderer& renderer) {
   LOG_DBG("TRS", "Building page index for %zu bytes...", fileSize);
 
   GUI.drawPopup(renderer, tr(STR_INDEXING));
+  uint32_t lastWatchdogServiceMs = millis();
 
   while (offset < fileSize) {
     std::vector<std::string> tempLines;
@@ -108,9 +112,13 @@ void TxtReaderActivity::buildPageIndex(GfxRenderer& renderer) {
       pageOffsets.push_back(offset);
     }
 
-    // Yield to other tasks periodically
-    if (pageOffsets.size() % 20 == 0) {
+    // Long lines used to turn the page-count yield into an unbounded interval.
+    // Service by elapsed time so a slow card or complex font cannot starve the
+    // subscribed task watchdog while TXT indexing is in progress.
+    if (millis() - lastWatchdogServiceMs >= INDEX_WATCHDOG_SERVICE_INTERVAL_MS) {
+      resetTaskWatchdogIfSubscribed();
       vTaskDelay(1);
+      lastWatchdogServiceMs = millis();
     }
   }
 
@@ -176,7 +184,12 @@ bool TxtReaderActivity::loadPageAtOffset(GfxRenderer& renderer, size_t offset, s
         break;
       }
 
+      // A single 8 KiB chunk can still be expensive with an SD-card font.
+      // Keep the subscribed task alive before and after that unavoidable full
+      // measurement; the prefix probes below do the same.
+      resetTaskWatchdogIfSubscribed();
       int lineWidth = renderer.getTextAdvanceX(cachedFontId, line.c_str(), EpdFontFamily::REGULAR);
+      resetTaskWatchdogIfSubscribed();
 
       if (lineWidth <= viewportWidth) {
         outLines.push_back(line);
@@ -185,26 +198,22 @@ bool TxtReaderActivity::loadPageAtOffset(GfxRenderer& renderer, size_t offset, s
         break;
       }
 
-      // Find break point
-      size_t breakPos = line.length();
-      while (breakPos > 0 && renderer.getTextAdvanceX(cachedFontId, line.substr(0, breakPos).c_str(),
-                                                      EpdFontFamily::REGULAR) > viewportWidth) {
-        // Try to break at space
-        size_t spacePos = line.rfind(' ', breakPos - 1);
-        if (spacePos != std::string::npos && spacePos > 0) {
-          breakPos = spacePos;
-        } else {
-          // Break at character boundary for UTF-8
-          breakPos--;
-          while (breakPos > 0 && (line[breakPos] & 0xC0) == 0x80) {
-            breakPos--;
-          }
-        }
+      // A one-byte-at-a-time search measures O(n²) text for a long unspaced
+      // line.  This is common in CJK TXT exports and can keep the indexing
+      // popup up long enough to look frozen.  Find the widest fitting UTF-8
+      // prefix in O(log n) measurements, then retain a natural ASCII-space
+      // break when one exists inside that fitting prefix.
+      size_t breakPos = Utf8LineBreaker::longestPrefixWithinWidth(
+          line, viewportWidth,
+          [&renderer, this](const char* prefix) {
+            resetTaskWatchdogIfSubscribed();
+            return renderer.getTextAdvanceX(cachedFontId, prefix, EpdFontFamily::REGULAR);
+          });
+      if (breakPos > 0) {
+        const size_t spacePos = line.rfind(' ', breakPos - 1);
+        if (spacePos != std::string::npos && spacePos > 0) breakPos = spacePos;
       }
-
-      if (breakPos == 0) {
-        breakPos = 1;
-      }
+      if (breakPos == 0) breakPos = Utf8LineBreaker::nextBoundary(line, 0);
 
       outLines.push_back(line.substr(0, breakPos));
 
