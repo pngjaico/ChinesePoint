@@ -168,3 +168,6 @@ The exact preflight, panel matrix, learner checks, and evidence format are in
 ## Upstream and license
 
 ChinesePoint inherits from CrossPoint Reader and FreeInk, both MIT-licensed. Upstream stays configured as crosspoint-reader/crosspoint-reader so ChinesePoint changes remain auditable and selectively rebaseable.
+
+The current dependency decision log is in
+[`docs/chinesepoint/upstream-watch-2026-09-12.md`](docs/chinesepoint/upstream-watch-2026-09-12.md).
