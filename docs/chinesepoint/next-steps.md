@@ -20,6 +20,10 @@ evidence are absent. It must not be flashed as a 1.0 release.
    dictionary, save direct hits and misses with context, export/reimport the
    learner journal, then perform the Anki Desktop first-sync, idempotent-sync,
    conflict, and offline-retry cases on the user's real deck.
+   The workstation listener smoke is recorded in
+   `evidence/anki-desktop-smoke-2026-09-12.md`; it did not import cards. Its
+   pre-existing AnkiMCP startup failure must be handled separately before the
+   live session.
 5. **Perform recovery only after normal testing.** Trigger the automatic
    2.5-second DOWN+POWER backup path and the manual picker, verify the exact
    backup is accepted and a wrong image is rejected, then record the complete
