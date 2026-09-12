@@ -40,15 +40,16 @@ The initial source base is CrossPoint develop commit e7a3bb48817f1cb951b521ca958
 
 The unmodified X4 Pro baseline compiled on 2026-08-30 and produced a valid ESP32-S3 application image. It is not yet a ChinesePoint CJK release.
 
-The current ChinesePoint pre-physical build is source commit `da0511e`. Its X4
-Pro artifact has an ESP32-S3 image header, the current
+The current local X4 Pro diagnostic build uses the firmware source at
+`d24e15f`; later commits through the current branch change only documentation
+and the desktop Anki add-on, so they do not change this application image. The
+artifact has an ESP32-S3 image header, the current
 `CROSSPOINT-BOARD-V1:x4pro;` tag, a valid Espressif checksum and validation
-hash, and SHA-256 `761324065c89cc08d40577af300fc0694e712a8d80e97df15a3dc36cb473e9fe`
-(5,379,216 bytes). Two consecutive X4 Pro builds produced that same SHA-256
-for both `firmware.bin` and the generated `update.bin`; the latter was also
-validated after safe staging into a local test SD root. It passed artifact
-validation, 211 native host tests, eight release-structure tests, and
-simulator Home captures in the SSD1677, UC8179, and UC8279 profiles.
+hash, and SHA-256 `ea0cb4aaf74002d7f668cf6ec1f2154c392e0a9c93c1667a663cb684b1c4cd83`
+(5,390,320 bytes). `firmware.bin` and its generated `update.bin` have that
+same hash. It passed artifact validation, 222 native host tests before this
+firmware-only rebuild, and simulator compile/link coverage in the SSD1677,
+UC8179, and UC8279 profiles.
 
 It includes word selection, sentence-context saving even for a local dictionary
 miss, optional local StarDict lookup, and Matcha-inspired EPUB language
