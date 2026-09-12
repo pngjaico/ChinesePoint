@@ -174,7 +174,11 @@ The `.sha256` file contains exactly the lowercase SHA-256 of the application
 file. The firmware validates that digest twice, plus the ESP image structure,
 chip family, OTA partition size, and X4 Pro board tag before writing. Missing,
 corrupt, wrong-board, or changed files do not flash; recovery falls back to the
-manual picker. Prepare the SD card from Windows without flashing a device:
+manual picker. Before copying, the preparation tool also rejects a file that
+is too small or too large for the OTA slot, lacks ESP application magic, is not
+ESP32-S3, or has no X4 Pro board tag. This is a desktop preflight; it does not
+replace the firmware's streamed integrity validation. Prepare the SD card from
+Windows without flashing a device:
 
 ~~~powershell
 cd D:\Usuario-pc\Projetos\ChinesePoint\firmware
