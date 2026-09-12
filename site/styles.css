@@ -370,6 +370,9 @@ h2 { margin: 0; font-family: var(--sans); font-size: clamp(30px, 3.4vw, 46px); f
 .flash-button-icon { font-size: 28px; font-weight: 400; }
 .flash-button strong { display: block; font-size: 15px; }
 .flash-button small { display: block; margin-top: 4px; color: rgba(255,255,255,.68); font-size: 10px; }
+.flash-acknowledgement { display: flex; align-items: flex-start; gap: 9px; color: #bdb8b0; font-size: 11px; line-height: 1.45; cursor: pointer; }
+.flash-acknowledgement input { margin: 2px 0 0; accent-color: #cf6357; }
+.flash-acknowledgement + esp-web-install-button { display: block; margin-top: 14px; }
 .flash-side { display: grid; gap: 14px; }
 .progress-card, .terminal-card, .upstream-note { background: #1b1a18; border: 1px solid #383530; border-radius: var(--radius-md); overflow: hidden; }
 .progress-card { padding: 22px; }

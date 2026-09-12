@@ -29,6 +29,8 @@ class ReleaseManifestTest(unittest.TestCase):
     def test_installable_claim_requires_every_panel_and_recovery(self) -> None:
         candidate = copy.deepcopy(self.manifest)
         candidate["artifact"]["installable"] = True
+        candidate["web_install"]["state"] = "ready"
+        candidate["web_install"]["reason"] = ""
         candidate["evidence"]["simulator"]["state"] = "passed"
         candidate["evidence"]["simulator"]["panels"] = {
             panel: {"state": "passed", "record": f"qa/{panel}.bmp"} for panel in MODULE.PANEL_IDS
@@ -45,6 +47,11 @@ class ReleaseManifestTest(unittest.TestCase):
             MODULE.validate(candidate, require_installable=True)
         candidate["evidence"]["simulator"]["panels"]["ssd1677"]["record"] = "qa/ssd1677.bmp"
         candidate["evidence"]["physical"]["panels"]["uc8279"]["state"] = "pending"
+        with self.assertRaises(MODULE.ReleaseEvidenceError):
+            MODULE.validate(candidate, require_installable=True)
+        candidate["evidence"]["physical"]["panels"]["uc8279"]["state"] = "passed"
+        candidate["web_install"]["state"] = "blocked"
+        candidate["web_install"]["reason"] = "still blocked"
         with self.assertRaises(MODULE.ReleaseEvidenceError):
             MODULE.validate(candidate, require_installable=True)
 

@@ -1,5 +1,5 @@
 {
-  "schema": 2,
+  "schema": 3,
   "project": "ChinesePoint",
   "target": "xteink-x4-pro",
   "source_commit": "51fc0470d54c3217fb35fc2b16cb621b35e290a5",
@@ -11,7 +11,12 @@
     "environment": "chinesepoint_x4pro",
     "board_tag": "CROSSPOINT-BOARD-V1:x4pro;",
     "installable": false,
-    "installable_reason": "Physical panel, reader, Anki, and recovery validation are still required; the current image also has zero bytes of free IRAM."
+    "installable_reason": "Physical panel, reader, Anki, and recovery validation are still required. The browser installer remains blocked until those records are complete."
+  },
+  "web_install": {
+    "state": "blocked",
+    "manifest": "web-install-manifest.json",
+    "reason": "No hardware-validated X4 Pro release exists. Browser flashing is disabled."
   },
   "evidence": {
     "native_tests": 222,

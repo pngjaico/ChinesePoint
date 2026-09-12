@@ -20,6 +20,7 @@ PANEL_IDS = ("ssd1677", "uc8179", "uc8279")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 STATES = {"pending", "passed", "failed"}
+WEB_INSTALL_STATES = {"blocked", "ready"}
 
 
 class ReleaseEvidenceError(ValueError):
@@ -55,7 +56,7 @@ def require_panels(value: Any, name: str) -> dict[str, dict[str, str]]:
 
 def validate(manifest: dict[str, Any], require_installable: bool = False) -> None:
     require(isinstance(manifest, dict), "release manifest must be an object")
-    require(manifest.get("schema") == 2, "manifest schema must be 2")
+    require(manifest.get("schema") == 3, "manifest schema must be 3")
     require(manifest.get("project") == "ChinesePoint", "project must be ChinesePoint")
     require(manifest.get("target") == "xteink-x4-pro", "target must be xteink-x4-pro")
     commit = manifest.get("source_commit")
@@ -75,6 +76,15 @@ def validate(manifest: dict[str, Any], require_installable: bool = False) -> Non
     if not artifact["installable"]:
         require(isinstance(artifact.get("installable_reason"), str) and artifact["installable_reason"].strip(),
                 "blocked artifact needs an installable_reason")
+
+    web_install = manifest.get("web_install")
+    require(isinstance(web_install, dict), "web_install must be an object")
+    require(web_install.get("state") in WEB_INSTALL_STATES, "web_install.state must be blocked or ready")
+    require(web_install.get("manifest") == "web-install-manifest.json",
+            "web_install.manifest must be web-install-manifest.json")
+    require(isinstance(web_install.get("reason", ""), str), "web_install.reason must be text")
+    if web_install["state"] == "blocked":
+        require(web_install["reason"].strip(), "blocked web installer needs a reason")
 
     evidence = manifest.get("evidence")
     require(isinstance(evidence, dict), "evidence must be an object")
@@ -109,6 +119,7 @@ def validate(manifest: dict[str, Any], require_installable: bool = False) -> Non
         require(physical["state"] == "passed" and all(value["state"] == "passed" for value in physical_panels.values()),
                 "release tags require physical evidence for all three X4 Pro panel paths")
         require(recovery["state"] == "passed", "release tags require a passed DOWN+POWER recovery drill")
+        require(web_install["state"] == "ready", "release tags require a ready browser installer manifest")
 
 
 def main() -> int:

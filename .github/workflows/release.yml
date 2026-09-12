@@ -59,6 +59,17 @@ jobs:
             --elf .pio/build/chinesepoint_x4pro/firmware.elf \
             --objdump "$HOME/.platformio/packages/toolchain-xtensa-esp-elf/bin/xtensa-esp32s3-elf-objdump"
 
+      - name: Package approved browser USB installer
+        run: |
+          python tools/chinesepoint/package_web_installer.py \
+            --release-manifest site/release-manifest.json \
+            --firmware .pio/build/chinesepoint_x4pro/firmware.bin \
+            --bootloader .pio/build/chinesepoint_x4pro/bootloader.bin \
+            --partitions .pio/build/chinesepoint_x4pro/partitions.bin \
+            --boot-app0 "$HOME/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin" \
+            --output-dir web-install \
+            --esptool "$HOME/.platformio/packages/tool-esptoolpy/esptool.py"
+
       - name: Upload X4 Pro release evidence
         uses: actions/upload-artifact@v4
         with:
@@ -68,3 +79,4 @@ jobs:
             .pio/build/chinesepoint_x4pro/firmware.elf
             .pio/build/chinesepoint_x4pro/firmware.map
             qa-artifacts/chinesepoint-x4pro-artifact.json
+            web-install/

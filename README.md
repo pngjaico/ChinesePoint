@@ -51,6 +51,16 @@ the candidate must have a fixed commit and verified application hash, a proven
 known-good recovery image, and a documented simulator result. The reporting
 rules and stop conditions are in
 [community-hardware-testing.md](docs/chinesepoint/community-hardware-testing.md).
+
+## Browser USB installer
+
+The release dashboard contains an ESP Web Tools installer for an approved X4
+Pro release. It is intentionally absent for the current blocked artifact. A
+tagged release must pass every simulator and physical panel row and the
+DOWN+POWER recovery drill before the release workflow may create its merged
+ESP32-S3 web-install image and manifest. The tool accepts no local `.bin`,
+cannot distinguish an X4 Pro from another ESP32-S3 by itself, and must never be
+used on a locked or irreplaceable reader.
 ## Verified baseline
 
 The initial source base is CrossPoint develop commit e7a3bb48817f1cb951b521ca958562723159c2f6. ChinesePoint currently pins FreeInk `7f6bd0f47a766eea18206dd19f723f3707b6c9d3`, which contains the upstream X4 Pro display-driver correction.
