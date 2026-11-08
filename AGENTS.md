@@ -1,5 +1,17 @@
 # CrossPoint Reader Development Guide
 
+## ChinesePoint / current PlatformIO stack
+
+The ChinesePoint integration in this repository targets XTEINK X4 Pro and uses C++/Arduino with PlatformIO. The root `platformio.ini` declares the `x4pro` environment on `esp32-s3-devkitc1-n16r8`; generic upstream ESP32-C3 constraints below are not evidence of X4 Pro hardware compatibility.
+
+The current `.github/workflows/ci.yml` observes these cloud checks:
+
+- `pio check --fail-on-defect low --fail-on-defect medium --fail-on-defect high`
+- `pio run -e <default|sticky|x4pro|papermono>`
+- `cmake -S test -B build/test -G Ninja`, `cmake --build build/test`, and `ctest --test-dir build/test --output-on-failure -j`
+
+These are GitHub-hosted build and host-test steps. They do not flash a device and do not validate a physical display panel or recovery path.
+
 Project: Open-source e-reader firmware for Xteink X4 (ESP32-C3)
 Mission: Provide a lightweight, high-performance reading experience focused on EPUB rendering on constrained hardware.
 
