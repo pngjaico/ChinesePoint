@@ -1040,3 +1040,12 @@ struct PageLine {
 ---
 
 Philosophy: We are building a dedicated e-reader, not a Swiss Army knife. If a feature adds RAM pressure without significantly improving the reading experience, it is Out of Scope.
+
+---
+
+## Referência Cloud & Google Drive (Atualizado 2026-11-08)
+
+- **Guia Completo de Agentes na Nuvem:** Consulte [`.agents/CLOUD_GUIDE.md`](.agents/CLOUD_GUIDE.md).
+- **Google Drive do Projeto (`Projetos/ChinesePoint/`):** https://drive.google.com/drive/folders/1x_-NDR2EJX40o3axN5dydGJqIPBkODtM (`docs`, `dados`, `assets`, `backups`)
+- **Google Drive Restrito (`Projetos/_Restrito/ChinesePoint/`):** https://drive.google.com/drive/folders/1xdgPWLy-aMD56OjhAC6PE_ls5Cv0MTxl
+- **Branches no Repositório:** `develop`, `sync-pc-2026-11-08`, `feature/x4pro-continuacao`, `pc-feature-x4pro-continuacao`, `recuperado-chinesepoint-x4pro-repro-20260912`, `cjk/part2.5-safety`
